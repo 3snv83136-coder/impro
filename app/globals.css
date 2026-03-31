@@ -1,40 +1,48 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&family=Epilogue:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --bg: #f7f3ee;
-  --ink: #18120a;
-  --muted: #7a6a58;
-  --warm: #e6ddd0;
-  --line: #d4c8b8;
-  --stage: #1a1208;
+  --bg: #0d0d0d;
+  --bg2: #141414;
+  --bg3: #1a1a1a;
+  --card: #1e1e1e;
+  --border: #2a2a2a;
+  --red: #e53935;
+  --red-dark: #b71c1c;
+  --red-light: #ff5252;
+  --text: #f5f5f5;
+  --muted: #888;
+  --warm: #333;
 }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
   background: var(--bg);
-  color: var(--ink);
-  font-family: 'Epilogue', sans-serif;
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
   font-weight: 300;
+  line-height: 1.6;
 }
 
 @keyframes alarm-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.03); }
+  50% { opacity: 0.7; transform: scale(1.02); }
 }
 .alarm-pulse { animation: alarm-pulse 0.6s ease-in-out infinite; }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.fade-up { animation: fadeUp 0.3s ease forwards; }
+.fade-up { animation: fadeUp 0.25s ease forwards; }
 
-.card-hover { transition: transform 0.15s ease, box-shadow 0.15s ease; }
-.card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+.card-hover { transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease; }
+.card-hover:hover { transform: translateY(-2px); border-color: var(--red) !important; box-shadow: 0 0 20px rgba(229,57,53,0.15); }
 
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #e6ddd0; }
-::-webkit-scrollbar-thumb { background: #d4c8b8; border-radius: 3px; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--red); border-radius: 2px; }

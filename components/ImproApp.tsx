@@ -2,434 +2,287 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
-  PHASES,
-  CONTEXTES_SOLO,
-  CONTEXTES_DUOS,
-  CONTEXTES_SCENES,
-  MANTRAS_JOUEUR,
-  MANTRAS_COACH,
-  MANTRAS_OBS,
+  PHASES, CONTEXTES_SOLO, CONTEXTES_DUOS, CONTEXTES_SCENES,
+  MANTRAS_JOUEUR, MANTRAS_COACH, MANTRAS_OBS,
 } from "@/lib/data";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
 type Tab = "session" | "fiches" | "participants" | "projector";
 type FicheRole = "coach" | "joueur" | "observateur";
 type FichePhase = "warmup" | "theory" | "solo" | "duos" | "scenes" | "debrief";
 type Participant = { id: string; name: string; role: FicheRole; passages: number };
 
-const ROLE_COLORS: Record<FicheRole, { bg: string; accent: string; text: string }> = {
-  coach:      { bg: "#1c1208", accent: "#f0a020", text: "#f0e8d8" },
-  joueur:     { bg: "#0d1a2a", accent: "#38b2e8", text: "#e0eefc" },
-  observateur:{ bg: "#1a0d1a", accent: "#c060e0", text: "#f0e0ff" },
-};
+const R = { coach: { bg: "#1a0a0a", accent: "#e53935", text: "#fce4e4" }, joueur: { bg: "#0a1020", accent: "#42a5f5", text: "#e3f2fd" }, observateur: { bg: "#0a0a1a", accent: "#ab47bc", text: "#f3e5f5" } };
+const RL = { coach: "🎙 Coach", joueur: "🎭 Joueur", observateur: "👁 Observateur" };
 
-const ROLE_LABELS: Record<FicheRole, string> = {
-  coach: "🎙 Coach",
-  joueur: "🎭 Joueur",
-  observateur: "👁 Observateur",
-};
+function fmt(s: number) { return `${Math.floor(s/60)}:${(s%60).toString().padStart(2,"0")}`; }
+function rand<T>(a: T[]): T { return a[Math.floor(Math.random()*a.length)]; }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-function fmt(s: number) {
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return `${m}:${sec.toString().padStart(2, "0")}`;
-}
-
-function randomFrom<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-function TimerRing({ pct, color }: { pct: number; color: string }) {
-  const r = 80;
-  const circ = 2 * Math.PI * r;
-  const offset = circ * (1 - pct);
+/* ── RING ── */
+function Ring({ pct, color, size = 180 }: { pct: number; color: string; size?: number }) {
+  const r = size * 0.4;
+  const c = 2 * Math.PI * r;
   return (
-    <svg width="200" height="200" viewBox="0 0 200 200" className="rotate-[-90deg]">
-      <circle cx="100" cy="100" r={r} fill="none" stroke="#e6ddd0" strokeWidth="10" />
-      <circle
-        cx="100" cy="100" r={r} fill="none"
-        stroke={color} strokeWidth="10"
-        strokeLinecap="round"
-        strokeDasharray={circ}
-        strokeDashoffset={offset}
-        style={{ transition: "stroke-dashoffset 1s linear" }}
-      />
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="rotate-[-90deg]">
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#2a2a2a" strokeWidth="8"/>
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth="8"
+        strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c*(1-pct)}
+        style={{ transition: "stroke-dashoffset 1s linear" }}/>
     </svg>
   );
 }
 
-function PhaseBadge({ phase, isActive }: { phase: typeof PHASES[0]; isActive: boolean }) {
+/* ── RED BUTTON ── */
+function Btn({ children, onClick, variant = "red", small }: { children: React.ReactNode; onClick?: () => void; variant?: "red"|"ghost"|"dark"; small?: boolean }) {
+  const base = `font-semibold rounded-full transition-all hover:scale-105 active:scale-95 cursor-pointer border-0 ${small ? "text-xs px-3 py-1.5" : "text-sm px-5 py-2.5"}`;
+  const styles = { red: "bg-[#e53935] text-white hover:bg-[#ff5252]", ghost: "bg-transparent text-[#888] border border-[#2a2a2a] hover:border-[#e53935] hover:text-white", dark: "bg-[#1e1e1e] text-[#f5f5f5] border border-[#2a2a2a] hover:border-[#e53935]" };
+  return <button onClick={onClick} className={`${base} ${styles[variant]}`} style={{ fontFamily: "'Syne', sans-serif" }}>{children}</button>;
+}
+
+/* ── BADGE ── */
+function PhasePill({ p, active, onClick }: { p: typeof PHASES[0]; active: boolean; onClick: () => void }) {
   return (
-    <div
-      className="text-xs font-medium px-3 py-1 rounded-full border transition-all"
-      style={{
-        background: isActive ? phase.color : "transparent",
-        borderColor: phase.color,
-        color: isActive ? "#fff" : phase.color,
-        fontFamily: "'Syne', sans-serif",
-        letterSpacing: "0.05em",
-      }}
-    >
-      {phase.emoji} {phase.label}
-    </div>
+    <button onClick={onClick} className="text-xs px-3 py-1.5 rounded-full border transition-all cursor-pointer hover:scale-105"
+      style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, letterSpacing:"0.05em", background: active ? p.color : "transparent", borderColor: active ? p.color : "#2a2a2a", color: active ? "#fff" : "#888" }}>
+      {p.emoji} {p.label}
+    </button>
   );
 }
 
-// ─── SESSION TAB ─────────────────────────────────────────────────────────────
+/* ══════════════════════ SESSION ══════════════════════ */
 function SessionTab() {
-  const [phaseIdx, setPhaseIdx] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(PHASES[0].duration);
-  const [running, setRunning] = useState(false);
-  const [alarming, setAlarming] = useState(false);
-  const [drawnContext, setDrawnContext] = useState<{ emoji: string; label: string } | null>(null);
-  const [notes, setNotes] = useState<Record<string, string>>({});
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const audioRef = useRef<AudioContext | null>(null);
+  const [pi, setPi] = useState(0);
+  const [t, setT] = useState(PHASES[0].duration);
+  const [run, setRun] = useState(false);
+  const [alarm, setAlarm] = useState(false);
+  const [ctx, setCtx] = useState<{emoji:string;label:string}|null>(null);
+  const [notes, setNotes] = useState<Record<string,string>>({});
+  const ref = useRef<ReturnType<typeof setInterval>|null>(null);
+  const ph = PHASES[pi];
 
-  const phase = PHASES[phaseIdx];
-  const pct = timeLeft / phase.duration;
-
-  const playBeep = useCallback(() => {
+  const beep = useCallback(() => {
     try {
-      const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
-      audioRef.current = ctx;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.frequency.value = 880;
-      gain.gain.setValueAtTime(0.4, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.8);
+      const ac = new (window.AudioContext||(window as unknown as{webkitAudioContext:typeof AudioContext}).webkitAudioContext)();
+      const o = ac.createOscillator(); const g = ac.createGain();
+      o.connect(g); g.connect(ac.destination);
+      o.frequency.value = 880; g.gain.setValueAtTime(0.4, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+1);
+      o.start(); o.stop(ac.currentTime+1);
     } catch {}
   }, []);
 
   useEffect(() => {
-    if (running) {
-      intervalRef.current = setInterval(() => {
-        setTimeLeft((t) => {
-          if (t <= 1) {
-            setRunning(false);
-            setAlarming(true);
-            playBeep();
-            return 0;
-          }
-          return t - 1;
-        });
-      }, 1000);
-    }
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [running, playBeep]);
+    if (run) { ref.current = setInterval(() => setT(v => { if(v<=1){setRun(false);setAlarm(true);beep();return 0;} return v-1; }), 1000); }
+    return () => { if(ref.current) clearInterval(ref.current); };
+  }, [run, beep]);
 
-  const goToPhase = (idx: number) => {
-    setPhaseIdx(idx);
-    setTimeLeft(PHASES[idx].duration);
-    setRunning(false);
-    setAlarming(false);
-    setDrawnContext(null);
-  };
-
-  const drawContext = () => {
-    const contexts =
-      phase.id === "solo" ? CONTEXTES_SOLO :
-      phase.id === "duos" ? CONTEXTES_DUOS :
-      phase.id === "scenes" ? CONTEXTES_SCENES : [];
-    if (contexts.length) setDrawnContext(randomFrom(contexts));
-  };
-
-  const noteKey = `${phaseIdx}`;
+  const go = (i: number) => { setPi(i); setT(PHASES[i].duration); setRun(false); setAlarm(false); setCtx(null); };
+  const draw = () => { const c = ph.id==="solo"?CONTEXTES_SOLO:ph.id==="duos"?CONTEXTES_DUOS:ph.id==="scenes"?CONTEXTES_SCENES:[]; if(c.length) setCtx(rand(c)); };
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 fade-up">
-      {/* Phase nav */}
+      {/* Phase pills */}
       <div className="flex flex-wrap gap-2 mb-6">
-        {PHASES.map((p, i) => (
-          <button key={p.id} onClick={() => goToPhase(i)} className="cursor-pointer">
-            <PhaseBadge phase={p} isActive={i === phaseIdx} />
-          </button>
-        ))}
+        {PHASES.map((p,i) => <PhasePill key={p.id} p={p} active={i===pi} onClick={() => go(i)}/>)}
       </div>
 
-      {/* Main timer card */}
-      <div
-        className="rounded-2xl p-6 mb-6 text-white"
-        style={{ background: phase.color }}
-      >
+      {/* Timer card */}
+      <div className={`rounded-2xl p-6 mb-5 border ${alarm?"alarm-pulse":""}`}
+        style={{ background:"linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%)", borderColor: ph.color, boxShadow:`0 0 40px ${ph.color}22` }}>
+        
+        {/* Red top bar */}
+        <div className="h-0.5 w-full rounded-full mb-5" style={{ background:`linear-gradient(90deg, ${ph.color}, transparent)` }}/>
+
         <div className="flex flex-col md:flex-row items-center gap-6">
-          {/* Ring + time */}
-          <div className={`relative ${alarming ? "alarm-pulse" : ""}`}>
-            <TimerRing pct={pct} color="rgba(255,255,255,0.9)" />
+          <div className={`relative flex-shrink-0 ${alarm?"alarm-pulse":""}`}>
+            <Ring pct={t/ph.duration} color={ph.color}/>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-4xl font-bold" style={{ fontFamily: "'Syne', sans-serif" }}>
-                {fmt(timeLeft)}
-              </span>
-              <span className="text-xs opacity-60 mt-1">{fmt(phase.duration)} total</span>
+              <span className="text-4xl font-bold" style={{ fontFamily:"'Syne',sans-serif", color: ph.color }}>{fmt(t)}</span>
+              <span className="text-xs mt-1" style={{ color:"#555" }}>{fmt(ph.duration)}</span>
             </div>
           </div>
 
-          {/* Phase info */}
           <div className="flex-1">
-            <div className="text-xs opacity-50 uppercase tracking-widest mb-1" style={{ fontFamily: "'Syne', sans-serif" }}>
-              Phase {phaseIdx + 1} / {PHASES.length}
+            <div className="text-xs uppercase tracking-widest mb-1" style={{ fontFamily:"'Syne',sans-serif", color:"#555" }}>
+              Phase {pi+1}/{PHASES.length}
             </div>
-            <h2 className="text-2xl font-bold mb-1" style={{ fontFamily: "'Syne', sans-serif" }}>
-              {phase.emoji} {phase.subtitle}
-            </h2>
-            <p className="text-sm opacity-70 mb-4">{phase.description}</p>
-
-            {/* Controls */}
-            <div className="flex flex-wrap gap-3">
-              <button
-                onClick={() => { setRunning(!running); setAlarming(false); }}
-                className="px-5 py-2 rounded-full font-semibold text-sm transition-all hover:scale-105"
-                style={{
-                  background: running ? "rgba(255,255,255,0.2)" : "white",
-                  color: running ? "white" : phase.color,
-                  fontFamily: "'Syne', sans-serif",
-                }}
-              >
-                {running ? "⏸ Pause" : timeLeft === 0 ? "🔄 Relancer" : "▶ Démarrer"}
-              </button>
-              <button
-                onClick={() => { setTimeLeft(phase.duration); setRunning(false); setAlarming(false); }}
-                className="px-5 py-2 rounded-full text-sm opacity-70 hover:opacity-100 transition-all border border-white/30"
-              >
-                ↺ Reset
-              </button>
-              {phaseIdx < PHASES.length - 1 && (
-                <button
-                  onClick={() => goToPhase(phaseIdx + 1)}
-                  className="px-5 py-2 rounded-full text-sm font-semibold transition-all hover:scale-105 bg-white/20 hover:bg-white/30"
-                >
-                  Phase suivante →
-                </button>
-              )}
+            <h2 className="text-2xl font-bold mb-1" style={{ fontFamily:"'Syne',sans-serif", color: ph.color }}>{ph.emoji} {ph.subtitle}</h2>
+            <p className="text-sm mb-4" style={{ color:"#888" }}>{ph.description}</p>
+            <div className="flex flex-wrap gap-2">
+              <Btn onClick={() => {setRun(!run);setAlarm(false);}}>
+                {run ? "⏸ Pause" : t===0 ? "↺ Relancer" : "▶ Démarrer"}
+              </Btn>
+              <Btn variant="ghost" onClick={() => {setT(ph.duration);setRun(false);setAlarm(false);}}>↺ Reset</Btn>
+              {pi < PHASES.length-1 && <Btn variant="dark" onClick={() => go(pi+1)}>Suivant →</Btn>}
             </div>
           </div>
         </div>
 
-        {alarming && (
-          <div className="mt-4 text-center text-sm font-semibold bg-white/20 rounded-xl p-3">
+        {alarm && (
+          <div className="mt-4 text-center text-sm font-bold py-2.5 rounded-xl" style={{ background:"#e5393520", border:"1px solid #e53935", color:"#ff5252", fontFamily:"'Syne',sans-serif" }}>
             ⏰ Temps écoulé — passez à la phase suivante !
           </div>
         )}
       </div>
 
-      {/* Actions grid + context drawer */}
+      {/* Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        {/* Coach actions */}
-        <div className="bg-white rounded-xl p-4 shadow-sm">
-          <h3 className="text-xs uppercase tracking-widest mb-3 font-semibold" style={{ fontFamily: "'Syne', sans-serif", color: "#f0a020" }}>
-            🎙 Coach — à faire
-          </h3>
-          <ul className="space-y-2">
-            {phase.coachActions.map((a, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-[#7a6a58]">
-                <span className="text-[#f0a020] mt-0.5">▸</span> {a}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Player actions */}
-        <div className="bg-white rounded-xl p-4 shadow-sm">
-          <h3 className="text-xs uppercase tracking-widest mb-3 font-semibold" style={{ fontFamily: "'Syne', sans-serif", color: "#38b2e8" }}>
-            🎭 Joueur — à faire
-          </h3>
-          <ul className="space-y-2">
-            {phase.playerActions.map((a, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-[#7a6a58]">
-                <span className="text-[#38b2e8] mt-0.5">▸</span> {a}
-              </li>
-            ))}
-          </ul>
-        </div>
+        {[
+          { role:"coach" as FicheRole, actions: ph.coachActions },
+          { role:"joueur" as FicheRole, actions: ph.playerActions },
+        ].map(({role, actions}) => (
+          <div key={role} className="rounded-xl p-4 border card-hover" style={{ background:"#141414", borderColor:"#2a2a2a" }}>
+            <div className="text-xs uppercase tracking-widest mb-3 font-bold" style={{ fontFamily:"'Syne',sans-serif", color: R[role].accent }}>
+              {RL[role]}
+            </div>
+            <ul className="space-y-2">
+              {actions.map((a,i) => (
+                <li key={i} className="flex items-start gap-2 text-sm" style={{ color:"#aaa" }}>
+                  <span style={{ color: R[role].accent, flexShrink:0 }}>▸</span>{a}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
 
-      {/* Observer actions if any */}
-      {"observerActions" in phase && (
-        <div className="bg-white rounded-xl p-4 shadow-sm mb-4">
-          <h3 className="text-xs uppercase tracking-widest mb-3 font-semibold" style={{ fontFamily: "'Syne', sans-serif", color: "#c060e0" }}>
-            👁 Observateur — à faire
-          </h3>
-          <ul className="grid grid-cols-1 md:grid-cols-3 gap-2">
-            {(phase as typeof phase & { observerActions: string[] }).observerActions.map((a, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-[#7a6a58]">
-                <span className="text-[#c060e0] mt-0.5">▸</span> {a}
-              </li>
+      {"observerActions" in ph && (
+        <div className="rounded-xl p-4 border mb-4 card-hover" style={{ background:"#141414", borderColor:"#2a2a2a" }}>
+          <div className="text-xs uppercase tracking-widest mb-3 font-bold" style={{ fontFamily:"'Syne',sans-serif", color: R.observateur.accent }}>
+            {RL.observateur}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+            {(ph as typeof ph & {observerActions:string[]}).observerActions.map((a,i) => (
+              <div key={i} className="flex items-start gap-2 text-sm" style={{ color:"#aaa" }}>
+                <span style={{ color: R.observateur.accent, flexShrink:0 }}>▸</span>{a}
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
 
-      {/* Context drawer */}
-      {["solo", "duos", "scenes"].includes(phase.id) && (
-        <div className="bg-white rounded-xl p-4 shadow-sm mb-4">
+      {/* Context draw */}
+      {["solo","duos","scenes"].includes(ph.id) && (
+        <div className="rounded-xl p-4 border mb-4" style={{ background:"#141414", borderColor:"#2a2a2a" }}>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs uppercase tracking-widest font-semibold" style={{ fontFamily: "'Syne', sans-serif", color: "#7a6a58" }}>
+            <span className="text-xs uppercase tracking-widest font-bold" style={{ fontFamily:"'Syne',sans-serif", color:"#555" }}>
               🎲 Tirage de contexte
-            </h3>
-            <button
-              onClick={drawContext}
-              className="text-sm px-4 py-1.5 rounded-full font-semibold text-white transition-all hover:scale-105"
-              style={{ background: phase.color, fontFamily: "'Syne', sans-serif" }}
-            >
-              Tirer au sort
-            </button>
+            </span>
+            <Btn small onClick={draw}>Tirer au sort</Btn>
           </div>
-          {drawnContext ? (
-            <div
-              className="text-center py-4 rounded-xl text-lg font-semibold fade-up"
-              style={{ background: phase.colorLight, fontFamily: "'Syne', sans-serif" }}
-            >
-              {drawnContext.emoji} {drawnContext.label}
+          {ctx ? (
+            <div className="text-center py-4 rounded-xl text-lg font-bold fade-up border"
+              style={{ fontFamily:"'Syne',sans-serif", background:"#1e1e1e", borderColor: ph.color, color: ph.color }}>
+              {ctx.emoji} {ctx.label}
             </div>
           ) : (
-            <p className="text-sm text-[#7a6a58] text-center py-2">Appuie sur « Tirer au sort » pour révéler un contexte au groupe</p>
+            <p className="text-sm text-center py-2" style={{ color:"#555" }}>Appuie pour révéler un contexte</p>
           )}
         </div>
       )}
 
       {/* Notes */}
-      <div className="bg-white rounded-xl p-4 shadow-sm">
-        <h3 className="text-xs uppercase tracking-widest mb-2 font-semibold" style={{ fontFamily: "'Syne', sans-serif", color: "#7a6a58" }}>
-          📝 Notes de phase
-        </h3>
-        <textarea
-          className="w-full text-sm text-[#18120a] bg-[#f7f3ee] rounded-lg p-3 resize-none outline-none focus:ring-2"
-          style={{ minHeight: "80px", border: "1px solid #e6ddd0" }}
-          placeholder="Observations, ce qui a fonctionné, ce qui a résisté…"
-          value={notes[noteKey] || ""}
-          onChange={(e) => setNotes((n) => ({ ...n, [noteKey]: e.target.value }))}
-        />
+      <div className="rounded-xl p-4 border" style={{ background:"#141414", borderColor:"#2a2a2a" }}>
+        <div className="text-xs uppercase tracking-widest mb-2 font-bold" style={{ fontFamily:"'Syne',sans-serif", color:"#555" }}>📝 Notes</div>
+        <textarea className="w-full text-sm bg-[#0d0d0d] rounded-lg p-3 resize-none outline-none text-[#aaa] placeholder-[#444]"
+          style={{ minHeight:"72px", border:"1px solid #2a2a2a" }}
+          placeholder="Ce qui a fonctionné, ce qui a résisté…"
+          value={notes[`${pi}`]||""}
+          onChange={e => setNotes(n => ({...n,[`${pi}`]:e.target.value}))}/>
       </div>
     </div>
   );
 }
 
-// ─── FICHES TAB ───────────────────────────────────────────────────────────────
+/* ══════════════════════ FICHES ══════════════════════ */
 function FichesTab() {
-  const [view, setView] = useState<"roles" | "phases">("roles");
-  const [activeRole, setActiveRole] = useState<FicheRole>("coach");
-  const [activePhase, setActivePhase] = useState<FichePhase>("warmup");
+  const [view, setView] = useState<"roles"|"phases">("roles");
+  const [role, setRole] = useState<FicheRole>("coach");
+  const [phase, setPhase] = useState<FichePhase>("warmup");
+  const ph = PHASES.find(p => p.id===phase)!;
 
-  const phase = PHASES.find((p) => p.id === activePhase)!;
-  const roleStyle = ROLE_COLORS[activeRole];
-
-  const mantras: Record<FicheRole, string[]> = {
-    coach: MANTRAS_COACH,
-    joueur: MANTRAS_JOUEUR,
-    observateur: MANTRAS_OBS,
-  };
-
-  const erreurs: Record<FicheRole, { titre: string; fix: string }[]> = {
+  const mantras: Record<FicheRole,string[]> = { coach:MANTRAS_COACH, joueur:MANTRAS_JOUEUR, observateur:MANTRAS_OBS };
+  const erreurs: Record<FicheRole,{titre:string;fix:string}[]> = {
     coach: [
-      { titre: "Parler pendant la scène", fix: "Attendre le freeze ou la fin, jamais pendant." },
-      { titre: "Feedback trop long", fix: "1 à 2 observations max. Plus = les joueurs saturent." },
-      { titre: "Laisser dépasser le temps", fix: "Couper à l'heure dite, même si ça dérange." },
-      { titre: "Poser une question rhétorique", fix: "Si tu poses une question, attends une réponse vraie." },
-      { titre: "Cibler une seule personne", fix: "Varier les passes, surveiller qui n'a pas encore joué." },
-      { titre: "Corriger l'intention", fix: "Tu corriges ce que le public a perçu, pas ce qu'ils voulaient faire." },
+      {titre:"Parler pendant la scène",fix:"Attendre le freeze ou la fin."},
+      {titre:"Feedback trop long",fix:"1–2 observations max."},
+      {titre:"Dépasser le temps",fix:"Couper à l'heure dite."},
+      {titre:"Question rhétorique",fix:"Si tu poses une question, attends la réponse."},
+      {titre:"Cibler une seule personne",fix:"Varier les passes."},
+      {titre:"Corriger l'intention",fix:"Corriger la perception, pas l'intention."},
     ],
     joueur: [
-      { titre: "Annoncer le décor", fix: "Ne jamais dire « comme tu le sais, on est à l'hôpital… »" },
-      { titre: "Geste flou", fix: "Mimer vaguement ≠ manipuler un objet avec résistance précise." },
-      { titre: "Ignorer le sol", fix: "Marbre d'hôpital ≠ plage ≠ vaisseau. Le sol change tout." },
-      { titre: "Jouer en parallèle", fix: "Avec un partenaire, votre espace est partagé. Regardez-vous." },
-      { titre: "Figer au Freeze", fix: "Au Freeze, tu gardes la position mais restes présent dans le regard." },
+      {titre:"Annoncer le décor",fix:"Ne jamais dire « comme tu le sais… »"},
+      {titre:"Geste flou",fix:"Un objet avec résistance, poids, texture."},
+      {titre:"Ignorer le sol",fix:"Marbre ≠ plage ≠ vaisseau. Le sol change tout."},
+      {titre:"Jouer en parallèle",fix:"Même espace, même lumière que le partenaire."},
+      {titre:"Figer au Freeze",fix:"Position tenue mais regard vivant."},
     ],
     observateur: [
-      { titre: "Rire / réagir pendant la scène", fix: "Ça casse la concentration du joueur et biais ta lecture." },
-      { titre: "« Tu aurais dû… »", fix: "Remplace par « Je n'ai pas vu… » ou « Il m'a manqué… »" },
-      { titre: "Retour trop long", fix: "3 points max. Le reste se dilue et démotive." },
-      { titre: "Valider l'intention", fix: "Ce n'est pas « tu voulais faire X » — c'est ce que j'ai perçu." },
+      {titre:"Réagir pendant la scène",fix:"Silence total — aucune réaction."},
+      {titre:"« Tu aurais dû… »",fix:"« Je n'ai pas vu… » ou « Il m'a manqué… »"},
+      {titre:"Retour trop long",fix:"3 points max."},
+      {titre:"Valider l'intention",fix:"Ce que j'ai perçu, pas ce qu'ils voulaient."},
     ],
   };
+
+  const Card = ({ children, accent }: { children: React.ReactNode; accent?: string }) => (
+    <div className="rounded-xl p-4 border card-hover" style={{ background:"#141414", borderColor: accent ? `${accent}44` : "#2a2a2a" }}>{children}</div>
+  );
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 fade-up">
-      {/* View switcher */}
       <div className="flex gap-2 mb-6">
-        {(["roles", "phases"] as const).map((v) => (
-          <button
-            key={v}
-            onClick={() => setView(v)}
-            className="px-4 py-2 rounded-full text-sm font-semibold transition-all"
-            style={{
-              fontFamily: "'Syne', sans-serif",
-              background: view === v ? "#18120a" : "#e6ddd0",
-              color: view === v ? "#f7f3ee" : "#7a6a58",
-            }}
-          >
-            {v === "roles" ? "👤 Par rôle" : "📋 Par exercice"}
-          </button>
+        {(["roles","phases"] as const).map(v => (
+          <Btn key={v} variant={view===v?"red":"ghost"} onClick={() => setView(v)}>
+            {v==="roles" ? "👤 Par rôle" : "📋 Par exercice"}
+          </Btn>
         ))}
       </div>
 
-      {view === "roles" && (
+      {view==="roles" && (
         <>
-          {/* Role tabs */}
-          <div className="flex gap-2 mb-4">
-            {(["coach", "joueur", "observateur"] as FicheRole[]).map((r) => (
-              <button
-                key={r}
-                onClick={() => setActiveRole(r)}
-                className="px-4 py-2 rounded-full text-sm font-semibold transition-all hover:scale-105"
-                style={{
-                  fontFamily: "'Syne', sans-serif",
-                  background: activeRole === r ? ROLE_COLORS[r].bg : "#e6ddd0",
-                  color: activeRole === r ? ROLE_COLORS[r].accent : "#7a6a58",
-                }}
-              >
-                {ROLE_LABELS[r]}
+          <div className="flex gap-2 mb-5">
+            {(["coach","joueur","observateur"] as FicheRole[]).map(r => (
+              <button key={r} onClick={() => setRole(r)}
+                className="px-4 py-2 rounded-full text-sm font-bold transition-all hover:scale-105 border cursor-pointer"
+                style={{ fontFamily:"'Syne',sans-serif", background: role===r ? R[r].bg : "transparent", borderColor: role===r ? R[r].accent : "#2a2a2a", color: role===r ? R[r].accent : "#555" }}>
+                {RL[r]}
               </button>
             ))}
           </div>
 
-          {/* Role hero */}
-          <div className="rounded-2xl p-6 mb-4" style={{ background: roleStyle.bg }}>
-            <div className="text-xs uppercase tracking-widest mb-2 opacity-40" style={{ fontFamily: "'Syne', sans-serif", color: roleStyle.text }}>
-              Fiche de poste
-            </div>
-            <h2 className="text-3xl font-bold mb-1" style={{ fontFamily: "'Syne', sans-serif", color: roleStyle.accent }}>
-              {ROLE_LABELS[activeRole]}
-            </h2>
-            <p className="text-sm opacity-60" style={{ fontFamily: "'Instrument Serif', serif", fontStyle: "italic", color: roleStyle.text }}>
-              {activeRole === "coach" && "Le chef d'orchestre silencieux qui voit tout"}
-              {activeRole === "joueur" && "Incarner, ne pas expliquer — montrer, ne pas dire"}
-              {activeRole === "observateur" && "Les yeux du public — le miroir précis"}
+          {/* Hero */}
+          <div className="rounded-2xl p-6 mb-5 border" style={{ background: R[role].bg, borderColor: R[role].accent }}>
+            <div className="h-0.5 w-16 rounded-full mb-4" style={{ background: R[role].accent }}/>
+            <div className="text-xs uppercase tracking-widest mb-1 opacity-40" style={{ fontFamily:"'Syne',sans-serif" }}>Fiche de poste</div>
+            <h2 className="text-3xl font-bold mb-1" style={{ fontFamily:"'Syne',sans-serif", color: R[role].accent }}>{RL[role]}</h2>
+            <p className="text-sm opacity-50 italic">
+              {role==="coach"&&"Le chef d'orchestre silencieux qui voit tout"}
+              {role==="joueur"&&"Incarner, ne pas expliquer — montrer, ne pas dire"}
+              {role==="observateur"&&"Les yeux du public — le miroir précis"}
             </p>
           </div>
 
           {/* Mantras */}
-          <div className="bg-white rounded-xl p-4 shadow-sm mb-4">
-            <h3 className="text-xs uppercase tracking-widest mb-3 font-semibold text-[#7a6a58]" style={{ fontFamily: "'Syne', sans-serif" }}>
-              Mantras
-            </h3>
+          <Card accent={R[role].accent}>
+            <div className="text-xs uppercase tracking-widest mb-3 font-bold" style={{ fontFamily:"'Syne',sans-serif", color:"#555" }}>Mantras</div>
             <ul className="space-y-2">
-              {mantras[activeRole].map((m, i) => (
-                <li key={i} className="flex items-start gap-3 py-2 border-b border-[#e6ddd0] last:border-0">
-                  <span className="text-[#d4c8b8] text-xl leading-none">"</span>
-                  <span className="text-sm" style={{ fontFamily: "'Instrument Serif', serif", fontStyle: "italic" }}>{m}</span>
+              {mantras[role].map((m,i) => (
+                <li key={i} className="flex items-start gap-3 py-2 border-b border-[#2a2a2a] last:border-0">
+                  <span className="text-2xl leading-none opacity-20" style={{ color: R[role].accent }}>"</span>
+                  <span className="text-sm italic" style={{ color:"#bbb" }}>{m}</span>
                 </li>
               ))}
             </ul>
-          </div>
+          </Card>
 
-          {/* Erreurs */}
-          <div className="bg-white rounded-xl p-4 shadow-sm">
-            <h3 className="text-xs uppercase tracking-widest mb-3 font-semibold text-[#7a6a58]" style={{ fontFamily: "'Syne', sans-serif" }}>
-              Pièges à éviter
-            </h3>
+          <div className="mt-4">
+            <div className="text-xs uppercase tracking-widest mb-3 font-bold" style={{ fontFamily:"'Syne',sans-serif", color:"#555" }}>Pièges à éviter</div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {erreurs[activeRole].map((e, i) => (
-                <div key={i} className="rounded-lg p-3" style={{ background: "#fff5f5", border: "1px solid #fccaca" }}>
-                  <div className="text-sm font-medium text-red-800 mb-1">{e.titre}</div>
-                  <div className="text-xs text-[#4a5568]">→ {e.fix}</div>
+              {erreurs[role].map((e,i) => (
+                <div key={i} className="rounded-lg p-3 border card-hover" style={{ background:"#1a0808", borderColor:"#3a1414" }}>
+                  <div className="text-sm font-semibold mb-1" style={{ color:"#ff5252", fontFamily:"'Syne',sans-serif" }}>{e.titre}</div>
+                  <div className="text-xs" style={{ color:"#888" }}>→ {e.fix}</div>
                 </div>
               ))}
             </div>
@@ -437,45 +290,30 @@ function FichesTab() {
         </>
       )}
 
-      {view === "phases" && (
+      {view==="phases" && (
         <>
-          {/* Phase tabs */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            {PHASES.map((p) => (
-              <button key={p.id} onClick={() => setActivePhase(p.id as FichePhase)}>
-                <PhaseBadge phase={p} isActive={p.id === activePhase} />
-              </button>
-            ))}
+          <div className="flex flex-wrap gap-2 mb-5">
+            {PHASES.map(p => <PhasePill key={p.id} p={p} active={p.id===phase} onClick={() => setPhase(p.id as FichePhase)}/>)}
           </div>
 
-          {/* Phase hero */}
-          <div className="rounded-2xl p-6 mb-4 text-white" style={{ background: phase.color }}>
-            <div className="text-xs opacity-50 uppercase tracking-widest mb-1" style={{ fontFamily: "'Syne', sans-serif" }}>
-              {PHASES.findIndex((p) => p.id === activePhase) + 1} / {PHASES.length} · {fmt(phase.duration)}
-            </div>
-            <h2 className="text-2xl font-bold" style={{ fontFamily: "'Syne', sans-serif" }}>
-              {phase.emoji} {phase.subtitle}
-            </h2>
-            <p className="text-sm opacity-70 mt-1">{phase.description}</p>
+          <div className="rounded-2xl p-6 mb-5 border" style={{ background:"#141414", borderColor: ph.color, boxShadow:`0 0 30px ${ph.color}22` }}>
+            <div className="h-0.5 w-16 rounded-full mb-4" style={{ background: ph.color }}/>
+            <div className="text-xs uppercase tracking-widest mb-1 opacity-40" style={{ fontFamily:"'Syne',sans-serif" }}>{PHASES.findIndex(p=>p.id===phase)+1}/{PHASES.length} · {fmt(ph.duration)}</div>
+            <h2 className="text-2xl font-bold mb-1" style={{ fontFamily:"'Syne',sans-serif", color: ph.color }}>{ph.emoji} {ph.subtitle}</h2>
+            <p className="text-sm" style={{ color:"#888" }}>{ph.description}</p>
           </div>
 
-          {/* 3 role cards for phase */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            {(["coach", "joueur", "observateur"] as FicheRole[]).map((role) => {
-              const actions =
-                role === "coach" ? phase.coachActions :
-                role === "joueur" ? phase.playerActions :
-                ("observerActions" in phase ? (phase as typeof phase & { observerActions: string[] }).observerActions : []);
-              if (actions.length === 0) return null;
+            {(["coach","joueur","observateur"] as FicheRole[]).map(r => {
+              const actions = r==="coach"?ph.coachActions:r==="joueur"?ph.playerActions:"observerActions" in ph?(ph as typeof ph&{observerActions:string[]}).observerActions:[];
+              if(!actions.length) return null;
               return (
-                <div key={role} className="rounded-xl p-4" style={{ background: ROLE_COLORS[role].bg }}>
-                  <div className="text-xs uppercase tracking-widest mb-3 font-semibold" style={{ fontFamily: "'Syne', sans-serif", color: ROLE_COLORS[role].accent }}>
-                    {ROLE_LABELS[role]}
-                  </div>
-                  <ul className="space-y-2">
-                    {actions.map((a, i) => (
-                      <li key={i} className="text-xs flex items-start gap-2" style={{ color: ROLE_COLORS[role].text, opacity: 0.85 }}>
-                        <span style={{ color: ROLE_COLORS[role].accent }}>▸</span> {a}
+                <div key={r} className="rounded-xl p-4 border" style={{ background: R[r].bg, borderColor:`${R[r].accent}44` }}>
+                  <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ fontFamily:"'Syne',sans-serif", color: R[r].accent }}>{RL[r]}</div>
+                  <ul className="space-y-1.5">
+                    {actions.map((a,i) => (
+                      <li key={i} className="text-xs flex items-start gap-2" style={{ color: R[r].text, opacity:0.8 }}>
+                        <span style={{ color: R[r].accent, flexShrink:0 }}>▸</span>{a}
                       </li>
                     ))}
                   </ul>
@@ -484,16 +322,13 @@ function FichesTab() {
             })}
           </div>
 
-          {/* Contexts if applicable */}
-          {["solo", "duos", "scenes"].includes(phase.id) && (
-            <div className="bg-white rounded-xl p-4 shadow-sm">
-              <h3 className="text-xs uppercase tracking-widest mb-3 font-semibold text-[#7a6a58]" style={{ fontFamily: "'Syne', sans-serif" }}>
-                Contextes disponibles
-              </h3>
+          {["solo","duos","scenes"].includes(ph.id) && (
+            <div className="rounded-xl p-4 border" style={{ background:"#141414", borderColor:"#2a2a2a" }}>
+              <div className="text-xs uppercase tracking-widest mb-3 font-bold" style={{ fontFamily:"'Syne',sans-serif", color:"#555" }}>Contextes disponibles</div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {(phase.id === "solo" ? CONTEXTES_SOLO : phase.id === "duos" ? CONTEXTES_DUOS : CONTEXTES_SCENES).map((c, i) => (
-                  <div key={i} className="rounded-lg px-3 py-2 text-sm text-[#7a6a58] flex items-center gap-2" style={{ background: "#f7f3ee" }}>
-                    <span>{c.emoji}</span> {c.label}
+                {(ph.id==="solo"?CONTEXTES_SOLO:ph.id==="duos"?CONTEXTES_DUOS:CONTEXTES_SCENES).map((c,i) => (
+                  <div key={i} className="rounded-lg px-3 py-2 text-xs flex items-center gap-2 border" style={{ background:"#1e1e1e", borderColor:"#2a2a2a", color:"#888" }}>
+                    {c.emoji} {c.label}
                   </div>
                 ))}
               </div>
@@ -505,156 +340,94 @@ function FichesTab() {
   );
 }
 
-// ─── PARTICIPANTS TAB ─────────────────────────────────────────────────────────
+/* ══════════════════════ PARTICIPANTS ══════════════════════ */
 function ParticipantsTab() {
-  const [participants, setParticipants] = useState<Participant[]>([
-    { id: "1", name: "Participant 1", role: "joueur", passages: 0 },
-    { id: "2", name: "Participant 2", role: "joueur", passages: 0 },
-    { id: "3", name: "Participant 3", role: "joueur", passages: 0 },
+  const [parts, setParts] = useState<Participant[]>([
+    {id:"1",name:"Alice",role:"joueur",passages:0},
+    {id:"2",name:"Bruno",role:"joueur",passages:0},
+    {id:"3",name:"Chloé",role:"observateur",passages:0},
   ]);
-  const [newName, setNewName] = useState("");
+  const [name, setName] = useState("");
 
-  const addParticipant = () => {
-    if (!newName.trim()) return;
-    setParticipants((p) => [
-      ...p,
-      { id: Date.now().toString(), name: newName.trim(), role: "joueur", passages: 0 },
-    ]);
-    setNewName("");
-  };
-
-  const updateRole = (id: string, role: FicheRole) => {
-    setParticipants((p) => p.map((x) => (x.id === id ? { ...x, role } : x)));
-  };
-
-  const incrementPassage = (id: string) => {
-    setParticipants((p) => p.map((x) => (x.id === id ? { ...x, passages: x.passages + 1 } : x)));
-  };
-
-  const remove = (id: string) => {
-    setParticipants((p) => p.filter((x) => x.id !== id));
-  };
-
-  const totalPassages = participants.reduce((s, p) => s + p.passages, 0);
+  const add = () => { if(!name.trim())return; setParts(p=>[...p,{id:Date.now()+"",name:name.trim(),role:"joueur",passages:0}]); setName(""); };
+  const setRole = (id:string,r:FicheRole) => setParts(p=>p.map(x=>x.id===id?{...x,role:r}:x));
+  const inc = (id:string) => setParts(p=>p.map(x=>x.id===id?{...x,passages:x.passages+1}:x));
+  const rem = (id:string) => setParts(p=>p.filter(x=>x.id!==id));
+  const total = parts.reduce((s,p)=>s+p.passages,0);
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 fade-up">
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-3 gap-3 mb-6">
         {[
-          { label: "Participants", value: participants.length, color: "#18120a" },
-          { label: "Passages total", value: totalPassages, color: "#c8440a" },
-          { label: "Moy. / joueur", value: participants.length ? (totalPassages / participants.length).toFixed(1) : 0, color: "#5b8fd4" },
-        ].map((s) => (
-          <div key={s.label} className="bg-white rounded-xl p-4 shadow-sm text-center">
-            <div className="text-3xl font-bold mb-1" style={{ fontFamily: "'Syne', sans-serif", color: s.color }}>{s.value}</div>
-            <div className="text-xs text-[#7a6a58] uppercase tracking-widest" style={{ fontFamily: "'Syne', sans-serif" }}>{s.label}</div>
+          {l:"Participants",v:parts.length,c:"#e53935"},
+          {l:"Passages total",v:total,c:"#42a5f5"},
+          {l:"Moy. / joueur",v:parts.length?(total/parts.length).toFixed(1):0,c:"#ab47bc"},
+        ].map(s=>(
+          <div key={s.l} className="rounded-xl p-4 border text-center" style={{ background:"#141414", borderColor:"#2a2a2a" }}>
+            <div className="text-3xl font-bold mb-0.5" style={{ fontFamily:"'Syne',sans-serif", color:s.c }}>{s.v}</div>
+            <div className="text-xs uppercase tracking-widest" style={{ fontFamily:"'Syne',sans-serif", color:"#555" }}>{s.l}</div>
           </div>
         ))}
       </div>
 
-      {/* Add participant */}
-      <div className="bg-white rounded-xl p-4 shadow-sm mb-4">
-        <h3 className="text-xs uppercase tracking-widest mb-3 font-semibold text-[#7a6a58]" style={{ fontFamily: "'Syne', sans-serif" }}>
-          Ajouter un participant
-        </h3>
+      {/* Add */}
+      <div className="rounded-xl p-4 border mb-4" style={{ background:"#141414", borderColor:"#2a2a2a" }}>
+        <div className="text-xs uppercase tracking-widest mb-3 font-bold" style={{ fontFamily:"'Syne',sans-serif", color:"#555" }}>Ajouter</div>
         <div className="flex gap-2">
-          <input
-            className="flex-1 px-3 py-2 rounded-lg text-sm outline-none focus:ring-2"
-            style={{ background: "#f7f3ee", border: "1px solid #e6ddd0" }}
-            placeholder="Prénom…"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && addParticipant()}
-          />
-          <button
-            onClick={addParticipant}
-            className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:scale-105"
-            style={{ background: "#18120a", fontFamily: "'Syne', sans-serif" }}
-          >
-            + Ajouter
-          </button>
+          <input className="flex-1 px-3 py-2 rounded-lg text-sm outline-none bg-[#0d0d0d] text-[#f5f5f5] placeholder-[#444]"
+            style={{ border:"1px solid #2a2a2a" }}
+            placeholder="Prénom…" value={name}
+            onChange={e=>setName(e.target.value)}
+            onKeyDown={e=>e.key==="Enter"&&add()}/>
+          <Btn onClick={add}>+ Ajouter</Btn>
         </div>
       </div>
 
-      {/* Participants list */}
-      <div className="space-y-2">
-        {participants.map((p) => (
-          <div key={p.id} className="bg-white rounded-xl p-4 shadow-sm flex items-center gap-4 card-hover">
-            {/* Avatar */}
-            <div
-              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-              style={{ background: ROLE_COLORS[p.role].bg, fontFamily: "'Syne', sans-serif" }}
-            >
+      {/* List */}
+      <div className="space-y-2 mb-4">
+        {parts.map(p=>(
+          <div key={p.id} className="rounded-xl px-4 py-3 border flex items-center gap-3 card-hover" style={{ background:"#141414", borderColor:"#2a2a2a" }}>
+            <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+              style={{ background: R[p.role].bg, color: R[p.role].accent, fontFamily:"'Syne',sans-serif", border:`1px solid ${R[p.role].accent}44` }}>
               {p.name.charAt(0).toUpperCase()}
             </div>
-
-            {/* Name */}
             <div className="flex-1 min-w-0">
-              <div className="font-semibold text-sm truncate" style={{ fontFamily: "'Syne', sans-serif" }}>{p.name}</div>
-              <div className="text-xs text-[#7a6a58]">{p.passages} passage{p.passages > 1 ? "s" : ""}</div>
+              <div className="font-bold text-sm truncate" style={{ fontFamily:"'Syne',sans-serif" }}>{p.name}</div>
+              <div className="text-xs" style={{ color:"#555" }}>{p.passages} passage{p.passages>1?"s":""}</div>
             </div>
-
-            {/* Role selector */}
             <div className="flex gap-1">
-              {(["coach", "joueur", "observateur"] as FicheRole[]).map((r) => (
-                <button
-                  key={r}
-                  onClick={() => updateRole(p.id, r)}
-                  className="text-xs px-2 py-1 rounded-full transition-all"
-                  style={{
-                    background: p.role === r ? ROLE_COLORS[r].bg : "#f0ece6",
-                    color: p.role === r ? ROLE_COLORS[r].accent : "#7a6a58",
-                    fontFamily: "'Syne', sans-serif",
-                  }}
-                  title={ROLE_LABELS[r]}
-                >
-                  {r === "coach" ? "🎙" : r === "joueur" ? "🎭" : "👁"}
+              {(["coach","joueur","observateur"] as FicheRole[]).map(r=>(
+                <button key={r} onClick={()=>setRole(p.id,r)}
+                  className="text-xs px-2 py-1 rounded-full transition-all cursor-pointer border"
+                  style={{ background:p.role===r?R[r].bg:"transparent", color:p.role===r?R[r].accent:"#555", borderColor:p.role===r?R[r].accent:"#2a2a2a" }}
+                  title={RL[r]}>
+                  {r==="coach"?"🎙":r==="joueur"?"🎭":"👁"}
                 </button>
               ))}
             </div>
-
-            {/* Passage counter */}
-            <button
-              onClick={() => incrementPassage(p.id)}
-              className="px-3 py-1 rounded-full text-sm font-bold text-white transition-all hover:scale-110"
-              style={{ background: "#c8440a", fontFamily: "'Syne', sans-serif" }}
-              title="Ajouter un passage"
-            >
-              +1
-            </button>
-
-            {/* Remove */}
-            <button
-              onClick={() => remove(p.id)}
-              className="text-[#d4c8b8] hover:text-red-400 transition-colors text-lg leading-none"
-            >
-              ×
-            </button>
+            <button onClick={()=>inc(p.id)}
+              className="px-3 py-1 rounded-full text-xs font-bold text-white transition-all hover:scale-110 cursor-pointer"
+              style={{ background:"#e53935", fontFamily:"'Syne',sans-serif" }}>+1</button>
+            <button onClick={()=>rem(p.id)} className="text-[#444] hover:text-[#e53935] transition-colors text-xl leading-none cursor-pointer">×</button>
           </div>
         ))}
       </div>
 
-      {/* Passage heatmap */}
-      {participants.length > 0 && (
-        <div className="bg-white rounded-xl p-4 shadow-sm mt-4">
-          <h3 className="text-xs uppercase tracking-widest mb-3 font-semibold text-[#7a6a58]" style={{ fontFamily: "'Syne', sans-serif" }}>
-            Équilibre des passages
-          </h3>
+      {/* Heatmap */}
+      {parts.length>0 && (
+        <div className="rounded-xl p-4 border" style={{ background:"#141414", borderColor:"#2a2a2a" }}>
+          <div className="text-xs uppercase tracking-widest mb-3 font-bold" style={{ fontFamily:"'Syne',sans-serif", color:"#555" }}>Équilibre des passages</div>
           <div className="space-y-2">
-            {participants.map((p) => {
-              const max = Math.max(...participants.map((x) => x.passages), 1);
-              const pct = (p.passages / max) * 100;
+            {parts.map(p=>{
+              const max = Math.max(...parts.map(x=>x.passages),1);
               return (
                 <div key={p.id} className="flex items-center gap-3">
-                  <div className="w-20 text-xs text-[#7a6a58] truncate">{p.name}</div>
-                  <div className="flex-1 h-5 rounded-full overflow-hidden" style={{ background: "#f0ece6" }}>
-                    <div
-                      className="h-full rounded-full transition-all duration-500"
-                      style={{ width: `${pct}%`, background: ROLE_COLORS[p.role].bg === "#1c1208" ? "#f0a020" : ROLE_COLORS[p.role].accent }}
-                    />
+                  <div className="w-20 text-xs truncate" style={{ color:"#888" }}>{p.name}</div>
+                  <div className="flex-1 h-4 rounded-full overflow-hidden" style={{ background:"#1e1e1e" }}>
+                    <div className="h-full rounded-full transition-all duration-500" style={{ width:`${(p.passages/max)*100}%`, background: R[p.role].accent }}/>
                   </div>
-                  <div className="text-xs font-bold w-6 text-right" style={{ fontFamily: "'Syne', sans-serif" }}>{p.passages}</div>
+                  <div className="text-xs font-bold w-5 text-right" style={{ fontFamily:"'Syne',sans-serif", color: R[p.role].accent }}>{p.passages}</div>
                 </div>
               );
             })}
@@ -665,118 +438,85 @@ function ParticipantsTab() {
   );
 }
 
-// ─── PROJECTOR TAB ────────────────────────────────────────────────────────────
-function ProjectorTab() {
-  const [phaseIdx, setPhaseIdx] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(PHASES[0].duration);
-  const [running, setRunning] = useState(false);
-  const [alarming, setAlarming] = useState(false);
-  const [drawnContext, setDrawnContext] = useState<{ emoji: string; label: string } | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const phase = PHASES[phaseIdx];
-  const pct = timeLeft / phase.duration;
+/* ══════════════════════ PROJECTOR ══════════════════════ */
+function ProjectorTab({ onBack }: { onBack: () => void }) {
+  const [pi, setPi] = useState(0);
+  const [t, setT] = useState(PHASES[0].duration);
+  const [run, setRun] = useState(false);
+  const [alarm, setAlarm] = useState(false);
+  const [ctx, setCtx] = useState<{emoji:string;label:string}|null>(null);
+  const ref = useRef<ReturnType<typeof setInterval>|null>(null);
+  const ph = PHASES[pi];
 
   useEffect(() => {
-    if (running) {
-      intervalRef.current = setInterval(() => {
-        setTimeLeft((t) => {
-          if (t <= 1) { setRunning(false); setAlarming(true); return 0; }
-          return t - 1;
-        });
-      }, 1000);
-    }
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [running]);
+    if(run){ref.current=setInterval(()=>setT(v=>{if(v<=1){setRun(false);setAlarm(true);return 0;}return v-1;}),1000);}
+    return()=>{if(ref.current)clearInterval(ref.current);};
+  },[run]);
 
-  const goToPhase = (idx: number) => {
-    setPhaseIdx(idx);
-    setTimeLeft(PHASES[idx].duration);
-    setRunning(false);
-    setAlarming(false);
-    setDrawnContext(null);
-  };
-
-  const drawContext = () => {
-    const contexts = phase.id === "solo" ? CONTEXTES_SOLO : phase.id === "duos" ? CONTEXTES_DUOS : phase.id === "scenes" ? CONTEXTES_SCENES : [];
-    if (contexts.length) setDrawnContext(randomFrom(contexts));
-  };
+  const go=(i:number)=>{setPi(i);setT(PHASES[i].duration);setRun(false);setAlarm(false);setCtx(null);};
+  const draw=()=>{const c=ph.id==="solo"?CONTEXTES_SOLO:ph.id==="duos"?CONTEXTES_DUOS:ph.id==="scenes"?CONTEXTES_SCENES:[];if(c.length)setCtx(rand(c));};
 
   return (
-    <div
-      className={`min-h-screen flex flex-col items-center justify-center p-8 ${alarming ? "alarm-pulse" : ""}`}
-      style={{ background: phase.color }}
-    >
+    <div className={`min-h-screen flex flex-col items-center justify-center p-8 ${alarm?"alarm-pulse":""}`}
+      style={{ background:"#0a0a0a" }}>
+      
+      {/* Back */}
+      <button onClick={onBack} className="fixed top-4 left-4 z-50 px-4 py-2 rounded-full text-xs font-bold border cursor-pointer"
+        style={{ fontFamily:"'Syne',sans-serif", background:"#141414", borderColor:"#2a2a2a", color:"#888" }}>← Retour</button>
+
       {/* Phase nav */}
-      <div className="flex flex-wrap justify-center gap-2 mb-8 opacity-60">
-        {PHASES.map((p, i) => (
-          <button
-            key={p.id}
-            onClick={() => goToPhase(i)}
-            className="text-white text-xs px-3 py-1 rounded-full border border-white/30 hover:border-white/80 transition-all"
-            style={{ fontFamily: "'Syne', sans-serif", opacity: i === phaseIdx ? 1 : 0.5 }}
-          >
+      <div className="flex flex-wrap justify-center gap-2 mb-10">
+        {PHASES.map((p,i)=>(
+          <button key={p.id} onClick={()=>go(i)} className="text-xs px-3 py-1.5 rounded-full border cursor-pointer transition-all"
+            style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, background:i===pi?p.color:"transparent", borderColor:i===pi?p.color:"#2a2a2a", color:i===pi?"#fff":"#555" }}>
             {p.emoji} {p.label}
           </button>
         ))}
       </div>
 
-      {/* Big timer */}
+      {/* Big ring */}
       <div className="relative mb-6">
-        <TimerRing pct={pct} color="rgba(255,255,255,0.9)" />
+        <Ring pct={t/ph.duration} color={ph.color} size={260}/>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-5xl font-bold text-white" style={{ fontFamily: "'Syne', sans-serif" }}>
-            {fmt(timeLeft)}
-          </span>
+          <span className="text-7xl font-bold" style={{ fontFamily:"'Syne',sans-serif", color: ph.color }}>{fmt(t)}</span>
+          <span className="text-sm mt-1" style={{ color:"#444" }}>{fmt(ph.duration)} total</span>
         </div>
       </div>
 
-      {/* Phase name */}
-      <h1 className="text-5xl font-bold text-white text-center mb-2" style={{ fontFamily: "'Syne', sans-serif" }}>
-        {phase.emoji} {phase.subtitle}
+      {/* Title */}
+      <h1 className="text-5xl font-bold text-center mb-2" style={{ fontFamily:"'Syne',sans-serif", color: ph.color }}>
+        {ph.emoji} {ph.subtitle}
       </h1>
-      <p className="text-white/60 text-lg text-center mb-8" style={{ fontFamily: "'Instrument Serif', serif", fontStyle: "italic" }}>
-        {phase.description}
-      </p>
+      <p className="text-lg text-center mb-8" style={{ color:"#555" }}>{ph.description}</p>
 
       {/* Controls */}
-      <div className="flex gap-4 mb-8">
-        <button
-          onClick={() => { setRunning(!running); setAlarming(false); }}
-          className="px-8 py-3 rounded-full text-xl font-bold transition-all hover:scale-105"
-          style={{ background: "rgba(255,255,255,0.2)", color: "white", fontFamily: "'Syne', sans-serif", backdropFilter: "blur(8px)" }}
-        >
-          {running ? "⏸" : "▶"}
-        </button>
-        <button
-          onClick={() => { setTimeLeft(phase.duration); setRunning(false); setAlarming(false); }}
-          className="px-8 py-3 rounded-full text-xl font-bold transition-all hover:scale-105"
-          style={{ background: "rgba(255,255,255,0.1)", color: "white", fontFamily: "'Syne', sans-serif" }}
-        >
-          ↺
-        </button>
-        {["solo", "duos", "scenes"].includes(phase.id) && (
-          <button
-            onClick={drawContext}
-            className="px-8 py-3 rounded-full text-xl font-bold transition-all hover:scale-105"
-            style={{ background: "rgba(255,255,255,0.15)", color: "white", fontFamily: "'Syne', sans-serif" }}
-          >
-            🎲
+      <div className="flex gap-4 mb-6">
+        {[
+          {label: run?"⏸":"▶", action:()=>{setRun(!run);setAlarm(false);}},
+          {label:"↺", action:()=>{setT(ph.duration);setRun(false);setAlarm(false);}},
+        ].map((b,i)=>(
+          <button key={i} onClick={b.action}
+            className="w-16 h-16 rounded-full text-2xl font-bold transition-all hover:scale-110 cursor-pointer border"
+            style={{ background:"#141414", borderColor: ph.color, color: ph.color, fontFamily:"'Syne',sans-serif" }}>
+            {b.label}
           </button>
+        ))}
+        {["solo","duos","scenes"].includes(ph.id) && (
+          <button onClick={draw}
+            className="w-16 h-16 rounded-full text-2xl font-bold transition-all hover:scale-110 cursor-pointer border"
+            style={{ background:"#141414", borderColor:"#2a2a2a", color:"#888" }}>🎲</button>
         )}
       </div>
 
-      {/* Drawn context */}
-      {drawnContext && (
-        <div
-          className="text-3xl font-bold text-center py-5 px-10 rounded-2xl fade-up"
-          style={{ background: "rgba(255,255,255,0.15)", color: "white", fontFamily: "'Syne', sans-serif", backdropFilter: "blur(8px)" }}
-        >
-          {drawnContext.emoji} {drawnContext.label}
+      {ctx && (
+        <div className="text-3xl font-bold text-center py-5 px-10 rounded-2xl border fade-up"
+          style={{ fontFamily:"'Syne',sans-serif", background:"#141414", borderColor: ph.color, color: ph.color }}>
+          {ctx.emoji} {ctx.label}
         </div>
       )}
 
-      {alarming && (
-        <div className="text-white text-2xl font-bold mt-4" style={{ fontFamily: "'Syne', sans-serif" }}>
+      {alarm && (
+        <div className="mt-4 text-2xl font-bold" style={{ fontFamily:"'Syne',sans-serif", color:"#e53935" }}>
           ⏰ Temps écoulé !
         </div>
       )}
@@ -784,77 +524,60 @@ function ProjectorTab() {
   );
 }
 
-// ─── MAIN APP ────────────────────────────────────────────────────────────────
+/* ══════════════════════ MAIN ══════════════════════ */
 export default function ImproApp() {
   const [tab, setTab] = useState<Tab>("session");
 
-  const tabs: { id: Tab; label: string; emoji: string }[] = [
-    { id: "session", label: "Séance", emoji: "⏱" },
-    { id: "fiches", label: "Fiches", emoji: "📋" },
-    { id: "participants", label: "Participants", emoji: "👥" },
-    { id: "projector", label: "Projecteur", emoji: "📽" },
+  if(tab==="projector") return <ProjectorTab onBack={()=>setTab("session")}/>;
+
+  const tabs = [
+    {id:"session" as Tab, label:"Séance", icon:"⏱"},
+    {id:"fiches" as Tab, label:"Fiches", icon:"📋"},
+    {id:"participants" as Tab, label:"Participants", icon:"👥"},
+    {id:"projector" as Tab, label:"Projecteur", icon:"📽"},
   ];
 
-  if (tab === "projector") {
-    return (
-      <div>
-        <button
-          onClick={() => setTab("session")}
-          className="fixed top-4 right-4 z-50 px-4 py-2 rounded-full text-sm font-semibold text-white"
-          style={{ background: "rgba(0,0,0,0.4)", fontFamily: "'Syne', sans-serif", backdropFilter: "blur(8px)" }}
-        >
-          ← Retour
-        </button>
-        <ProjectorTab />
-      </div>
-    );
-  }
-
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
+    <div style={{ minHeight:"100vh", background:"#0d0d0d" }}>
       {/* Header */}
-      <header style={{ background: "#1a1208" }} className="px-4 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div>
-            <div className="text-xs uppercase tracking-widest text-[#7a6a58] mb-0.5" style={{ fontFamily: "'Syne', sans-serif" }}>
-              Improvisation théâtrale
+      <header style={{ background:"#0a0a0a", borderBottom:"1px solid #1e1e1e" }}>
+        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background:"#e53935" }}>
+              <span className="text-white text-sm font-bold" style={{ fontFamily:"'Syne',sans-serif" }}>IQ</span>
             </div>
-            <h1 className="text-xl font-bold" style={{ fontFamily: "'Syne', sans-serif", color: "#f0a020" }}>
-              Qui ? Quoi ? Où ?
-            </h1>
+            <div>
+              <div className="text-xs uppercase tracking-widest mb-0" style={{ fontFamily:"'Syne',sans-serif", color:"#555" }}>Improvisation</div>
+              <h1 className="text-lg font-bold leading-none" style={{ fontFamily:"'Syne',sans-serif", color:"#e53935" }}>Qui ? Quoi ? Où ?</h1>
+            </div>
           </div>
           <div className="text-right">
-            <div className="text-xs text-[#7a6a58]" style={{ fontFamily: "'Syne', sans-serif" }}>1h · 10 participants</div>
-            <div className="text-xs text-[#7a6a58]">Niveau intermédiaire</div>
+            <div className="text-xs font-bold" style={{ fontFamily:"'Syne',sans-serif", color:"#555" }}>1h · 10 participants</div>
           </div>
         </div>
+        {/* Red line */}
+        <div className="h-0.5 w-full" style={{ background:"linear-gradient(90deg, #e53935, transparent)" }}/>
       </header>
 
       {/* Nav */}
-      <nav style={{ background: "#18120a", borderBottom: "1px solid #2a2010" }} className="sticky top-0 z-40">
+      <nav style={{ background:"#0a0a0a", borderBottom:"1px solid #1e1e1e", position:"sticky", top:0, zIndex:40 }}>
         <div className="max-w-3xl mx-auto flex">
-          {tabs.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className="flex-1 px-2 py-3 text-xs font-semibold transition-all"
-              style={{
-                fontFamily: "'Syne', sans-serif",
-                color: tab === t.id ? "#f0a020" : "#7a6a58",
-                borderBottom: tab === t.id ? "2px solid #f0a020" : "2px solid transparent",
-                letterSpacing: "0.05em",
-              }}
-            >
-              {t.emoji} {t.label}
+          {tabs.map(t=>(
+            <button key={t.id} onClick={()=>setTab(t.id)}
+              className="flex-1 px-2 py-3 text-xs font-bold transition-all cursor-pointer border-b-2"
+              style={{ fontFamily:"'Syne',sans-serif", letterSpacing:"0.05em",
+                color: tab===t.id?"#e53935":"#555",
+                borderColor: tab===t.id?"#e53935":"transparent",
+                background:"transparent" }}>
+              {t.icon} {t.label}
             </button>
           ))}
         </div>
       </nav>
 
-      {/* Content */}
-      {tab === "session" && <SessionTab />}
-      {tab === "fiches" && <FichesTab />}
-      {tab === "participants" && <ParticipantsTab />}
+      {tab==="session" && <SessionTab/>}
+      {tab==="fiches" && <FichesTab/>}
+      {tab==="participants" && <ParticipantsTab/>}
     </div>
   );
 }
