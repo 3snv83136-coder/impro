@@ -1,532 +1,545 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { PHASES, CONTEXTES_SOLO, CONTEXTES_DUOS, CONTEXTES_SCENES, MANTRAS_JOUEUR, MANTRAS_COACH, MANTRAS_OBS } from "@/lib/data";
+import {
+  PHASES, CONTEXTES_SOLO, CONTEXTES_DUOS, CONTEXTES_SCENES,
+  MANTRAS_JOUEUR, MANTRAS_COACH, MANTRAS_OBS,
+} from "@/lib/data";
 
-type Tab = "session"|"fiches"|"participants"|"projector";
-type Role = "coach"|"joueur"|"observateur";
+type Tab = "session" | "fiches" | "participants" | "projector";
+type Role = "coach" | "joueur" | "observateur";
 type PhaseId = "warmup"|"theory"|"solo"|"duos"|"scenes"|"debrief";
 type Participant = { id:string; name:string; role:Role; passages:number };
 
+// ── Phase colors matching the screenshot ──────────────────────────────────
+const PC = ["#00ff88","#1cb0f6","#9b59b6","#ff4b4b","#ff9600","#00d4ff"];
+const PC_DARK = ["#004422","#003850","#2d1050","#500000","#502800","#003040"];
+
 const ROLE_CFG = {
-  coach:       { color:"#ff9600", bg:"#fff8ed", border:"#ffd580", emoji:"🎙", label:"Coach" },
-  joueur:      { color:"#1cb0f6", bg:"#e8f7fe", border:"#9adff8", emoji:"🎭", label:"Joueur" },
-  observateur: { color:"#ce82ff", bg:"#f7eeff", border:"#e0bcff", emoji:"👁",  label:"Observateur" },
+  coach:       { color:"#ff4b4b", bg:"#1f0a0a", border:"#ff4b4b44", emoji:"🧑‍💼", label:"Coach Instructions" },
+  joueur:      { color:"#1cb0f6", bg:"#0a1f30", border:"#1cb0f644", emoji:"🎭", label:"Player Goals" },
+  observateur: { color:"#ce82ff", bg:"#1a0a2a", border:"#ce82ff44", emoji:"👁",  label:"Observer Notes" },
 };
 
-const PHASE_COLORS = ["#58cc02","#1cb0f6","#ff9600","#ff4b4b","#ce82ff","#ffc800"];
-
-function fmt(s:number){ return `${Math.floor(s/60)}:${(s%60).toString().padStart(2,"0")}`; }
+function fmt(s:number){ return `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`; }
 function rand<T>(a:T[]):T{ return a[Math.floor(Math.random()*a.length)]; }
 
-// ── Duo Button ──────────────────────────────────────────────────────────────
-function DBtn({
-  children, onClick, color="#58cc02", textColor="#fff",
-  size="md", fullWidth, disabled, variant="solid"
-}:{
-  children:React.ReactNode; onClick?:()=>void;
-  color?:string; textColor?:string;
-  size?:"sm"|"md"|"lg"; fullWidth?:boolean;
-  disabled?:boolean; variant?:"solid"|"outline"|"ghost";
-}){
-  const shadow = variant==="solid" ? `0 4px 0 ${darken(color)}` : "none";
-  const pad = size==="sm"?"8px 16px":size==="lg"?"16px 32px":"12px 24px";
-  const fs = size==="sm"?"0.8rem":size==="lg"?"1.1rem":"0.9rem";
+// ── Neon Ring ──────────────────────────────────────────────────────────────
+function NeonRing({ pct, color, size=220, children }: { pct:number; color:string; size?:number; children?:React.ReactNode }) {
+  const r = size * 0.42;
+  const c = 2 * Math.PI * r;
   return (
-    <button onClick={onClick} disabled={disabled}
-      className="btn-press rounded-2xl font-extrabold transition-all cursor-pointer select-none disabled:opacity-50"
-      style={{
-        background: variant==="solid"?color:variant==="outline"?"transparent":color+"15",
-        color: variant==="solid"?textColor:color,
-        border: variant==="outline"?`2.5px solid ${color}`:"2.5px solid transparent",
-        boxShadow: disabled?"none":shadow,
-        padding: pad, fontSize: fs,
-        width: fullWidth?"100%":"auto",
-        fontFamily:"'Nunito',sans-serif",
-        letterSpacing:"0.02em",
-      }}>
-      {children}
-    </button>
-  );
-}
-
-function darken(hex:string):string{
-  const n=parseInt(hex.slice(1),16);
-  const r=Math.max(0,(n>>16)-40), g=Math.max(0,((n>>8)&0xff)-40), b=Math.max(0,(n&0xff)-40);
-  return `#${r.toString(16).padStart(2,"0")}${g.toString(16).padStart(2,"0")}${b.toString(16).padStart(2,"0")}`;
-}
-
-// ── Card ────────────────────────────────────────────────────────────────────
-function Card({children,accent,className="",onClick}:{children:React.ReactNode;accent?:string;className?:string;onClick?:()=>void}){
-  return (
-    <div onClick={onClick}
-      className={`rounded-3xl border-2 bg-white transition-all ${onClick?"cursor-pointer hover:scale-[1.02]":""} ${className}`}
-      style={{ borderColor: accent||"#e5e5e5", boxShadow: accent?`0 4px 0 ${darken(accent||"#e5e5e5")}`:"0 4px 0 #e5e5e5" }}>
-      {children}
-    </div>
-  );
-}
-
-// ── XP Bar ──────────────────────────────────────────────────────────────────
-function XPBar({pct,color}:{pct:number;color:string}){
-  return (
-    <div className="w-full h-4 rounded-full overflow-hidden" style={{ background:"#e5e5e5" }}>
-      <div className="h-full rounded-full transition-all duration-1000 relative overflow-hidden"
-        style={{ width:`${Math.max(2,pct*100)}%`, background:color }}>
-        <div className="absolute inset-0 opacity-30" style={{ background:"linear-gradient(90deg,transparent,white,transparent)", animation:"shimmer 2s infinite" }}/>
-      </div>
-    </div>
-  );
-}
-
-// ── Ring ────────────────────────────────────────────────────────────────────
-function Ring({pct,color,size=160,children}:{pct:number;color:string;size?:number;children?:React.ReactNode}){
-  const r=size*0.38; const c=2*Math.PI*r;
-  return (
-    <div className="relative flex-shrink-0" style={{width:size,height:size}}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{transform:"rotate(-90deg)"}}>
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#e5e5e5" strokeWidth="12"/>
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth="12"
-          strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c*(1-Math.max(0,Math.min(1,pct)))}
-          style={{transition:"stroke-dashoffset 1s linear"}}/>
+    <div className="relative flex-shrink-0" style={{ width:size, height:size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform:"rotate(-90deg)" }}>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#ffffff0a" strokeWidth="10"/>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth="10"
+          strokeLinecap="round" strokeDasharray={c}
+          strokeDashoffset={c*(1-Math.max(0,Math.min(1,pct)))}
+          style={{ transition:"stroke-dashoffset 1s linear", filter:`drop-shadow(0 0 8px ${color}) drop-shadow(0 0 20px ${color}88)` }}/>
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">{children}</div>
     </div>
   );
 }
 
-// ══════════ SESSION ══════════════════════════════════════════════════════════
-function SessionTab(){
-  const [pi,setPi]=useState(0);
-  const [t,setT]=useState(PHASES[0].duration);
-  const [run,setRun]=useState(false);
-  const [alarm,setAlarm]=useState(false);
-  const [ctx,setCtx]=useState<{emoji:string;label:string}|null>(null);
-  const [ctxKey,setCtxKey]=useState(0);
-  const [notes,setNotes]=useState<Record<string,string>>({});
-  const ref=useRef<ReturnType<typeof setInterval>|null>(null);
-  const ph=PHASES[pi];
-  const color=PHASE_COLORS[pi];
-
-  const beep=useCallback(()=>{
-    try{
-      const ac=new (window.AudioContext||(window as unknown as{webkitAudioContext:typeof AudioContext}).webkitAudioContext)();
-      [880,1100,880].forEach((f,i)=>{
-        const o=ac.createOscillator(),g=ac.createGain();
-        o.connect(g);g.connect(ac.destination);
-        o.frequency.value=f; g.gain.setValueAtTime(0.3,ac.currentTime+i*0.15);
-        g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+i*0.15+0.12);
-        o.start(ac.currentTime+i*0.15); o.stop(ac.currentTime+i*0.15+0.15);
-      });
-    }catch{}
-  },[]);
-
-  useEffect(()=>{
-    if(run){ref.current=setInterval(()=>setT(v=>{if(v<=1){setRun(false);setAlarm(true);beep();return 0;}return v-1;}),1000);}
-    return()=>{if(ref.current)clearInterval(ref.current);};
-  },[run,beep]);
-
-  const go=(i:number)=>{setPi(i);setT(PHASES[i].duration);setRun(false);setAlarm(false);setCtx(null);};
-  const draw=()=>{
-    const c=ph.id==="solo"?CONTEXTES_SOLO:ph.id==="duos"?CONTEXTES_DUOS:ph.id==="scenes"?CONTEXTES_SCENES:[];
-    if(c.length){setCtx(rand(c));setCtxKey(k=>k+1);}
-  };
-
+// ── Chevron Phase Bar ──────────────────────────────────────────────────────
+function PhaseBar({ active, onSelect }: { active:number; onSelect:(i:number)=>void }) {
   return (
-    <div className="px-4 py-6 max-w-2xl mx-auto fade-up">
-      {/* Phase scroll pills */}
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-5 snap-x" style={{scrollbarWidth:"none"}}>
-        {PHASES.map((p,i)=>(
-          <button key={p.id} onClick={()=>go(i)} className="btn-press flex-shrink-0 snap-start rounded-2xl px-4 py-2 font-extrabold text-xs transition-all cursor-pointer border-2"
+    <div className="flex w-full overflow-x-auto" style={{ scrollbarWidth:"none", gap:0 }}>
+      {PHASES.map((p, i) => {
+        const isActive = i === active;
+        const color = PC[i];
+        return (
+          <button key={p.id} onClick={() => onSelect(i)}
+            className="relative flex-1 min-w-[80px] flex items-center justify-center py-2.5 px-2 text-xs font-extrabold transition-all cursor-pointer"
             style={{
               fontFamily:"'Nunito',sans-serif",
-              background: i===pi?PHASE_COLORS[i]:"white",
-              color: i===pi?"white":PHASE_COLORS[i],
-              borderColor: PHASE_COLORS[i],
-              boxShadow: i===pi?`0 3px 0 ${darken(PHASE_COLORS[i])}`:"0 3px 0 #e5e5e5",
+              background: isActive ? color : "#1c2128",
+              color: isActive ? "#000" : color,
+              clipPath: i===0
+                ? "polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%)"
+                : i===PHASES.length-1
+                ? "polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 50%)"
+                : "polygon(12px 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 12px 100%, 0 50%)",
+              textShadow: isActive ? "none" : `0 0 8px ${color}`,
+              border: "none",
+              outline: "none",
             }}>
-            {p.emoji} {p.label}
+            <span className="truncate">{p.label}</span>
           </button>
-        ))}
-      </div>
-
-      {/* Timer hero card */}
-      <Card accent={color} className={`p-6 mb-5 ${alarm?"alarm-pulse":""}`}>
-        <div className="flex flex-col sm:flex-row items-center gap-6">
-          {/* Ring */}
-          <Ring pct={t/ph.duration} color={color} size={160}>
-            <span className="text-4xl font-black" style={{color,fontFamily:"'Nunito',sans-serif"}}>{fmt(t)}</span>
-            <span className="text-xs font-bold" style={{color:"#afafaf"}}>{fmt(ph.duration)}</span>
-          </Ring>
-
-          <div className="flex-1 text-center sm:text-left">
-            <div className="text-xs font-extrabold uppercase tracking-widest mb-1" style={{color:"#afafaf"}}>Phase {pi+1}/{PHASES.length}</div>
-            <h2 className="text-2xl font-black mb-1" style={{color,fontFamily:"'Nunito',sans-serif"}}>{ph.emoji} {ph.subtitle}</h2>
-            <p className="text-sm font-semibold mb-4" style={{color:"#afafaf"}}>{ph.description}</p>
-            <XPBar pct={t/ph.duration} color={color}/>
-            <div className="flex flex-wrap gap-2 mt-4 justify-center sm:justify-start">
-              <DBtn color={color} onClick={()=>{setRun(!run);setAlarm(false);}}>
-                {run?"⏸ Pause":t===0?"🔄 Relancer":"▶ Démarrer"}
-              </DBtn>
-              <DBtn variant="outline" color={color} onClick={()=>{setT(ph.duration);setRun(false);setAlarm(false);}}>↺</DBtn>
-              {pi<PHASES.length-1&&<DBtn variant="outline" color={color} onClick={()=>go(pi+1)}>Suivant →</DBtn>}
-            </div>
-          </div>
-        </div>
-
-        {alarm&&(
-          <div className="mt-4 rounded-2xl p-3 text-center font-black text-sm bounce-in"
-            style={{background:`${color}20`,color,border:`2px solid ${color}40`}}>
-            🎉 Temps écoulé — phase suivante !
-          </div>
-        )}
-      </Card>
-
-      {/* Action cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-        {([["coach","joueur"] as Role[], "observerActions" in ph ? ["observateur" as Role] : []] as Role[][]).flat().map(role=>{
-          const cfg=ROLE_CFG[role];
-          const actions=role==="coach"?ph.coachActions:role==="joueur"?ph.playerActions:"observerActions" in ph?(ph as typeof ph&{observerActions:string[]}).observerActions:[];
-          if(!actions.length)return null;
-          return (
-            <Card key={role} accent={cfg.border} className="p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center text-base font-black"
-                  style={{background:cfg.bg,border:`2px solid ${cfg.border}`}}>
-                  {cfg.emoji}
-                </div>
-                <span className="font-extrabold text-sm" style={{color:cfg.color}}>{cfg.label}</span>
-              </div>
-              <ul className="space-y-1.5">
-                {actions.map((a,i)=>(
-                  <li key={i} className="flex items-start gap-2 text-xs font-semibold" style={{color:"#3c3c3c"}}>
-                    <span className="mt-0.5 font-black" style={{color:cfg.color}}>▸</span>{a}
-                  </li>
-                ))}
-              </ul>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Context drawer */}
-      {["solo","duos","scenes"].includes(ph.id)&&(
-        <Card accent={color} className="p-4 mb-3">
-          <div className="flex items-center justify-between mb-3">
-            <span className="font-extrabold text-sm" style={{color}}>🎲 Contexte aléatoire</span>
-            <DBtn size="sm" color={color} onClick={draw}>Tirer !</DBtn>
-          </div>
-          {ctx?(
-            <div key={ctxKey} className="text-center py-3 px-4 rounded-2xl font-extrabold text-sm bounce-in"
-              style={{background:`${color}15`,color,border:`2px dashed ${color}60`}}>
-              {ctx.emoji} {ctx.label}
-            </div>
-          ):(
-            <div className="text-center py-3 text-xs font-bold" style={{color:"#afafaf"}}>
-              Appuie sur « Tirer ! » pour un contexte surprise 🎁
-            </div>
-          )}
-        </Card>
-      )}
-
-      {/* Notes */}
-      <Card className="p-4">
-        <div className="font-extrabold text-xs mb-2" style={{color:"#afafaf"}}>📝 Notes de phase</div>
-        <textarea className="w-full text-xs font-semibold bg-[#f7f7f7] rounded-2xl p-3 resize-none outline-none placeholder-[#afafaf]"
-          style={{minHeight:"64px",border:"2px solid #e5e5e5",color:"#3c3c3c",fontFamily:"'Nunito',sans-serif"}}
-          placeholder="Ce qui a fonctionné, ce qui a résisté…"
-          value={notes[`${pi}`]||""}
-          onChange={e=>setNotes(n=>({...n,[`${pi}`]:e.target.value}))}/>
-      </Card>
+        );
+      })}
     </div>
   );
 }
 
-// ══════════ FICHES ════════════════════════════════════════════════════════════
-function FichesTab(){
-  const [view,setView]=useState<"roles"|"phases">("roles");
-  const [role,setRole]=useState<Role>("coach");
-  const [phase,setPhase]=useState<PhaseId>("warmup");
-  const ph=PHASES.find(p=>p.id===phase)!;
-  const phIdx=PHASES.findIndex(p=>p.id===phase);
-  const color=PHASE_COLORS[phIdx];
-  const cfg=ROLE_CFG[role];
+// ── Neon Card ──────────────────────────────────────────────────────────────
+function NeonCard({ children, color, className="" }: { children:React.ReactNode; color:string; className?:string }) {
+  return (
+    <div className={`rounded-xl p-4 ${className}`}
+      style={{
+        background:"#1c2128",
+        border:`1.5px solid ${color}`,
+        boxShadow:`0 0 12px ${color}33, inset 0 0 12px ${color}08`,
+      }}>
+      {children}
+    </div>
+  );
+}
 
-  const mantras:Record<Role,string[]>={coach:MANTRAS_COACH,joueur:MANTRAS_JOUEUR,observateur:MANTRAS_OBS};
-  const erreurs:Record<Role,{titre:string;fix:string}[]>={
+// ══════════════════════════════════════════════════════════════════════════════
+// SESSION TAB
+// ══════════════════════════════════════════════════════════════════════════════
+function SessionTab() {
+  const [pi, setPi] = useState(0);
+  const [t, setT] = useState(PHASES[0].duration);
+  const [run, setRun] = useState(false);
+  const [alarm, setAlarm] = useState(false);
+  const [ctx, setCtx] = useState<{emoji:string;label:string}|null>(null);
+  const [ctxKey, setCtxKey] = useState(0);
+  const [notes, setNotes] = useState<Record<string,string>>({});
+  const ref = useRef<ReturnType<typeof setInterval>|null>(null);
+  const ph = PHASES[pi];
+  const color = PC[pi];
+
+  const beep = useCallback(() => {
+    try {
+      const ac = new (window.AudioContext||(window as unknown as{webkitAudioContext:typeof AudioContext}).webkitAudioContext)();
+      [523,659,784].forEach((f,i) => {
+        const o=ac.createOscillator(), g=ac.createGain();
+        o.connect(g); g.connect(ac.destination);
+        o.type="sine"; o.frequency.value=f;
+        g.gain.setValueAtTime(0,ac.currentTime+i*0.12);
+        g.gain.linearRampToValueAtTime(0.3,ac.currentTime+i*0.12+0.05);
+        g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+i*0.12+0.2);
+        o.start(ac.currentTime+i*0.12); o.stop(ac.currentTime+i*0.12+0.25);
+      });
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (run) {
+      ref.current = setInterval(() => setT(v => {
+        if (v <= 1) { setRun(false); setAlarm(true); beep(); return 0; }
+        return v - 1;
+      }), 1000);
+    }
+    return () => { if (ref.current) clearInterval(ref.current); };
+  }, [run, beep]);
+
+  const go = (i:number) => { setPi(i); setT(PHASES[i].duration); setRun(false); setAlarm(false); setCtx(null); };
+  const draw = () => {
+    const c = ph.id==="solo"?CONTEXTES_SOLO:ph.id==="duos"?CONTEXTES_DUOS:ph.id==="scenes"?CONTEXTES_SCENES:[];
+    if (c.length) { setCtx(rand(c)); setCtxKey(k=>k+1); }
+  };
+
+  return (
+    <div className="flex flex-col" style={{ minHeight:"calc(100vh - 100px)" }}>
+      {/* Chevron bar */}
+      <div style={{ background:"#161b22", borderBottom:"1px solid #30363d" }}>
+        <PhaseBar active={pi} onSelect={go}/>
+      </div>
+
+      {/* Main content */}
+      <div className="flex-1 px-4 py-6 max-w-4xl mx-auto w-full fade-up">
+        {/* Timer centered */}
+        <div className={`flex flex-col items-center mb-6 ${alarm?"alarm-pulse":""}`}>
+          <NeonRing pct={t/ph.duration} color={color} size={220}>
+            <span className="font-black text-5xl" style={{
+              fontFamily:"'Share Tech Mono','Nunito',sans-serif",
+              color, textShadow:`0 0 20px ${color}, 0 0 40px ${color}88`
+            }}>{fmt(t)}</span>
+            <span className="text-xs font-bold mt-1" style={{color:"#7d8590"}}>{fmt(ph.duration)}</span>
+          </NeonRing>
+
+          <h2 className="text-3xl font-black mt-4 mb-2 text-center"
+            style={{ color, textShadow:`0 0 12px ${color}88`, fontFamily:"'Nunito',sans-serif" }}>
+            {ph.emoji} {ph.subtitle}
+          </h2>
+          <p className="text-sm text-center" style={{ color:"#7d8590" }}>{ph.description}</p>
+
+          {/* Controls */}
+          <div className="flex gap-3 mt-4 flex-wrap justify-center">
+            {[
+              { label: run?"⏸ Pause":t===0?"↺ Relancer":"▶ Start", action: ()=>{setRun(!run);setAlarm(false);}, primary:true },
+              { label:"↺", action:()=>{setT(ph.duration);setRun(false);setAlarm(false);}, primary:false },
+              ...(pi<PHASES.length-1 ? [{ label:"Next →", action:()=>go(pi+1), primary:false }] : []),
+              ...( ["solo","duos","scenes"].includes(ph.id) ? [{ label:"🎲 Context", action:draw, primary:false }] : [] ),
+            ].map((b,i) => (
+              <button key={i} onClick={b.action}
+                className="px-5 py-2 rounded-lg font-extrabold text-sm transition-all cursor-pointer hover:scale-105 active:scale-95"
+                style={{
+                  fontFamily:"'Nunito',sans-serif",
+                  background: b.primary ? color : "transparent",
+                  color: b.primary ? "#000" : color,
+                  border: `2px solid ${color}`,
+                  boxShadow: b.primary ? `0 0 12px ${color}88` : "none",
+                  textShadow: b.primary ? "none" : `0 0 8px ${color}`,
+                }}>
+                {b.label}
+              </button>
+            ))}
+          </div>
+
+          {alarm && (
+            <div className="mt-4 px-6 py-3 rounded-xl font-extrabold text-sm bounce-in"
+              style={{ background:`${color}22`, border:`1.5px solid ${color}`, color, textShadow:`0 0 8px ${color}` }}>
+              ⏰ Temps écoulé — phase suivante !
+            </div>
+          )}
+        </div>
+
+        {/* Context drawn */}
+        {ctx && (
+          <div key={ctxKey} className="mb-5 bounce-in">
+            <NeonCard color={color} className="text-center py-3">
+              <span className="text-xl font-extrabold" style={{ color, textShadow:`0 0 8px ${color}` }}>
+                {ctx.emoji} {ctx.label}
+              </span>
+            </NeonCard>
+          </div>
+        )}
+
+        {/* 3 cards: Coach | Player | Notes */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Coach */}
+          <NeonCard color={ROLE_CFG.coach.color}>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-lg">{ROLE_CFG.coach.emoji}</span>
+              <span className="font-extrabold text-sm" style={{ color:ROLE_CFG.coach.color, textShadow:`0 0 8px ${ROLE_CFG.coach.color}` }}>
+                Coach Instructions
+              </span>
+            </div>
+            <ul className="space-y-1.5">
+              {ph.coachActions.map((a,i) => (
+                <li key={i} className="flex items-start gap-2 text-xs font-semibold" style={{color:"#c9d1d9"}}>
+                  <span style={{color:ROLE_CFG.coach.color, flexShrink:0}}>•</span>{a}
+                </li>
+              ))}
+            </ul>
+          </NeonCard>
+
+          {/* Player */}
+          <NeonCard color={ROLE_CFG.joueur.color}>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-lg">{ROLE_CFG.joueur.emoji}</span>
+              <span className="font-extrabold text-sm" style={{ color:ROLE_CFG.joueur.color, textShadow:`0 0 8px ${ROLE_CFG.joueur.color}` }}>
+                Player Goals
+              </span>
+            </div>
+            <ul className="space-y-1.5">
+              {ph.playerActions.map((a,i) => (
+                <li key={i} className="flex items-start gap-2 text-xs font-semibold" style={{color:"#c9d1d9"}}>
+                  <span style={{color:ROLE_CFG.joueur.color, flexShrink:0}}>•</span>{a}
+                </li>
+              ))}
+            </ul>
+          </NeonCard>
+
+          {/* Notes */}
+          <NeonCard color="#30363d">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-lg">✏️</span>
+              <span className="font-extrabold text-sm" style={{ color:"#e6edf3" }}>Session Notes</span>
+            </div>
+            <textarea
+              className="w-full text-xs font-semibold rounded-lg p-2 resize-none outline-none"
+              style={{
+                minHeight:"100px", background:"#0d1117",
+                border:"1px solid #30363d", color:"#c9d1d9",
+                fontFamily:"'Nunito',sans-serif",
+              }}
+              placeholder="Observations, feedback…"
+              value={notes[`${pi}`]||""}
+              onChange={e=>setNotes(n=>({...n,[`${pi}`]:e.target.value}))}/>
+          </NeonCard>
+        </div>
+
+        {/* Observer card if applicable */}
+        {"observerActions" in ph && (
+          <div className="mt-4">
+            <NeonCard color={ROLE_CFG.observateur.color}>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-lg">{ROLE_CFG.observateur.emoji}</span>
+                <span className="font-extrabold text-sm" style={{ color:ROLE_CFG.observateur.color, textShadow:`0 0 8px ${ROLE_CFG.observateur.color}` }}>
+                  Observer Notes
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {(ph as typeof ph & {observerActions:string[]}).observerActions.map((a,i)=>(
+                  <div key={i} className="flex items-start gap-2 text-xs font-semibold" style={{color:"#c9d1d9"}}>
+                    <span style={{color:ROLE_CFG.observateur.color,flexShrink:0}}>•</span>{a}
+                  </div>
+                ))}
+              </div>
+            </NeonCard>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// FICHES TAB
+// ══════════════════════════════════════════════════════════════════════════════
+function FichesTab() {
+  const [view, setView] = useState<"roles"|"phases">("roles");
+  const [role, setRole] = useState<Role>("coach");
+  const [phase, setPhase] = useState<PhaseId>("warmup");
+  const ph = PHASES.find(p=>p.id===phase)!;
+  const phIdx = PHASES.findIndex(p=>p.id===phase);
+  const color = PC[phIdx];
+  const cfg = ROLE_CFG[role];
+
+  const mantras:Record<Role,string[]> = { coach:MANTRAS_COACH, joueur:MANTRAS_JOUEUR, observateur:MANTRAS_OBS };
+  const erreurs:Record<Role,{titre:string;fix:string}[]> = {
     coach:[
       {titre:"Parler pendant la scène",fix:"Attendre le freeze ou la fin."},
       {titre:"Feedback trop long",fix:"1–2 observations max."},
       {titre:"Dépasser le temps",fix:"Couper à l'heure dite."},
-      {titre:"Question rhétorique",fix:"Attends la réponse vraie."},
+      {titre:"Question rhétorique",fix:"Attendre la réponse vraie."},
       {titre:"Cibler une seule personne",fix:"Varier les passes."},
       {titre:"Corriger l'intention",fix:"Corriger la perception, pas l'intention."},
     ],
     joueur:[
-      {titre:"Annoncer le décor",fix:"Ne jamais expliquer — montrer !"},
-      {titre:"Geste flou",fix:"Résistance, poids, texture — tout."},
+      {titre:"Annoncer le décor",fix:"Montrer, ne pas dire."},
+      {titre:"Geste flou",fix:"Résistance, poids, texture."},
       {titre:"Ignorer le sol",fix:"Marbre ≠ plage ≠ vaisseau."},
       {titre:"Jouer en parallèle",fix:"Même espace, même lumière."},
       {titre:"Figer au Freeze",fix:"Position tenue, regard vivant."},
     ],
     observateur:[
-      {titre:"Réagir pendant la scène",fix:"Silence total — zéro réaction."},
+      {titre:"Réagir pendant la scène",fix:"Silence total."},
       {titre:"« Tu aurais dû… »",fix:"« Je n'ai pas vu… »"},
       {titre:"Retour trop long",fix:"3 points max."},
-      {titre:"Valider l'intention",fix:"Ce que j'ai perçu, pas voulu."},
+      {titre:"Valider l'intention",fix:"Ce que j'ai perçu."},
     ],
   };
 
   return (
-    <div className="px-4 py-6 max-w-2xl mx-auto fade-up">
-      {/* Toggle */}
-      <div className="flex rounded-2xl p-1 mb-5 gap-1" style={{background:"#e5e5e5"}}>
-        {(["roles","phases"] as const).map(v=>(
-          <button key={v} onClick={()=>setView(v)} className="flex-1 rounded-xl py-2 text-sm font-extrabold transition-all cursor-pointer"
-            style={{
-              fontFamily:"'Nunito',sans-serif",
-              background: view===v?"white":"transparent",
-              color: view===v?"#3c3c3c":"#afafaf",
-              boxShadow: view===v?"0 2px 0 #e5e5e5":"none",
-            }}>
-            {v==="roles"?"👤 Par rôle":"📋 Par exercice"}
-          </button>
-        ))}
+    <div className="fade-up">
+      {/* Sub-nav */}
+      <div style={{ background:"#161b22", borderBottom:"1px solid #30363d" }}>
+        <div className="flex max-w-4xl mx-auto px-4">
+          {(["roles","phases"] as const).map(v=>(
+            <button key={v} onClick={()=>setView(v)}
+              className="px-5 py-3 text-xs font-extrabold transition-all cursor-pointer border-b-2"
+              style={{
+                fontFamily:"'Nunito',sans-serif",
+                color: view===v?"#00ff88":"#7d8590",
+                borderColor: view===v?"#00ff88":"transparent",
+                textShadow: view===v?"0 0 8px #00ff88":"none",
+                background:"transparent",
+              }}>
+              {v==="roles"?"👤 Par rôle":"📋 Par exercice"}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {view==="roles"&&(
-        <>
-          {/* Role pills */}
-          <div className="flex gap-2 mb-5">
-            {(["coach","joueur","observateur"] as Role[]).map(r=>{
-              const c=ROLE_CFG[r];
-              return (
-                <button key={r} onClick={()=>setRole(r)} className="btn-press flex-1 rounded-2xl py-2.5 text-xs font-extrabold transition-all cursor-pointer border-2"
-                  style={{
-                    fontFamily:"'Nunito',sans-serif",
-                    background: role===r?c.color:"white",
-                    color: role===r?"white":c.color,
-                    borderColor: c.color,
-                    boxShadow: role===r?`0 3px 0 ${darken(c.color)}`:"0 3px 0 #e5e5e5",
-                  }}>
-                  {c.emoji} {c.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Hero */}
-          <Card accent={cfg.border} className="p-5 mb-4 bounce-in" key={role}>
-            <div className="flex items-center gap-4 mb-3">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl font-black"
-                style={{background:cfg.bg,border:`3px solid ${cfg.border}`}}>
-                {cfg.emoji}
-              </div>
-              <div>
-                <div className="text-xs font-extrabold uppercase tracking-widest" style={{color:"#afafaf"}}>Fiche de poste</div>
-                <h2 className="text-2xl font-black" style={{color:cfg.color,fontFamily:"'Nunito',sans-serif"}}>{cfg.label}</h2>
-                <p className="text-xs font-semibold italic" style={{color:"#afafaf"}}>
-                  {role==="coach"&&"Chef d'orchestre silencieux 🧭"}
-                  {role==="joueur"&&"Montrer, ne pas dire 🎭"}
-                  {role==="observateur"&&"Les yeux du public 👁"}
-                </p>
-              </div>
+      <div className="px-4 py-6 max-w-4xl mx-auto w-full">
+        {view==="roles" && (
+          <>
+            {/* Role tabs */}
+            <div className="flex gap-3 mb-6 flex-wrap">
+              {(["coach","joueur","observateur"] as Role[]).map(r=>{
+                const c=ROLE_CFG[r];
+                return (
+                  <button key={r} onClick={()=>setRole(r)}
+                    className="px-5 py-2 rounded-lg font-extrabold text-sm cursor-pointer transition-all hover:scale-105"
+                    style={{
+                      fontFamily:"'Nunito',sans-serif",
+                      background: role===r ? `${c.color}22` : "transparent",
+                      color: c.color,
+                      border: `2px solid ${role===r?c.color:c.color+"44"}`,
+                      textShadow: role===r?`0 0 8px ${c.color}`:"none",
+                      boxShadow: role===r?`0 0 12px ${c.color}44`:"none",
+                    }}>
+                    {c.emoji} {c.label.split(" ")[0]}
+                  </button>
+                );
+              })}
             </div>
-          </Card>
 
-          {/* Mantras */}
-          <Card className="p-4 mb-4" accent={cfg.border}>
-            <div className="font-extrabold text-xs uppercase tracking-widest mb-3" style={{color:"#afafaf"}}>✨ Mantras</div>
-            <ul className="space-y-2">
-              {mantras[role].map((m,i)=>(
-                <li key={i} className="flex items-start gap-3 py-2 border-b-2 last:border-0" style={{borderColor:"#f0f0f0"}}>
-                  <span className="w-6 h-6 rounded-xl flex items-center justify-center text-xs font-black flex-shrink-0"
-                    style={{background:cfg.bg,color:cfg.color}}>
-                    {i+1}
-                  </span>
-                  <span className="text-sm font-bold italic" style={{color:"#3c3c3c"}}>« {m} »</span>
-                </li>
-              ))}
-            </ul>
-          </Card>
-
-          {/* Pièges */}
-          <div className="font-extrabold text-xs uppercase tracking-widest mb-3" style={{color:"#afafaf"}}>⚠️ Pièges à éviter</div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {erreurs[role].map((e,i)=>(
-              <Card key={i} className="p-3" accent="#ffd580">
-                <div className="text-sm font-extrabold mb-1" style={{color:"#ff9600"}}>❌ {e.titre}</div>
-                <div className="text-xs font-semibold" style={{color:"#3c3c3c"}}>✅ {e.fix}</div>
-              </Card>
-            ))}
-          </div>
-        </>
-      )}
-
-      {view==="phases"&&(
-        <>
-          {/* Phase scroll */}
-          <div className="flex gap-2 overflow-x-auto pb-2 mb-5" style={{scrollbarWidth:"none"}}>
-            {PHASES.map((p,i)=>(
-              <button key={p.id} onClick={()=>setPhase(p.id as PhaseId)} className="btn-press flex-shrink-0 rounded-2xl px-4 py-2 font-extrabold text-xs transition-all cursor-pointer border-2"
-                style={{
-                  fontFamily:"'Nunito',sans-serif",
-                  background: p.id===phase?PHASE_COLORS[i]:"white",
-                  color: p.id===phase?"white":PHASE_COLORS[i],
-                  borderColor: PHASE_COLORS[i],
-                  boxShadow: p.id===phase?`0 3px 0 ${darken(PHASE_COLORS[i])}`:"0 3px 0 #e5e5e5",
-                }}>
-                {p.emoji} {p.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Phase hero */}
-          <Card accent={color} className="p-5 mb-4 bounce-in" key={phase}>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl"
-                style={{background:`${color}20`,border:`2px solid ${color}40`}}>
-                {ph.emoji}
+            {/* Hero */}
+            <NeonCard color={cfg.color} className="mb-5 bounce-in">
+              <div className="flex items-center gap-4">
+                <div className="text-4xl">{cfg.emoji}</div>
+                <div>
+                  <div className="text-xs font-extrabold uppercase tracking-widest mb-1" style={{color:"#7d8590"}}>Fiche de poste</div>
+                  <h2 className="text-2xl font-black" style={{color:cfg.color,textShadow:`0 0 12px ${cfg.color}`,fontFamily:"'Nunito',sans-serif"}}>
+                    {cfg.label}
+                  </h2>
+                  <p className="text-xs font-semibold italic mt-1" style={{color:"#7d8590"}}>
+                    {role==="coach"&&"Chef d'orchestre silencieux 🧭"}
+                    {role==="joueur"&&"Montrer, ne pas dire 🎭"}
+                    {role==="observateur"&&"Les yeux du public 👁"}
+                  </p>
+                </div>
               </div>
-              <div>
-                <div className="text-xs font-extrabold" style={{color:"#afafaf"}}>{phIdx+1}/{PHASES.length} · {fmt(ph.duration)}</div>
-                <h2 className="text-xl font-black" style={{color,fontFamily:"'Nunito',sans-serif"}}>{ph.subtitle}</h2>
-              </div>
-            </div>
-            <p className="text-sm font-semibold" style={{color:"#6b6b6b"}}>{ph.description}</p>
-          </Card>
+            </NeonCard>
 
-          {/* 3 role cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-            {(["coach","joueur","observateur"] as Role[]).map(r=>{
-              const rc=ROLE_CFG[r];
-              const actions=r==="coach"?ph.coachActions:r==="joueur"?ph.playerActions:"observerActions" in ph?(ph as typeof ph&{observerActions:string[]}).observerActions:[];
-              if(!actions.length)return null;
-              return (
-                <Card key={r} accent={rc.border} className="p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-lg">{rc.emoji}</span>
-                    <span className="text-xs font-extrabold" style={{color:rc.color}}>{rc.label}</span>
-                  </div>
-                  <ul className="space-y-1">
-                    {actions.map((a,i)=>(
-                      <li key={i} className="text-xs font-semibold flex items-start gap-1.5" style={{color:"#6b6b6b"}}>
-                        <span style={{color:rc.color,flexShrink:0}}>▸</span>{a}
-                      </li>
-                    ))}
-                  </ul>
-                </Card>
-              );
-            })}
-          </div>
-
-          {/* Contexts */}
-          {["solo","duos","scenes"].includes(ph.id)&&(
-            <Card className="p-4" accent={color}>
-              <div className="font-extrabold text-xs uppercase tracking-widest mb-3" style={{color:"#afafaf"}}>🎭 Contextes disponibles</div>
-              <div className="grid grid-cols-2 gap-2">
-                {(ph.id==="solo"?CONTEXTES_SOLO:ph.id==="duos"?CONTEXTES_DUOS:CONTEXTES_SCENES).map((c,i)=>(
-                  <div key={i} className="rounded-2xl px-3 py-2 text-xs font-bold flex items-center gap-2"
-                    style={{background:`${color}12`,color:"#3c3c3c",border:`1.5px solid ${color}30`}}>
-                    {c.emoji} {c.label}
-                  </div>
+            {/* Mantras */}
+            <NeonCard color={cfg.color} className="mb-5">
+              <div className="font-extrabold text-xs uppercase tracking-widest mb-3" style={{color:"#7d8590"}}>✨ Mantras</div>
+              <ul className="space-y-2">
+                {mantras[role].map((m,i)=>(
+                  <li key={i} className="flex items-start gap-3 py-2 border-b last:border-0" style={{borderColor:"#30363d"}}>
+                    <span className="w-5 h-5 rounded flex items-center justify-center text-xs font-black flex-shrink-0"
+                      style={{background:`${cfg.color}22`,color:cfg.color}}>{i+1}</span>
+                    <span className="text-sm font-bold italic" style={{color:"#e6edf3"}}>« {m} »</span>
+                  </li>
                 ))}
+              </ul>
+            </NeonCard>
+
+            {/* Pièges */}
+            <div className="font-extrabold text-xs uppercase tracking-widest mb-3" style={{color:"#7d8590"}}>⚠️ Pièges à éviter</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {erreurs[role].map((e,i)=>(
+                <NeonCard key={i} color="#ff4b4b44">
+                  <div className="text-sm font-extrabold mb-1" style={{color:"#ff6b6b"}}>❌ {e.titre}</div>
+                  <div className="text-xs font-semibold" style={{color:"#c9d1d9"}}>✅ {e.fix}</div>
+                </NeonCard>
+              ))}
+            </div>
+          </>
+        )}
+
+        {view==="phases" && (
+          <>
+            <div style={{background:"#161b22",borderBottom:"1px solid #30363d",margin:"0 -1rem 1.5rem",padding:"0.5rem 1rem"}}>
+              <PhaseBar active={phIdx} onSelect={(i)=>setPhase(PHASES[i].id as PhaseId)}/>
+            </div>
+
+            <NeonCard color={color} className="mb-5 bounce-in">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="text-3xl">{ph.emoji}</div>
+                <div>
+                  <div className="text-xs font-extrabold" style={{color:"#7d8590"}}>{phIdx+1}/{PHASES.length} · {fmt(ph.duration)}</div>
+                  <h2 className="text-xl font-black" style={{color,textShadow:`0 0 12px ${color}`,fontFamily:"'Nunito',sans-serif"}}>{ph.subtitle}</h2>
+                </div>
               </div>
-            </Card>
-          )}
-        </>
-      )}
+              <p className="text-sm font-semibold" style={{color:"#7d8590"}}>{ph.description}</p>
+            </NeonCard>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+              {(["coach","joueur","observateur"] as Role[]).map(r=>{
+                const rc=ROLE_CFG[r];
+                const actions=r==="coach"?ph.coachActions:r==="joueur"?ph.playerActions:"observerActions" in ph?(ph as typeof ph&{observerActions:string[]}).observerActions:[];
+                if(!actions.length)return null;
+                return (
+                  <NeonCard key={r} color={rc.color}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span>{rc.emoji}</span>
+                      <span className="text-xs font-extrabold" style={{color:rc.color,textShadow:`0 0 6px ${rc.color}`}}>{rc.label}</span>
+                    </div>
+                    <ul className="space-y-1.5">
+                      {actions.map((a,i)=>(
+                        <li key={i} className="flex items-start gap-1.5 text-xs font-semibold" style={{color:"#c9d1d9"}}>
+                          <span style={{color:rc.color,flexShrink:0}}>•</span>{a}
+                        </li>
+                      ))}
+                    </ul>
+                  </NeonCard>
+                );
+              })}
+            </div>
+
+            {["solo","duos","scenes"].includes(ph.id)&&(
+              <NeonCard color={color}>
+                <div className="font-extrabold text-xs uppercase tracking-widest mb-3" style={{color:"#7d8590"}}>🎭 Contextes</div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {(ph.id==="solo"?CONTEXTES_SOLO:ph.id==="duos"?CONTEXTES_DUOS:CONTEXTES_SCENES).map((c,i)=>(
+                    <div key={i} className="rounded-lg px-3 py-2 text-xs font-bold"
+                      style={{background:`${color}11`,color:"#e6edf3",border:`1px solid ${color}33`}}>
+                      {c.emoji} {c.label}
+                    </div>
+                  ))}
+                </div>
+              </NeonCard>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
 
-// ══════════ PARTICIPANTS ══════════════════════════════════════════════════════
-function ParticipantsTab(){
-  const [parts,setParts]=useState<Participant[]>([
+// ══════════════════════════════════════════════════════════════════════════════
+// PARTICIPANTS TAB
+// ══════════════════════════════════════════════════════════════════════════════
+function ParticipantsTab() {
+  const [parts, setParts] = useState<Participant[]>([
     {id:"1",name:"Alice",role:"joueur",passages:0},
     {id:"2",name:"Bruno",role:"coach",passages:0},
     {id:"3",name:"Chloé",role:"observateur",passages:0},
   ]);
-  const [name,setName]=useState("");
-  const [confetti,setConfetti]=useState<{id:number;x:number;color:string}[]>([]);
+  const [name, setName] = useState("");
 
-  const add=()=>{
-    if(!name.trim())return;
-    setParts(p=>[...p,{id:Date.now()+"",name:name.trim(),role:"joueur",passages:0}]);
-    setName("");
-  };
+  const add=()=>{ if(!name.trim())return; setParts(p=>[...p,{id:Date.now()+"",name:name.trim(),role:"joueur",passages:0}]); setName(""); };
   const setRole=(id:string,r:Role)=>setParts(p=>p.map(x=>x.id===id?{...x,role:r}:x));
-  const inc=(id:string)=>{
-    setParts(p=>p.map(x=>x.id===id?{...x,passages:x.passages+1}:x));
-    const id2=Date.now();
-    setConfetti(c=>[...c,{id:id2,x:Math.random()*80+10,color:Object.values(ROLE_CFG)[Math.floor(Math.random()*3)].color}]);
-    setTimeout(()=>setConfetti(c=>c.filter(x=>x.id!==id2)),1000);
-  };
+  const inc=(id:string)=>setParts(p=>p.map(x=>x.id===id?{...x,passages:x.passages+1}:x));
   const rem=(id:string)=>setParts(p=>p.filter(x=>x.id!==id));
   const total=parts.reduce((s,p)=>s+p.passages,0);
 
   return (
-    <div className="px-4 py-6 max-w-2xl mx-auto fade-up relative overflow-hidden">
-      {/* Confetti */}
-      {confetti.map(c=>(
-        <div key={c.id} className="fixed pointer-events-none text-2xl z-50"
-          style={{left:`${c.x}%`,top:"40%",animation:"confetti-fall 0.9s ease-out forwards"}}>
-          🎉
-        </div>
-      ))}
-
+    <div className="px-4 py-6 max-w-4xl mx-auto w-full fade-up">
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-3 mb-5">
+      <div className="grid grid-cols-3 gap-4 mb-6">
         {[
-          {l:"Participants",v:parts.length,c:"#58cc02",bg:"#f0fdf4"},
-          {l:"Passages",v:total,c:"#1cb0f6",bg:"#e8f7fe"},
-          {l:"Moy./joueur",v:parts.length?(total/parts.length).toFixed(1):0,c:"#ce82ff",bg:"#f7eeff"},
+          {l:"Participants",v:parts.length,c:"#00ff88"},
+          {l:"Passages total",v:total,c:"#1cb0f6"},
+          {l:"Moy./joueur",v:parts.length?(total/parts.length).toFixed(1):0,c:"#ce82ff"},
         ].map(s=>(
-          <Card key={s.l} className="p-3 text-center" accent={s.c}>
-            <div className="text-3xl font-black" style={{fontFamily:"'Nunito',sans-serif",color:s.c}}>{s.v}</div>
-            <div className="text-xs font-extrabold uppercase tracking-wide mt-0.5" style={{color:"#afafaf"}}>{s.l}</div>
-          </Card>
+          <NeonCard key={s.l} color={s.c} className="text-center py-3">
+            <div className="text-4xl font-black" style={{fontFamily:"'Nunito',sans-serif",color:s.c,textShadow:`0 0 12px ${s.c}`}}>{s.v}</div>
+            <div className="text-xs font-extrabold uppercase tracking-widest mt-1" style={{color:"#7d8590"}}>{s.l}</div>
+          </NeonCard>
         ))}
       </div>
 
       {/* Add */}
-      <Card className="p-4 mb-4" accent="#58cc02">
-        <div className="font-extrabold text-xs uppercase tracking-widest mb-3" style={{color:"#afafaf"}}>➕ Ajouter</div>
-        <div className="flex gap-2">
-          <input className="flex-1 px-4 py-2.5 rounded-2xl text-sm font-bold outline-none placeholder-[#afafaf]"
-            style={{border:"2.5px solid #e5e5e5",fontFamily:"'Nunito',sans-serif",color:"#3c3c3c",background:"#f7f7f7"}}
+      <NeonCard color="#00ff88" className="mb-4">
+        <div className="font-extrabold text-xs uppercase tracking-widest mb-3" style={{color:"#7d8590"}}>➕ Ajouter un participant</div>
+        <div className="flex gap-3">
+          <input className="flex-1 px-4 py-2.5 rounded-lg text-sm font-bold outline-none"
+            style={{background:"#0d1117",border:"1.5px solid #30363d",color:"#e6edf3",fontFamily:"'Nunito',sans-serif"}}
             placeholder="Prénom…" value={name}
             onChange={e=>setName(e.target.value)}
             onKeyDown={e=>e.key==="Enter"&&add()}/>
-          <DBtn color="#58cc02" onClick={add}>＋</DBtn>
+          <button onClick={add}
+            className="px-5 py-2 rounded-lg font-extrabold text-sm cursor-pointer hover:scale-105 transition-all"
+            style={{background:"#00ff88",color:"#000",boxShadow:"0 0 12px #00ff8888",fontFamily:"'Nunito',sans-serif"}}>
+            ＋ Add
+          </button>
         </div>
-      </Card>
+      </NeonCard>
 
       {/* List */}
-      <div className="space-y-2 mb-4">
+      <div className="space-y-2 mb-5">
         {parts.map(p=>{
           const cfg=ROLE_CFG[p.role];
           return (
-            <Card key={p.id} accent={cfg.border} className="px-4 py-3 flex items-center gap-3">
-              {/* Avatar */}
-              <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-lg font-black flex-shrink-0"
-                style={{background:cfg.bg,border:`2px solid ${cfg.border}`,color:cfg.color}}>
+            <NeonCard key={p.id} color={cfg.color} className="flex items-center gap-3 py-2">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black flex-shrink-0"
+                style={{background:`${cfg.color}22`,color:cfg.color,border:`1.5px solid ${cfg.color}`,textShadow:`0 0 6px ${cfg.color}`}}>
                 {p.name.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-extrabold text-sm truncate">{p.name}</div>
-                <div className="text-xs font-bold" style={{color:"#afafaf"}}>{p.passages} passage{p.passages>1?"s":""}</div>
+                <div className="font-extrabold text-sm" style={{color:"#e6edf3"}}>{p.name}</div>
+                <div className="text-xs font-semibold" style={{color:"#7d8590"}}>{p.passages} passage{p.passages>1?"s":""}</div>
               </div>
-              {/* Roles */}
               <div className="flex gap-1">
                 {(["coach","joueur","observateur"] as Role[]).map(r=>{
                   const rc=ROLE_CFG[r];
                   return (
                     <button key={r} onClick={()=>setRole(p.id,r)}
-                      className="w-8 h-8 rounded-xl flex items-center justify-center text-sm transition-all cursor-pointer border-2 btn-press"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-sm cursor-pointer transition-all hover:scale-110"
                       style={{
-                        background: p.role===r?rc.bg:"white",
-                        borderColor: p.role===r?rc.color:"#e5e5e5",
-                        boxShadow: p.role===r?`0 2px 0 ${darken(rc.color)}`:"0 2px 0 #e5e5e5",
+                        background: p.role===r?`${rc.color}22`:"transparent",
+                        border: `1.5px solid ${p.role===r?rc.color:"#30363d"}`,
+                        boxShadow: p.role===r?`0 0 8px ${rc.color}66`:"none",
                       }}
                       title={rc.label}>
                       {rc.emoji}
@@ -534,38 +547,51 @@ function ParticipantsTab(){
                   );
                 })}
               </div>
-              <DBtn size="sm" color="#58cc02" onClick={()=>inc(p.id)}>+1</DBtn>
-              <button onClick={()=>rem(p.id)} className="text-xl leading-none cursor-pointer hover:scale-125 transition-transform" style={{color:"#afafaf"}}>×</button>
-            </Card>
+              <button onClick={()=>inc(p.id)}
+                className="px-3 py-1 rounded-lg text-xs font-extrabold cursor-pointer hover:scale-105 transition-all"
+                style={{background:"#00ff8822",color:"#00ff88",border:"1.5px solid #00ff88",boxShadow:"0 0 8px #00ff8844",fontFamily:"'Nunito',sans-serif"}}>
+                +1
+              </button>
+              <button onClick={()=>rem(p.id)} className="text-xl leading-none cursor-pointer hover:scale-125 transition-transform" style={{color:"#30363d"}}>×</button>
+            </NeonCard>
           );
         })}
       </div>
 
-      {/* Progress bars */}
+      {/* Heatmap */}
       {parts.length>0&&(
-        <Card className="p-4">
-          <div className="font-extrabold text-xs uppercase tracking-widest mb-3" style={{color:"#afafaf"}}>📊 Équilibre</div>
+        <NeonCard color="#30363d">
+          <div className="font-extrabold text-xs uppercase tracking-widest mb-4" style={{color:"#7d8590"}}>📊 Équilibre des passages</div>
           <div className="space-y-3">
             {parts.map(p=>{
               const max=Math.max(...parts.map(x=>x.passages),1);
               const cfg=ROLE_CFG[p.role];
               return (
                 <div key={p.id} className="flex items-center gap-3">
-                  <div className="w-16 text-xs font-bold truncate" style={{color:"#6b6b6b"}}>{p.name}</div>
-                  <div className="flex-1"><XPBar pct={p.passages/max} color={cfg.color}/></div>
+                  <div className="w-20 text-xs font-bold truncate" style={{color:"#c9d1d9"}}>{p.name}</div>
+                  <div className="flex-1 h-3 rounded-full overflow-hidden" style={{background:"#0d1117"}}>
+                    <div className="h-full rounded-full transition-all duration-700"
+                      style={{
+                        width:`${(p.passages/max)*100}%`,
+                        background:cfg.color,
+                        boxShadow:`0 0 8px ${cfg.color}`,
+                      }}/>
+                  </div>
                   <div className="w-6 text-right text-xs font-black" style={{color:cfg.color}}>{p.passages}</div>
                 </div>
               );
             })}
           </div>
-        </Card>
+        </NeonCard>
       )}
     </div>
   );
 }
 
-// ══════════ PROJECTOR ════════════════════════════════════════════════════════
-function ProjectorTab({onBack}:{onBack:()=>void}){
+// ══════════════════════════════════════════════════════════════════════════════
+// PROJECTOR TAB
+// ══════════════════════════════════════════════════════════════════════════════
+function ProjectorTab({onBack}:{onBack:()=>void}) {
   const [pi,setPi]=useState(0);
   const [t,setT]=useState(PHASES[0].duration);
   const [run,setRun]=useState(false);
@@ -573,8 +599,7 @@ function ProjectorTab({onBack}:{onBack:()=>void}){
   const [ctx,setCtx]=useState<{emoji:string;label:string}|null>(null);
   const [ctxKey,setCtxKey]=useState(0);
   const ref=useRef<ReturnType<typeof setInterval>|null>(null);
-  const ph=PHASES[pi];
-  const color=PHASE_COLORS[pi];
+  const ph=PHASES[pi]; const color=PC[pi];
 
   useEffect(()=>{
     if(run){ref.current=setInterval(()=>setT(v=>{if(v<=1){setRun(false);setAlarm(true);return 0;}return v-1;}),1000);}
@@ -588,127 +613,132 @@ function ProjectorTab({onBack}:{onBack:()=>void}){
   };
 
   return (
-    <div className={`min-h-screen flex flex-col items-center justify-center p-6 ${alarm?"alarm-pulse":""}`}
-      style={{background:`${color}15`}}>
-      <button onClick={onBack} className="fixed top-4 left-4 z-50 btn-press rounded-2xl px-4 py-2 text-xs font-extrabold border-2 cursor-pointer"
-        style={{background:"white",borderColor:"#e5e5e5",boxShadow:"0 3px 0 #e5e5e5",fontFamily:"'Nunito',sans-serif",color:"#afafaf"}}>
+    <div className={`min-h-screen flex flex-col items-center justify-center p-8 relative ${alarm?"alarm-pulse":""}`}
+      style={{background:"#0d1117"}}>
+      <button onClick={onBack}
+        className="fixed top-4 left-4 z-50 px-4 py-2 rounded-lg text-xs font-extrabold cursor-pointer"
+        style={{background:"#1c2128",border:"1px solid #30363d",color:"#7d8590",fontFamily:"'Nunito',sans-serif"}}>
         ← Retour
       </button>
 
-      {/* Phase pills */}
-      <div className="flex flex-wrap justify-center gap-2 mb-8">
-        {PHASES.map((p,i)=>(
-          <button key={p.id} onClick={()=>go(i)} className="btn-press rounded-2xl px-3 py-1.5 text-xs font-extrabold border-2 cursor-pointer transition-all"
+      <div style={{background:"#161b22",borderBottom:"1px solid #30363d",position:"fixed",top:0,left:0,right:0,zIndex:30}}>
+        <PhaseBar active={pi} onSelect={go}/>
+      </div>
+
+      <div className="mt-12">
+        <NeonRing pct={t/ph.duration} color={color} size={300}>
+          <span className="font-black" style={{
+            fontSize:"5rem",
+            fontFamily:"'Share Tech Mono','Nunito',sans-serif",
+            color, textShadow:`0 0 30px ${color}, 0 0 60px ${color}88`,
+          }}>{fmt(t)}</span>
+        </NeonRing>
+      </div>
+
+      <h1 className="text-5xl font-black text-center mt-6 mb-2"
+        style={{color,textShadow:`0 0 20px ${color}`,fontFamily:"'Nunito',sans-serif"}}>
+        {ph.emoji} {ph.subtitle}
+      </h1>
+      <p className="text-lg text-center mb-8" style={{color:"#7d8590"}}>{ph.description}</p>
+
+      <div className="flex gap-4 flex-wrap justify-center">
+        {[
+          {l:run?"⏸ Pause":"▶ Start",a:()=>{setRun(!run);setAlarm(false);},primary:true},
+          {l:"↺",a:()=>{setT(ph.duration);setRun(false);setAlarm(false);},primary:false},
+          ...( ["solo","duos","scenes"].includes(ph.id)?[{l:"🎲 Context",a:draw,primary:false}]:[] ),
+        ].map((b,i)=>(
+          <button key={i} onClick={b.a}
+            className="px-8 py-3 rounded-xl font-extrabold text-lg cursor-pointer hover:scale-105 transition-all"
             style={{
               fontFamily:"'Nunito',sans-serif",
-              background: i===pi?PHASE_COLORS[i]:"white",
-              color: i===pi?"white":PHASE_COLORS[i],
-              borderColor: PHASE_COLORS[i],
-              boxShadow: i===pi?`0 3px 0 ${darken(PHASE_COLORS[i])}`:"0 3px 0 #e5e5e5",
+              background: b.primary?color:"transparent",
+              color: b.primary?"#000":color,
+              border:`2px solid ${color}`,
+              boxShadow: b.primary?`0 0 20px ${color}88`:"none",
+              textShadow: b.primary?"none":`0 0 8px ${color}`,
             }}>
-            {p.emoji} {p.label}
+            {b.l}
           </button>
         ))}
       </div>
 
-      {/* Big ring */}
-      <Ring pct={t/ph.duration} color={color} size={280}>
-        <span className="text-6xl font-black" style={{color,fontFamily:"'Nunito',sans-serif"}}>{fmt(t)}</span>
-        <span className="text-sm font-bold" style={{color:"#afafaf"}}>{fmt(ph.duration)}</span>
-      </Ring>
-
-      <h1 className="text-4xl font-black text-center mt-6 mb-2" style={{color,fontFamily:"'Nunito',sans-serif"}}>
-        {ph.emoji} {ph.subtitle}
-      </h1>
-      <p className="text-base font-semibold text-center mb-8" style={{color:"#6b6b6b"}}>{ph.description}</p>
-
-      <div className="flex gap-4 mb-6 flex-wrap justify-center">
-        <DBtn color={color} size="lg" onClick={()=>{setRun(!run);setAlarm(false);}}>
-          {run?"⏸ Pause":"▶ Démarrer"}
-        </DBtn>
-        <DBtn variant="outline" color={color} size="lg" onClick={()=>{setT(ph.duration);setRun(false);setAlarm(false);}}>↺</DBtn>
-        {["solo","duos","scenes"].includes(ph.id)&&(
-          <DBtn variant="outline" color={color} size="lg" onClick={draw}>🎲 Contexte</DBtn>
-        )}
-      </div>
-
       {ctx&&(
-        <div key={ctxKey} className="text-2xl font-black text-center py-4 px-8 rounded-3xl border-2 bounce-in"
-          style={{background:"white",borderColor:color,color,boxShadow:`0 4px 0 ${darken(color)}`,fontFamily:"'Nunito',sans-serif"}}>
+        <div key={ctxKey} className="mt-8 px-10 py-5 rounded-2xl font-black text-3xl bounce-in"
+          style={{background:`${color}22`,border:`2px solid ${color}`,color,textShadow:`0 0 12px ${color}`,boxShadow:`0 0 30px ${color}44`,fontFamily:"'Nunito',sans-serif"}}>
           {ctx.emoji} {ctx.label}
         </div>
       )}
 
       {alarm&&(
-        <div className="mt-6 text-2xl font-black bounce-in" style={{color,fontFamily:"'Nunito',sans-serif"}}>
-          🎉 Temps écoulé !
+        <div className="mt-6 text-3xl font-black bounce-in" style={{color,textShadow:`0 0 20px ${color}`,fontFamily:"'Nunito',sans-serif"}}>
+          ⏰ Temps écoulé !
         </div>
       )}
     </div>
   );
 }
 
-// ══════════ MAIN ══════════════════════════════════════════════════════════════
-export default function ImproApp(){
-  const [tab,setTab]=useState<Tab>("session");
+// ══════════════════════════════════════════════════════════════════════════════
+// MAIN
+// ══════════════════════════════════════════════════════════════════════════════
+export default function ImproApp() {
+  const [tab, setTab] = useState<Tab>("session");
 
-  if(tab==="projector") return <ProjectorTab onBack={()=>setTab("session")}/>;
+  if (tab==="projector") return <ProjectorTab onBack={()=>setTab("session")}/>;
 
-  const tabs=[
-    {id:"session" as Tab,label:"Séance",icon:"⏱"},
-    {id:"fiches" as Tab,label:"Fiches",icon:"📋"},
-    {id:"participants" as Tab,label:"Équipe",icon:"👥"},
-    {id:"projector" as Tab,label:"Écran",icon:"📽"},
+  const TABS = [
+    {id:"session" as Tab, icon:"⏱", label:"Session"},
+    {id:"fiches" as Tab,  icon:"📋", label:"Cards"},
+    {id:"participants" as Tab, icon:"👥", label:"Participants"},
+    {id:"projector" as Tab, icon:"📽", label:"Projector"},
   ];
 
   return (
-    <div style={{minHeight:"100vh",background:"#f0faf0"}}>
-      {/* Header */}
-      <header className="sticky top-0 z-40 px-4 py-3" style={{background:"white",borderBottom:"3px solid #e5e5e5"}}>
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl font-black border-2"
-              style={{background:"#f0faf0",borderColor:"#58cc02",boxShadow:"0 3px 0 #46a302"}}>
-              🎭
+    <div style={{minHeight:"100vh",background:"#0d1117"}}>
+      {/* Header with tabs — exactly like the screenshot */}
+      <header style={{background:"#161b22",borderBottom:"1px solid #30363d",position:"sticky",top:0,zIndex:40}}>
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="flex items-center gap-6">
+            {/* Logo */}
+            <div className="flex items-center gap-2 py-3 flex-shrink-0">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
+                style={{background:"#00ff8822",border:"1.5px solid #00ff88"}}>
+                🎭
+              </div>
+              <span className="font-black text-sm" style={{color:"#00ff88",textShadow:"0 0 8px #00ff88",fontFamily:"'Nunito',sans-serif"}}>
+                Qui·Quoi·Où
+              </span>
             </div>
-            <div>
-              <h1 className="text-lg font-black leading-none" style={{fontFamily:"'Nunito',sans-serif",color:"#3c3c3c"}}>
-                Qui · Quoi · Où
-              </h1>
-              <p className="text-xs font-bold" style={{color:"#afafaf"}}>Coach d&apos;impro</p>
+
+            {/* Tabs */}
+            <nav className="flex flex-1 overflow-x-auto" style={{scrollbarWidth:"none"}}>
+              {TABS.map(t=>(
+                <button key={t.id} onClick={()=>setTab(t.id)}
+                  className="flex items-center gap-2 px-5 py-3.5 text-sm font-extrabold transition-all cursor-pointer whitespace-nowrap border-b-2 flex-shrink-0"
+                  style={{
+                    fontFamily:"'Nunito',sans-serif",
+                    color: tab===t.id?"#00ff88":"#7d8590",
+                    borderColor: tab===t.id?"#00ff88":"transparent",
+                    textShadow: tab===t.id?"0 0 8px #00ff88":"none",
+                    background:"transparent",
+                  }}>
+                  <span>{t.icon}</span>
+                  <span className="hidden sm:inline">{t.label}</span>
+                </button>
+              ))}
+            </nav>
+
+            <div className="text-xs font-bold flex-shrink-0 hidden md:block" style={{color:"#30363d"}}>
+              1h · 10p
             </div>
-          </div>
-          <div className="text-right">
-            <div className="text-xs font-extrabold" style={{color:"#58cc02"}}>1h · 10 joueurs</div>
           </div>
         </div>
       </header>
 
       {/* Content */}
-      <div className="pb-24">
-        {tab==="session"&&<SessionTab/>}
-        {tab==="fiches"&&<FichesTab/>}
-        {tab==="participants"&&<ParticipantsTab/>}
-      </div>
-
-      {/* Bottom nav — MOBILE FIRST */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 px-2 pb-2" style={{background:"white",borderTop:"3px solid #e5e5e5"}}>
-        <div className="max-w-2xl mx-auto flex gap-1">
-          {tabs.map(t=>(
-            <button key={t.id} onClick={()=>setTab(t.id)}
-              className="flex-1 flex flex-col items-center justify-center py-2.5 rounded-2xl transition-all cursor-pointer btn-press"
-              style={{
-                fontFamily:"'Nunito',sans-serif",
-                background: tab===t.id?"#f0faf0":"transparent",
-                border: tab===t.id?"2.5px solid #58cc02":"2.5px solid transparent",
-                boxShadow: tab===t.id?"0 3px 0 #46a302":"none",
-              }}>
-              <span className="text-xl leading-none mb-0.5">{t.icon}</span>
-              <span className="text-xs font-extrabold" style={{color:tab===t.id?"#58cc02":"#afafaf"}}>{t.label}</span>
-            </button>
-          ))}
-        </div>
-      </nav>
+      {tab==="session"&&<SessionTab/>}
+      {tab==="fiches"&&<FichesTab/>}
+      {tab==="participants"&&<ParticipantsTab/>}
     </div>
   );
 }
