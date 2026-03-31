@@ -4,8 +4,8 @@
  */
 
 import { motion, AnimatePresence } from "motion/react";
-import { ReactNode, useState, FormEvent, useEffect, useRef } from "react";
-import { Clock, Users, GraduationCap, Lightbulb, Target, Info, MessageSquare, ArrowRight, Plus, Trash2, UserPlus, Mail, CheckCircle2, Play, Pause, RotateCcw, Sparkles, RefreshCw, MapPin, User, Activity } from "lucide-react";
+import { ReactNode, useState, FormEvent, useEffect, useRef, ChangeEvent } from "react";
+import { Clock, Users, GraduationCap, Lightbulb, Target, Info, MessageSquare, ArrowRight, Plus, Trash2, UserPlus, Mail, CheckCircle2, Play, Pause, RotateCcw, Sparkles, RefreshCw, MapPin, User, Activity, Camera, Star, Edit3, Award, X } from "lucide-react";
 
 interface Participant {
   id: string;
@@ -26,6 +26,48 @@ export default function App() {
 
   // State for phase completion
   const [completedPhases, setCompletedPhases] = useState<Record<string, boolean>>({});
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'cours' | 'prof'>('cours');
+
+  // Prof state
+  const [profPhoto, setProfPhoto] = useState<string | null>(null);
+  const [profName, setProfName] = useState('Mondorito');
+  const [profBio, setProfBio] = useState('');
+  const [profAttributes, setProfAttributes] = useState<{id: string; label: string; value: number}[]>([
+    { id: '1', label: 'Présence scénique', value: 8 },
+    { id: '2', label: 'Écoute', value: 9 },
+    { id: '3', label: 'Lâcher-prise', value: 7 },
+    { id: '4', label: 'Réactivité', value: 8 },
+    { id: '5', label: 'Direction de jeu', value: 9 },
+    { id: '6', label: 'Pédagogie', value: 8 },
+  ]);
+  const [editingAttr, setEditingAttr] = useState<string | null>(null);
+  const [newAttrLabel, setNewAttrLabel] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePhotoUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => setProfPhoto(ev.target?.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const updateAttribute = (id: string, value: number) => {
+    setProfAttributes(prev => prev.map(a => a.id === id ? { ...a, value: Math.max(0, Math.min(10, value)) } : a));
+  };
+
+  const removeAttribute = (id: string) => {
+    setProfAttributes(prev => prev.filter(a => a.id !== id));
+  };
+
+  const addAttribute = () => {
+    if (!newAttrLabel.trim()) return;
+    setProfAttributes(prev => [...prev, { id: Math.random().toString(36).substr(2, 9), label: newAttrLabel, value: 5 }]);
+    setNewAttrLabel('');
+  };
 
   // State for impro generator
   const [generatedIdea, setGeneratedIdea] = useState<{ qui: string, quoi: string, ou: string } | null>(null);
@@ -148,9 +190,57 @@ export default function App() {
         </div>
       </div>
 
+      {/* TAB BAR */}
+      <div className="bg-cream border-b border-warm sticky top-0 z-30">
+        <div className="max-w-3xl mx-auto px-4 sm:px-8 flex">
+          <button
+            onClick={() => setActiveTab('cours')}
+            className={`flex items-center gap-2 px-4 sm:px-6 py-3 font-mono text-[0.75rem] uppercase tracking-wider border-b-2 transition-colors ${
+              activeTab === 'cours' ? 'border-accent text-accent font-medium' : 'border-transparent text-muted hover:text-ink'
+            }`}
+          >
+            <GraduationCap size={16} />
+            Cours
+          </button>
+          <button
+            onClick={() => setActiveTab('prof')}
+            className={`flex items-center gap-2 px-4 sm:px-6 py-3 font-mono text-[0.75rem] uppercase tracking-wider border-b-2 transition-colors ${
+              activeTab === 'prof' ? 'border-accent text-accent font-medium' : 'border-transparent text-muted hover:text-ink'
+            }`}
+          >
+            <User size={16} />
+            Prof
+          </button>
+        </div>
+      </div>
+
       {/* MAIN CONTENT */}
       <main className="max-w-3xl mx-auto px-4 sm:px-8 py-6 sm:py-10 flex-grow">
         
+        {activeTab === 'prof' && (
+          <ProfTab
+            profPhoto={profPhoto}
+            setProfPhoto={setProfPhoto}
+            profName={profName}
+            setProfName={setProfName}
+            profBio={profBio}
+            setProfBio={setProfBio}
+            profAttributes={profAttributes}
+            setProfAttributes={setProfAttributes}
+            editingAttr={editingAttr}
+            setEditingAttr={setEditingAttr}
+            newAttrLabel={newAttrLabel}
+            setNewAttrLabel={setNewAttrLabel}
+            fileInputRef={fileInputRef}
+            handlePhotoUpload={handlePhotoUpload}
+            updateAttribute={updateAttribute}
+            removeAttribute={removeAttribute}
+            addAttribute={addAttribute}
+          />
+        )}
+
+        {activeTab === 'cours' && (
+          <>
         {/* GENERATEUR D'IDEES */}
         <section className="mb-12">
           <div className="bg-white rounded-xl p-6 shadow-md border-2 border-gold/20 relative overflow-hidden">
@@ -469,6 +559,8 @@ export default function App() {
           </div>
         </Phase>
 
+        </>
+        )}
       </main>
 
       <footer className="bg-stage text-muted text-center py-6 font-mono text-[0.7rem] tracking-widest">
@@ -671,6 +763,233 @@ function getObjClass(obj: string) {
     case 'écoute': return 'bg-[#fdebd4] text-[#5a3010]';
     default: return 'bg-warm text-muted';
   }
+}
+
+function ProfTab({ profPhoto, setProfPhoto, profName, setProfName, profBio, setProfBio, profAttributes, setProfAttributes, editingAttr, setEditingAttr, newAttrLabel, setNewAttrLabel, fileInputRef, handlePhotoUpload, updateAttribute, removeAttribute, addAttribute }: any) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
+      {/* PHOTO + IDENTITE */}
+      <section className="mb-8">
+        <div className="bg-white rounded-xl p-6 shadow-md border border-warm">
+          <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
+            <div className="relative group">
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-warm/50 border-3 border-gold/30 flex items-center justify-center cursor-pointer overflow-hidden hover:border-gold transition-colors"
+              >
+                {profPhoto ? (
+                  <img src={profPhoto} alt="Prof" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="flex flex-col items-center gap-2 text-muted">
+                    <Camera size={28} />
+                    <span className="font-mono text-[0.6rem] uppercase tracking-wider">Ajouter photo</span>
+                  </div>
+                )}
+              </div>
+              {profPhoto && (
+                <button
+                  onClick={() => setProfPhoto(null)}
+                  className="absolute -top-1 -right-1 bg-accent text-cream rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X size={12} />
+                </button>
+              )}
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+            </div>
+            <div className="flex-1 text-center sm:text-left w-full">
+              <div className="font-mono text-[0.65rem] uppercase tracking-wider text-muted mb-1">Nom du professeur</div>
+              <input
+                type="text"
+                value={profName}
+                onChange={(e: any) => setProfName(e.target.value)}
+                className="font-serif text-2xl sm:text-3xl font-bold text-ink bg-transparent border-b-2 border-transparent hover:border-warm focus:border-gold focus:outline-none w-full pb-1 transition-colors"
+              />
+              <div className="font-mono text-[0.65rem] uppercase tracking-wider text-muted mt-4 mb-1">Bio / parcours</div>
+              <textarea
+                value={profBio}
+                onChange={(e: any) => setProfBio(e.target.value)}
+                placeholder="Coach d'impro depuis 15 ans. Spécialité : le jeu corporel et l'écoute active..."
+                rows={3}
+                className="w-full bg-cream/50 border border-warm rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gold resize-none leading-relaxed"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ATTRIBUTS THEATRAUX */}
+      <section className="mb-8">
+        <div className="bg-white rounded-xl p-6 shadow-md border border-warm">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="bg-accent/10 p-2 rounded-lg">
+              <Award size={20} className="text-accent" />
+            </div>
+            <div>
+              <h2 className="font-serif text-xl font-bold text-ink">Attributs Théâtraux</h2>
+              <p className="text-xs text-muted font-mono uppercase tracking-wider">Compétences clés du professeur</p>
+            </div>
+          </div>
+          <div className="space-y-4">
+            {profAttributes.map((attr: any) => (
+              <div key={attr.id} className="group">
+                <div className="flex items-center justify-between mb-1.5">
+                  {editingAttr === attr.id ? (
+                    <input
+                      type="text"
+                      value={attr.label}
+                      onChange={(e: any) => setProfAttributes((prev: any) => prev.map((a: any) => a.id === attr.id ? { ...a, label: e.target.value } : a))}
+                      onBlur={() => setEditingAttr(null)}
+                      onKeyDown={(e: any) => e.key === 'Enter' && setEditingAttr(null)}
+                      autoFocus
+                      className="font-mono text-[0.75rem] uppercase tracking-wider text-ink bg-cream/50 border border-warm rounded px-2 py-0.5 focus:outline-none focus:ring-1 focus:ring-gold"
+                    />
+                  ) : (
+                    <span
+                      onClick={() => setEditingAttr(attr.id)}
+                      className="font-mono text-[0.75rem] uppercase tracking-wider text-ink cursor-pointer hover:text-accent transition-colors flex items-center gap-1.5"
+                    >
+                      {attr.label}
+                      <Edit3 size={10} className="opacity-0 group-hover:opacity-50" />
+                    </span>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-sm font-medium text-accent w-6 text-right">{attr.value}</span>
+                    <span className="text-[0.6rem] text-muted">/10</span>
+                    <button onClick={() => removeAttribute(attr.id)} className="text-muted hover:text-accent transition-colors p-0.5 opacity-0 group-hover:opacity-100">
+                      <X size={12} />
+                    </button>
+                  </div>
+                </div>
+                <div className="flex-1 h-2.5 bg-warm/50 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${attr.value * 10}%` }}
+                    transition={{ duration: 0.5, ease: 'easeOut' }}
+                    className="h-full rounded-full"
+                    style={{ background: 'linear-gradient(90deg, #c8440a, #b8860b)' }}
+                  />
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={10}
+                  value={attr.value}
+                  onChange={(e: any) => updateAttribute(attr.id, parseInt(e.target.value))}
+                  className="w-full h-1 mt-1 appearance-none bg-transparent cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-accent [&::-webkit-slider-thumb]:cursor-pointer"
+                />
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 pt-4 border-t border-warm">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newAttrLabel}
+                onChange={(e: any) => setNewAttrLabel(e.target.value)}
+                onKeyDown={(e: any) => e.key === 'Enter' && addAttribute()}
+                placeholder="Nouvel attribut..."
+                className="flex-1 bg-cream/50 border border-warm rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gold"
+              />
+              <button
+                onClick={addAttribute}
+                className="bg-stage text-cream px-4 py-2 rounded-md text-sm font-medium hover:bg-ink transition-colors flex items-center gap-2"
+              >
+                <Plus size={14} />
+                Ajouter
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* RADAR VISUEL */}
+      <section className="mb-8">
+        <div className="bg-white rounded-xl p-6 shadow-md border border-warm">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="bg-gold/10 p-2 rounded-lg">
+              <Star size={20} className="text-gold" />
+            </div>
+            <div>
+              <h2 className="font-serif text-xl font-bold text-ink">Profil Radar</h2>
+              <p className="text-xs text-muted font-mono uppercase tracking-wider">Visualisation des compétences</p>
+            </div>
+          </div>
+          <div className="flex justify-center">
+            <RadarChart attributes={profAttributes} />
+          </div>
+        </div>
+      </section>
+    </motion.div>
+  );
+}
+
+function RadarChart({ attributes }: { attributes: { id: string; label: string; value: number }[] }) {
+  const size = 280;
+  const center = size / 2;
+  const radius = 110;
+  const n = attributes.length;
+
+  if (n < 3) return <p className="text-sm text-muted italic">Ajoutez au moins 3 attributs pour voir le radar.</p>;
+
+  const getPoint = (index: number, value: number) => {
+    const angle = (Math.PI * 2 * index) / n - Math.PI / 2;
+    const r = (value / 10) * radius;
+    return { x: center + r * Math.cos(angle), y: center + r * Math.sin(angle) };
+  };
+
+  const gridLevels = [2, 4, 6, 8, 10];
+
+  return (
+    <svg viewBox={`0 0 ${size} ${size}`} className="w-full max-w-[280px]">
+      {gridLevels.map(level => {
+        const points = Array.from({ length: n }, (_, i) => getPoint(i, level));
+        return (
+          <polygon
+            key={level}
+            points={points.map(p => `${p.x},${p.y}`).join(' ')}
+            fill="none"
+            stroke="#e8dfc8"
+            strokeWidth={level === 10 ? 1.5 : 0.5}
+          />
+        );
+      })}
+      {attributes.map((_, i) => {
+        const p = getPoint(i, 10);
+        return <line key={i} x1={center} y1={center} x2={p.x} y2={p.y} stroke="#e8dfc8" strokeWidth={0.5} />;
+      })}
+      <polygon
+        points={attributes.map((a, i) => { const p = getPoint(i, a.value); return `${p.x},${p.y}`; }).join(' ')}
+        fill="rgba(200,68,10,0.15)"
+        stroke="#c8440a"
+        strokeWidth={2}
+      />
+      {attributes.map((a, i) => {
+        const p = getPoint(i, a.value);
+        return <circle key={a.id} cx={p.x} cy={p.y} r={3.5} fill="#c8440a" />;
+      })}
+      {attributes.map((a, i) => {
+        const p = getPoint(i, 12);
+        const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
+        const textAnchor = Math.abs(Math.cos(angle)) < 0.1 ? 'middle' : Math.cos(angle) > 0 ? 'start' : 'end';
+        return (
+          <text
+            key={a.id}
+            x={p.x}
+            y={p.y}
+            textAnchor={textAnchor}
+            dominantBaseline="central"
+            className="text-[0.5rem] fill-[#7a6e60] font-mono uppercase"
+          >
+            {a.label}
+          </text>
+        );
+      })}
+    </svg>
+  );
 }
 
 function IdeaPart({ icon, label, value, color }: { icon: ReactNode, label: string, value?: string, color: string }) {
