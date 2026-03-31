@@ -5,318 +5,318 @@ import {
   MANTRAS_JOUEUR, MANTRAS_COACH, MANTRAS_OBS,
 } from "@/lib/data";
 
-type Tab = "session"|"fiches"|"participants"|"projector";
-type Role = "coach"|"joueur"|"observateur";
+type Tab = "session" | "fiches" | "participants" | "projector";
+type Role = "coach" | "joueur" | "observateur";
 type PhaseId = "warmup"|"theory"|"solo"|"duos"|"scenes"|"debrief";
 type Participant = { id:string; name:string; role:Role; passages:number };
 
-// ── Phase config ──────────────────────────────────────────────────────────
-const PC = [
-  { bg:"#22c55e", light:"#dcfce7", dark:"#16a34a", text:"#14532d" },
-  { bg:"#3b82f6", light:"#dbeafe", dark:"#2563eb", text:"#1e3a8a" },
-  { bg:"#9333ea", light:"#f3e8ff", dark:"#7c22ce", text:"#4a044e" },
-  { bg:"#ef4444", light:"#fee2e2", dark:"#dc2626", text:"#7f1d1d" },
-  { bg:"#f97316", light:"#ffedd5", dark:"#ea6c00", text:"#7c2d12" },
-  { bg:"#06b6d4", light:"#cffafe", dark:"#0891b2", text:"#164e63" },
-];
+// ── Comme J'aime–inspired palette ───────────────────────────────────────────
+const PC = ["#00b67a","#f58220","#e4007c","#00a5b5","#6b2fa0","#e63946"];
+const PBG = ["#e6f9f2","#fff3e6","#fde8f3","#e0f6f8","#f3ebfa","#fde8ea"];
 
-const ROLE_CFG = {
-  coach:       { color:"#ef4444", light:"#fee2e2", dark:"#dc2626", emoji:"🧑‍💼", label:"Coach" },
-  joueur:      { color:"#3b82f6", light:"#dbeafe", dark:"#2563eb", emoji:"🎭",   label:"Joueur" },
-  observateur: { color:"#9333ea", light:"#f3e8ff", dark:"#7c22ce", emoji:"👁",   label:"Observateur" },
+const ROLES: Record<Role,{color:string;bg:string;emoji:string;label:string}> = {
+  coach:       { color:"#e4007c", bg:"#fde8f3", emoji:"🎬", label:"Coach" },
+  joueur:      { color:"#00b67a", bg:"#e6f9f2", emoji:"🎭", label:"Joueur" },
+  observateur: { color:"#6b2fa0", bg:"#f3ebfa", emoji:"👁",  label:"Observateur" },
 };
 
 function fmt(s:number){ return `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`; }
 function rand<T>(a:T[]):T{ return a[Math.floor(Math.random()*a.length)]; }
 
-// ── Ring component ─────────────────────────────────────────────────────────
-function Ring({ pct, color, size=160, children }: { pct:number; color:string; size?:number; children?:React.ReactNode }) {
-  const r = size * 0.42;
+// ── Timer Ring ──────────────────────────────────────────────────────────────
+function TimerRing({ pct, color, size=150, time, alarm }:
+  { pct:number; color:string; size?:number; time:string; alarm?:boolean }) {
+  const stroke = 8;
+  const r = (size - stroke * 2) / 2;
   const c = 2 * Math.PI * r;
   return (
-    <div className="relative flex-shrink-0" style={{ width:size, height:size }}>
+    <div className={`relative ${alarm ? "alarm-bounce" : ""}`} style={{ width:size, height:size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform:"rotate(-90deg)" }}>
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#e2e8f0" strokeWidth="10"/>
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth="10"
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#f0f0f0" strokeWidth={stroke}/>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={stroke}
           strokeLinecap="round" strokeDasharray={c}
           strokeDashoffset={c*(1-Math.max(0,Math.min(1,pct)))}
           style={{ transition:"stroke-dashoffset 1s linear" }}/>
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">{children}</div>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="font-black text-3xl text-[#2d2d2d]">{time}</span>
+      </div>
     </div>
   );
 }
 
-// ── Primary Button ─────────────────────────────────────────────────────────
-function Btn({
-  children, onClick, color="#6c63ff", outline=false, sm=false, disabled=false
-}:{
-  children:React.ReactNode; onClick?:()=>void;
-  color?:string; outline?:boolean; sm?:boolean; disabled?:boolean;
-}) {
+// ── Phase Pills ─────────────────────────────────────────────────────────────
+function PhasePills({ active, onSelect }: { active:number; onSelect:(i:number)=>void }) {
   return (
-    <button onClick={onClick} disabled={disabled}
-      className="rounded-xl font-semibold transition-all cursor-pointer hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
-      style={{
-        padding: sm ? "6px 14px" : "10px 22px",
-        fontSize: sm ? "0.78rem" : "0.875rem",
-        background: outline ? "white" : color,
-        color: outline ? color : "white",
-        border: `2px solid ${color}`,
-        fontFamily:"'Inter',sans-serif",
-        fontWeight:600,
-        boxShadow: outline ? "none" : `0 2px 8px ${color}40`,
-      }}>
+    <div className="flex gap-2 overflow-x-auto no-scrollbar py-3 px-1">
+      {PHASES.map((p, i) => {
+        const isActive = i === active;
+        const isDone = i < active;
+        const color = PC[i];
+        return (
+          <button key={p.id} onClick={() => onSelect(i)}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer flex-shrink-0"
+            style={{
+              background: isActive ? color : isDone ? PBG[i] : "#f5f5f5",
+              color: isActive ? "#fff" : isDone ? color : "#a0a0a0",
+              border: isActive ? `2px solid ${color}` : isDone ? `2px solid ${color}40` : "2px solid #e5e5e5",
+            }}>
+            <span>{p.emoji}</span>
+            <span className="hidden sm:inline">{p.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── CTA Button (Comme J'aime style) ─────────────────────────────────────────
+function CTA({ children, color, variant="solid", onClick, className="" }:
+  { children:React.ReactNode; color:string; variant?:"solid"|"outline"|"soft"; onClick:()=>void; className?:string }) {
+  const base = "px-6 py-3 rounded-full font-extrabold text-sm cursor-pointer inline-flex items-center gap-2";
+  const styles = variant === "solid"
+    ? { background:color, color:"#fff", border:`2px solid ${color}`, boxShadow:`0 4px 14px ${color}30` }
+    : variant === "outline"
+    ? { background:"#fff", color, border:`2px solid ${color}` }
+    : { background:`${color}10`, color, border:`2px solid transparent` };
+  return (
+    <button onClick={onClick} className={`${base} hover:opacity-90 hover:scale-[1.02] ${className}`} style={styles}>
       {children}
     </button>
   );
 }
 
-// ── Card ────────────────────────────────────────────────────────────────────
-function Card({ children, className="", style={} }: { children:React.ReactNode; className?:string; style?:React.CSSProperties }) {
+// ── Card (white, rounded, shadow) ───────────────────────────────────────────
+function Card({ children, className="", border="" }:
+  { children:React.ReactNode; className?:string; border?:string }) {
   return (
-    <div className={`rounded-2xl bg-white ${className}`}
-      style={{ boxShadow:"0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.04)", border:"1px solid #e2e8f0", ...style }}>
+    <div className={`rounded-[20px] bg-white p-5 ${className}`}
+      style={{
+        boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+        border: border ? `3px solid ${border}` : "1px solid #f0f0f0",
+      }}>
       {children}
     </div>
   );
 }
 
-// ── Badge ───────────────────────────────────────────────────────────────────
-function Badge({ children, color, bg }: { children:React.ReactNode; color:string; bg:string }) {
+// ── Colored accent card ─────────────────────────────────────────────────────
+function AccentCard({ children, color, bg, className="" }:
+  { children:React.ReactNode; color:string; bg:string; className?:string }) {
   return (
-    <span className="inline-flex items-center rounded-lg px-2.5 py-0.5 text-xs font-semibold"
-      style={{ background:bg, color }}>
+    <div className={`rounded-[20px] p-5 ${className}`}
+      style={{ background:bg, border:`2px solid ${color}25` }}>
       {children}
-    </span>
+    </div>
   );
 }
 
-// ── Phase Tab ───────────────────────────────────────────────────────────────
-function PhaseTab({ p, color, active, onClick, idx }: { p:typeof PHASES[0]; color:typeof PC[0]; active:boolean; idx:number; onClick:()=>void }) {
+// ── Stat Pill ───────────────────────────────────────────────────────────────
+function StatPill({ value, label, color, bg }: { value:string|number; label:string; color:string; bg:string }) {
   return (
-    <button onClick={onClick}
-      className="flex items-center gap-2 px-4 py-3 text-sm font-semibold transition-all cursor-pointer whitespace-nowrap border-b-2 flex-shrink-0"
-      style={{
-        fontFamily:"'Inter',sans-serif",
-        color: active ? color.bg : "#94a3b8",
-        borderColor: active ? color.bg : "transparent",
-        background: "transparent",
-      }}>
-      <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-        style={{
-          background: active ? color.bg : "#f1f5f9",
-          color: active ? "white" : "#94a3b8",
-        }}>
-        {idx+1}
-      </span>
-      <span className="hidden sm:inline">{p.label}</span>
-      <span className="sm:hidden">{p.emoji}</span>
-    </button>
+    <div className="rounded-2xl p-4 text-center" style={{ background:bg }}>
+      <div className="font-black text-3xl" style={{ color }}>{value}</div>
+      <div className="text-[11px] font-bold uppercase tracking-wider text-[#6b6b6b] mt-1">{label}</div>
+    </div>
   );
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// SESSION
+// SESSION TAB
 // ══════════════════════════════════════════════════════════════════════════════
 function SessionTab() {
-  const [pi,setPi]=useState(0);
-  const [t,setT]=useState(PHASES[0].duration);
-  const [run,setRun]=useState(false);
-  const [alarm,setAlarm]=useState(false);
-  const [ctx,setCtx]=useState<{emoji:string;label:string}|null>(null);
-  const [ctxKey,setCtxKey]=useState(0);
-  const [notes,setNotes]=useState<Record<string,string>>({});
-  const ref=useRef<ReturnType<typeof setInterval>|null>(null);
-  const ph=PHASES[pi]; const pc=PC[pi];
+  const [pi, setPi] = useState(0);
+  const [t, setT] = useState(PHASES[0].duration);
+  const [run, setRun] = useState(false);
+  const [alarm, setAlarm] = useState(false);
+  const [ctx, setCtx] = useState<{emoji:string;label:string}|null>(null);
+  const [ctxKey, setCtxKey] = useState(0);
+  const [notes, setNotes] = useState<Record<string,string>>({});
+  const ref = useRef<ReturnType<typeof setInterval>|null>(null);
+  const ph = PHASES[pi];
+  const color = PC[pi];
+  const bg = PBG[pi];
 
-  const beep=useCallback(()=>{
+  const beep = useCallback(() => {
     try {
-      const ac=new (window.AudioContext||(window as unknown as{webkitAudioContext:typeof AudioContext}).webkitAudioContext)();
-      [523,659,784].forEach((f,i)=>{
-        const o=ac.createOscillator(),g=ac.createGain();
-        o.connect(g);g.connect(ac.destination);
-        o.frequency.value=f;
+      const ac = new (window.AudioContext||(window as unknown as{webkitAudioContext:typeof AudioContext}).webkitAudioContext)();
+      [523,659,784].forEach((f,i) => {
+        const o=ac.createOscillator(), g=ac.createGain();
+        o.connect(g); g.connect(ac.destination);
+        o.type="sine"; o.frequency.value=f;
         g.gain.setValueAtTime(0,ac.currentTime+i*0.12);
-        g.gain.linearRampToValueAtTime(0.25,ac.currentTime+i*0.12+0.05);
+        g.gain.linearRampToValueAtTime(0.3,ac.currentTime+i*0.12+0.05);
         g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+i*0.12+0.2);
-        o.start(ac.currentTime+i*0.12);o.stop(ac.currentTime+i*0.12+0.25);
+        o.start(ac.currentTime+i*0.12); o.stop(ac.currentTime+i*0.12+0.25);
       });
     } catch {}
-  },[]);
+  }, []);
 
-  useEffect(()=>{
-    if(run){ref.current=setInterval(()=>setT(v=>{if(v<=1){setRun(false);setAlarm(true);beep();return 0;}return v-1;}),1000);}
-    return()=>{if(ref.current)clearInterval(ref.current);};
-  },[run,beep]);
+  useEffect(() => {
+    if (run) {
+      ref.current = setInterval(() => setT(v => {
+        if (v <= 1) { setRun(false); setAlarm(true); beep(); return 0; }
+        return v - 1;
+      }), 1000);
+    }
+    return () => { if (ref.current) clearInterval(ref.current); };
+  }, [run, beep]);
 
-  const go=(i:number)=>{setPi(i);setT(PHASES[i].duration);setRun(false);setAlarm(false);setCtx(null);};
-  const draw=()=>{
-    const c=ph.id==="solo"?CONTEXTES_SOLO:ph.id==="duos"?CONTEXTES_DUOS:ph.id==="scenes"?CONTEXTES_SCENES:[];
-    if(c.length){setCtx(rand(c));setCtxKey(k=>k+1);}
+  const go = (i:number) => { setPi(i); setT(PHASES[i].duration); setRun(false); setAlarm(false); setCtx(null); };
+  const draw = () => {
+    const c = ph.id==="solo"?CONTEXTES_SOLO:ph.id==="duos"?CONTEXTES_DUOS:ph.id==="scenes"?CONTEXTES_SCENES:[];
+    if (c.length) { setCtx(rand(c)); setCtxKey(k=>k+1); }
   };
-
-  const pct=t/ph.duration;
 
   return (
     <div className="fade-up">
-      {/* Phase sub-nav */}
-      <div className="bg-white border-b border-[#e2e8f0]">
-        <div className="max-w-5xl mx-auto px-4 flex overflow-x-auto" style={{scrollbarWidth:"none"}}>
-          {PHASES.map((p,i)=>(
-            <PhaseTab key={p.id} p={p} color={PC[i]} active={i===pi} idx={i} onClick={()=>go(i)}/>
-          ))}
+      {/* Phase pills */}
+      <div className="border-b border-[#f0f0f0] bg-white">
+        <div className="max-w-3xl mx-auto px-4">
+          <PhasePills active={pi} onSelect={go}/>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-6">
-        {/* Hero row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
-          {/* Timer card */}
-          <Card className={`p-6 col-span-1 flex flex-col items-center justify-center ${alarm?"alarm-pulse":""}`}>
-            <Badge color={pc.dark} bg={pc.light}>{ph.emoji} Phase {pi+1}/{PHASES.length}</Badge>
-            <div className="my-5">
-              <Ring pct={pct} color={pc.bg} size={180}>
-                <span className="text-4xl font-bold" style={{color:pc.bg,fontFamily:"'Inter',sans-serif",letterSpacing:"-1px"}}>{fmt(t)}</span>
-                <span className="text-xs font-medium mt-0.5" style={{color:"#94a3b8"}}>{fmt(ph.duration)}</span>
-              </Ring>
-            </div>
-            {/* Progress bar */}
-            <div className="w-full h-2 rounded-full bg-[#f1f5f9] overflow-hidden mb-4">
-              <div className="h-full rounded-full transition-all duration-1000" style={{width:`${pct*100}%`,background:pc.bg}}/>
-            </div>
-            <div className="flex gap-2 flex-wrap justify-center">
-              <Btn color={pc.bg} onClick={()=>{setRun(!run);setAlarm(false);}}>
-                {run?"⏸ Pause":t===0?"↺ Relancer":"▶ Démarrer"}
-              </Btn>
-              <Btn outline color={pc.bg} onClick={()=>{setT(ph.duration);setRun(false);setAlarm(false);}}>↺</Btn>
-              {pi<PHASES.length-1&&<Btn outline color={pc.bg} onClick={()=>go(pi+1)}>Suivant →</Btn>}
-            </div>
-            {alarm&&(
-              <div className="mt-3 w-full text-center text-sm font-semibold py-2 rounded-xl bounce-in"
-                style={{background:pc.light,color:pc.dark}}>
-                🎉 Temps écoulé !
-              </div>
-            )}
-          </Card>
+      <div className="max-w-3xl mx-auto px-4 py-6 space-y-5 stagger">
+        {/* Timer card */}
+        <Card className="flex flex-col items-center !p-8" border={color}>
+          <TimerRing pct={t/ph.duration} color={color} size={150} time={fmt(t)} alarm={alarm}/>
 
-          {/* Phase info */}
-          <div className="col-span-1 lg:col-span-2 flex flex-col gap-4">
-            <Card className="p-5 flex-1">
-              <h2 className="text-xl font-bold mb-1" style={{color:"#1e1b4b"}}>{ph.emoji} {ph.subtitle}</h2>
-              <p className="text-sm mb-4" style={{color:"#64748b"}}>{ph.description}</p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Coach */}
-                <div className="rounded-xl p-4" style={{background:ROLE_CFG.coach.light}}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-base">{ROLE_CFG.coach.emoji}</span>
-                    <span className="text-xs font-bold uppercase tracking-wide" style={{color:ROLE_CFG.coach.dark}}>Coach</span>
-                  </div>
-                  <ul className="space-y-1.5">
-                    {ph.coachActions.map((a,i)=>(
-                      <li key={i} className="flex items-start gap-2 text-xs" style={{color:"#374151"}}>
-                        <span className="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{background:ROLE_CFG.coach.color}}/>
-                        {a}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Joueur */}
-                <div className="rounded-xl p-4" style={{background:ROLE_CFG.joueur.light}}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-base">{ROLE_CFG.joueur.emoji}</span>
-                    <span className="text-xs font-bold uppercase tracking-wide" style={{color:ROLE_CFG.joueur.dark}}>Joueur</span>
-                  </div>
-                  <ul className="space-y-1.5">
-                    {ph.playerActions.map((a,i)=>(
-                      <li key={i} className="flex items-start gap-2 text-xs" style={{color:"#374151"}}>
-                        <span className="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{background:ROLE_CFG.joueur.color}}/>
-                        {a}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-
-              {"observerActions" in ph && (
-                <div className="mt-3 rounded-xl p-4" style={{background:ROLE_CFG.observateur.light}}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span>{ROLE_CFG.observateur.emoji}</span>
-                    <span className="text-xs font-bold uppercase tracking-wide" style={{color:ROLE_CFG.observateur.dark}}>Observateur</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {(ph as typeof ph&{observerActions:string[]}).observerActions.map((a,i)=>(
-                      <div key={i} className="flex items-start gap-2 text-xs" style={{color:"#374151"}}>
-                        <span className="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{background:ROLE_CFG.observateur.color}}/>
-                        {a}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </Card>
-
-            {/* Context + Notes */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {["solo","duos","scenes"].includes(ph.id)?(
-                <Card className="p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-semibold" style={{color:"#1e1b4b"}}>🎲 Contexte aléatoire</span>
-                    <Btn sm color={pc.bg} onClick={draw}>Tirer !</Btn>
-                  </div>
-                  {ctx?(
-                    <div key={ctxKey} className="rounded-xl px-4 py-3 text-sm font-semibold text-center bounce-in"
-                      style={{background:pc.light,color:pc.dark}}>
-                      {ctx.emoji} {ctx.label}
-                    </div>
-                  ):(
-                    <div className="rounded-xl px-4 py-3 text-xs text-center" style={{background:"#f8fafc",color:"#94a3b8"}}>
-                      Appuie pour révéler un contexte surprise
-                    </div>
-                  )}
-                </Card>
-              ):<div/>}
-
-              <Card className="p-4">
-                <div className="text-sm font-semibold mb-2" style={{color:"#1e1b4b"}}>📝 Notes</div>
-                <textarea
-                  className="w-full text-xs rounded-xl p-3 resize-none outline-none"
-                  style={{minHeight:"80px",background:"#f8fafc",border:"1.5px solid #e2e8f0",color:"#374151",fontFamily:"'Inter',sans-serif"}}
-                  placeholder="Observations, feedback de phase…"
-                  value={notes[`${pi}`]||""}
-                  onChange={e=>setNotes(n=>({...n,[`${pi}`]:e.target.value}))}/>
-              </Card>
-            </div>
+          <div className="mt-5 text-center">
+            <span className="inline-block px-4 py-1.5 rounded-full text-xs font-extrabold"
+              style={{ background:bg, color }}>
+              {ph.emoji} Phase {pi+1}/{PHASES.length} · {fmt(ph.duration)}
+            </span>
+            <h2 className="font-black text-2xl sm:text-3xl mt-3" style={{color:"#6b2fa0"}}>{ph.subtitle}</h2>
+            <p className="text-sm text-[#6b6b6b] mt-2 max-w-md mx-auto leading-relaxed">{ph.description}</p>
           </div>
+
+          <div className="flex gap-2.5 mt-6 flex-wrap justify-center">
+            <CTA color={color} onClick={()=>{setRun(!run);setAlarm(false);}}>
+              {run ? "⏸ Pause" : t===0 ? "↻ Relancer" : "▶ Démarrer"}
+            </CTA>
+            <CTA color="#6b6b6b" variant="outline" onClick={()=>{setT(ph.duration);setRun(false);setAlarm(false);}}>
+              ↻ Reset
+            </CTA>
+            {pi < PHASES.length-1 && (
+              <CTA color={PC[pi+1]} variant="soft" onClick={()=>go(pi+1)}>Suivant ▸</CTA>
+            )}
+            {["solo","duos","scenes"].includes(ph.id) && (
+              <CTA color={color} variant="outline" onClick={draw}>🎲 Contexte</CTA>
+            )}
+          </div>
+
+          {alarm && (
+            <div className="mt-5 px-6 py-3 rounded-full font-extrabold text-sm pop"
+              style={{ background:bg, color, border:`2px solid ${color}` }}>
+              🔔 Temps écoulé — phase suivante !
+            </div>
+          )}
+        </Card>
+
+        {/* Context */}
+        {ctx && (
+          <div key={ctxKey} className="pop">
+            <Card className="text-center !py-4" border={color}>
+              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#a0a0a0] mb-1">Contexte tiré</div>
+              <div className="font-black text-xl" style={{ color }}>{ctx.emoji} {ctx.label}</div>
+            </Card>
+          </div>
+        )}
+
+        {/* Role cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Coach */}
+          <AccentCard color={ROLES.coach.color} bg={ROLES.coach.bg}>
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm"
+                style={{background:"#fff"}}>{ROLES.coach.emoji}</div>
+              <span className="font-extrabold text-sm" style={{color:ROLES.coach.color}}>Instructions Coach</span>
+            </div>
+            <ul className="space-y-2">
+              {ph.coachActions.map((a,i)=>(
+                <li key={i} className="flex items-start gap-2 text-[13px] text-[#2d2d2d] leading-snug">
+                  <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{background:ROLES.coach.color}}/>{a}
+                </li>
+              ))}
+            </ul>
+          </AccentCard>
+
+          {/* Joueur */}
+          <AccentCard color={ROLES.joueur.color} bg={ROLES.joueur.bg}>
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm"
+                style={{background:"#fff"}}>{ROLES.joueur.emoji}</div>
+              <span className="font-extrabold text-sm" style={{color:ROLES.joueur.color}}>Objectifs Joueur</span>
+            </div>
+            <ul className="space-y-2">
+              {ph.playerActions.map((a,i)=>(
+                <li key={i} className="flex items-start gap-2 text-[13px] text-[#2d2d2d] leading-snug">
+                  <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{background:ROLES.joueur.color}}/>{a}
+                </li>
+              ))}
+            </ul>
+          </AccentCard>
+
+          {/* Notes */}
+          <Card>
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="w-8 h-8 rounded-full bg-[#f5f5f5] flex items-center justify-center text-sm">✏️</div>
+              <span className="font-extrabold text-sm text-[#6b6b6b]">Notes de séance</span>
+            </div>
+            <textarea
+              className="w-full text-[13px] font-semibold rounded-2xl p-3 resize-none outline-none border-2 border-[#f0f0f0] focus:border-[#6b2fa0] focus:ring-2 focus:ring-[#6b2fa020] transition-all bg-[#f9f9f9] text-[#2d2d2d] placeholder:text-[#c0c0c0]"
+              style={{ minHeight:"110px" }}
+              placeholder="Observations, feedback..."
+              value={notes[`${pi}`]||""}
+              onChange={e=>setNotes(n=>({...n,[`${pi}`]:e.target.value}))}/>
+          </Card>
         </div>
+
+        {/* Observer */}
+        {"observerActions" in ph && (
+          <AccentCard color={ROLES.observateur.color} bg={ROLES.observateur.bg}>
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm"
+                style={{background:"#fff"}}>{ROLES.observateur.emoji}</div>
+              <span className="font-extrabold text-sm" style={{color:ROLES.observateur.color}}>Notes Observateur</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {(ph as typeof ph & {observerActions:string[]}).observerActions.map((a,i)=>(
+                <div key={i} className="flex items-start gap-2 text-[13px] text-[#2d2d2d] leading-snug">
+                  <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{background:ROLES.observateur.color}}/>{a}
+                </div>
+              ))}
+            </div>
+          </AccentCard>
+        )}
       </div>
     </div>
   );
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// FICHES
+// FICHES TAB
 // ══════════════════════════════════════════════════════════════════════════════
 function FichesTab() {
-  const [view,setView]=useState<"roles"|"phases">("roles");
-  const [role,setRole]=useState<Role>("coach");
-  const [phase,setPhase]=useState<PhaseId>("warmup");
-  const ph=PHASES.find(p=>p.id===phase)!;
-  const phIdx=PHASES.findIndex(p=>p.id===phase);
-  const pc=PC[phIdx];
-  const cfg=ROLE_CFG[role];
+  const [view, setView] = useState<"roles"|"phases">("roles");
+  const [role, setRole] = useState<Role>("coach");
+  const [phase, setPhase] = useState<PhaseId>("warmup");
+  const ph = PHASES.find(p=>p.id===phase)!;
+  const phIdx = PHASES.findIndex(p=>p.id===phase);
+  const color = PC[phIdx];
+  const bg = PBG[phIdx];
+  const cfg = ROLES[role];
 
-  const mantras:Record<Role,string[]>={coach:MANTRAS_COACH,joueur:MANTRAS_JOUEUR,observateur:MANTRAS_OBS};
-  const erreurs:Record<Role,{titre:string;fix:string}[]>={
+  const mantras:Record<Role,string[]> = { coach:MANTRAS_COACH, joueur:MANTRAS_JOUEUR, observateur:MANTRAS_OBS };
+  const erreurs:Record<Role,{titre:string;fix:string}[]> = {
     coach:[
       {titre:"Parler pendant la scène",fix:"Attendre le freeze ou la fin."},
       {titre:"Feedback trop long",fix:"1–2 observations max."},
       {titre:"Dépasser le temps",fix:"Couper à l'heure dite."},
-      {titre:"Question rhétorique",fix:"Attendre la vraie réponse."},
+      {titre:"Question rhétorique",fix:"Attendre la réponse vraie."},
       {titre:"Cibler une seule personne",fix:"Varier les passes."},
-      {titre:"Corriger l'intention",fix:"Corriger la perception, pas l'intention."},
+      {titre:"Corriger l'intention",fix:"Corriger la perception."},
     ],
     joueur:[
       {titre:"Annoncer le décor",fix:"Montrer, ne pas dire."},
@@ -335,39 +335,35 @@ function FichesTab() {
 
   return (
     <div className="fade-up">
-      {/* Toggle */}
-      <div className="bg-white border-b border-[#e2e8f0]">
-        <div className="max-w-5xl mx-auto px-4 flex gap-1 py-2">
+      {/* Sub-nav */}
+      <div className="bg-white border-b border-[#f0f0f0]">
+        <div className="flex max-w-3xl mx-auto px-4 gap-1">
           {(["roles","phases"] as const).map(v=>(
             <button key={v} onClick={()=>setView(v)}
-              className="px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer"
-              style={{
-                background: view===v?"#6c63ff":"transparent",
-                color: view===v?"white":"#64748b",
-                fontFamily:"'Inter',sans-serif",
-              }}>
-              {v==="roles"?"👤 Par rôle":"📋 Par exercice"}
+              className="px-5 py-3 text-sm font-extrabold cursor-pointer relative"
+              style={{ color: view===v ? "#6b2fa0" : "#a0a0a0" }}>
+              {v==="roles" ? "🎭 Par rôle" : "📋 Par exercice"}
+              {view===v && <div className="absolute bottom-0 left-2 right-2 h-[3px] rounded-full bg-[#6b2fa0]"/>}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-6">
-        {view==="roles"&&(
+      <div className="px-4 py-6 max-w-3xl mx-auto w-full space-y-5 stagger">
+        {view==="roles" && (
           <>
-            {/* Role selector */}
-            <div className="flex gap-3 mb-6 flex-wrap">
+            {/* Role selector pills */}
+            <div className="flex gap-2 flex-wrap">
               {(["coach","joueur","observateur"] as Role[]).map(r=>{
-                const c=ROLE_CFG[r];
+                const c=ROLES[r];
+                const active = role===r;
                 return (
                   <button key={r} onClick={()=>setRole(r)}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer"
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-extrabold cursor-pointer"
                     style={{
-                      background: role===r?c.color:"white",
-                      color: role===r?"white":c.color,
-                      border:`2px solid ${role===r?c.color:c.color+"33"}`,
-                      boxShadow: role===r?`0 2px 8px ${c.color}40`:"0 1px 3px rgba(0,0,0,0.06)",
-                      fontFamily:"'Inter',sans-serif",
+                      background: active ? c.bg : "#f5f5f5",
+                      color: active ? c.color : "#a0a0a0",
+                      border: active ? `2px solid ${c.color}` : "2px solid #e5e5e5",
                     }}>
                     {c.emoji} {c.label}
                   </button>
@@ -375,124 +371,105 @@ function FichesTab() {
               })}
             </div>
 
-            {/* Hero */}
-            <Card className="p-6 mb-5 bounce-in" style={{borderLeft:`4px solid ${cfg.color}`}}>
+            {/* Hero card */}
+            <Card border={cfg.color} className="pop">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
-                  style={{background:cfg.light}}>
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl" style={{background:cfg.bg}}>
                   {cfg.emoji}
                 </div>
                 <div>
-                  <Badge color={cfg.dark} bg={cfg.light}>Fiche de poste</Badge>
-                  <h2 className="text-2xl font-bold mt-1" style={{color:"#1e1b4b"}}>{cfg.label}</h2>
-                  <p className="text-sm" style={{color:"#64748b"}}>
-                    {role==="coach"&&"Chef d'orchestre silencieux — voir, ne pas dire"}
-                    {role==="joueur"&&"Incarner, montrer, ne pas expliquer"}
-                    {role==="observateur"&&"Les yeux du public — le miroir précis"}
+                  <div className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#a0a0a0]">Fiche de poste</div>
+                  <h2 className="font-black text-2xl" style={{color:cfg.color}}>{cfg.label}</h2>
+                  <p className="text-sm text-[#6b6b6b] mt-0.5">
+                    {role==="coach"&&"Chef d'orchestre silencieux 🧭"}
+                    {role==="joueur"&&"Montrer, ne pas dire 🎭"}
+                    {role==="observateur"&&"Les yeux du public 👁"}
                   </p>
                 </div>
               </div>
             </Card>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
-              {/* Mantras */}
-              <Card className="p-5">
-                <div className="text-xs font-bold uppercase tracking-widest mb-4" style={{color:"#94a3b8"}}>✨ Mantras</div>
-                <ul className="space-y-3">
-                  {mantras[role].map((m,i)=>(
-                    <li key={i} className="flex items-start gap-3 pb-3 border-b border-[#f1f5f9] last:border-0 last:pb-0">
-                      <span className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
-                        style={{background:cfg.light,color:cfg.color}}>{i+1}</span>
-                      <span className="text-sm italic font-medium" style={{color:"#374151"}}>« {m} »</span>
-                    </li>
-                  ))}
-                </ul>
-              </Card>
+            {/* Mantras */}
+            <Card>
+              <div className="font-extrabold text-xs uppercase tracking-[0.15em] text-[#a0a0a0] mb-4">✨ Mantras</div>
+              <div className="space-y-0">
+                {mantras[role].map((m,i)=>(
+                  <div key={i} className="flex items-start gap-3 py-3 border-b border-[#f0f0f0] last:border-0">
+                    <span className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0"
+                      style={{background:cfg.bg,color:cfg.color}}>{i+1}</span>
+                    <span className="text-sm text-[#2d2d2d] italic leading-relaxed">« {m} »</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
 
-              {/* Pièges */}
-              <div>
-                <div className="text-xs font-bold uppercase tracking-widest mb-4" style={{color:"#94a3b8"}}>⚠️ Pièges à éviter</div>
-                <div className="space-y-2">
-                  {erreurs[role].map((e,i)=>(
-                    <Card key={i} className="p-3">
-                      <div className="flex items-start gap-3">
-                        <span className="text-base flex-shrink-0">❌</span>
-                        <div>
-                          <div className="text-sm font-semibold" style={{color:"#1e1b4b"}}>{e.titre}</div>
-                          <div className="text-xs mt-0.5" style={{color:"#64748b"}}>✅ {e.fix}</div>
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
+            {/* Pièges */}
+            <div>
+              <div className="font-extrabold text-xs uppercase tracking-[0.15em] text-[#a0a0a0] mb-3">⚠️ Pièges à éviter</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {erreurs[role].map((e,i)=>(
+                  <Card key={i} className="!p-4">
+                    <div className="text-sm font-extrabold text-[#e63946] mb-1.5">✕ {e.titre}</div>
+                    <div className="text-sm font-bold text-[#00b67a]">✓ {e.fix}</div>
+                  </Card>
+                ))}
               </div>
             </div>
           </>
         )}
 
-        {view==="phases"&&(
+        {view==="phases" && (
           <>
-            {/* Phase pills */}
-            <div className="flex gap-2 overflow-x-auto pb-3 mb-5" style={{scrollbarWidth:"none"}}>
-              {PHASES.map((p,i)=>(
-                <button key={p.id} onClick={()=>setPhase(p.id as PhaseId)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer whitespace-nowrap flex-shrink-0"
-                  style={{
-                    background: p.id===phase?PC[i].bg:"white",
-                    color: p.id===phase?"white":PC[i].bg,
-                    border:`2px solid ${p.id===phase?PC[i].bg:PC[i].bg+"33"}`,
-                    boxShadow: p.id===phase?`0 2px 8px ${PC[i].bg}40`:"0 1px 3px rgba(0,0,0,0.06)",
-                    fontFamily:"'Inter',sans-serif",
-                  }}>
-                  {p.emoji} {p.label}
-                </button>
-              ))}
-            </div>
+            <Card className="!px-3 !py-1">
+              <PhasePills active={phIdx} onSelect={(i)=>setPhase(PHASES[i].id as PhaseId)}/>
+            </Card>
 
-            <Card className="p-5 mb-5 bounce-in" style={{borderLeft:`4px solid ${pc.bg}`}}>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0"
-                  style={{background:pc.light}}>{ph.emoji}</div>
+            <Card border={color} className="pop">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{background:bg}}>
+                  {ph.emoji}
+                </div>
                 <div>
-                  <Badge color={pc.dark} bg={pc.light}>Phase {phIdx+1}/{PHASES.length} · {fmt(ph.duration)}</Badge>
-                  <h2 className="text-xl font-bold mt-1" style={{color:"#1e1b4b"}}>{ph.subtitle}</h2>
-                  <p className="text-sm" style={{color:"#64748b"}}>{ph.description}</p>
+                  <div className="text-[10px] font-extrabold text-[#a0a0a0] uppercase tracking-wide">
+                    Phase {phIdx+1}/{PHASES.length} · {fmt(ph.duration)}
+                  </div>
+                  <h2 className="font-black text-xl" style={{color}}>{ph.subtitle}</h2>
+                  <p className="text-sm text-[#6b6b6b] mt-0.5">{ph.description}</p>
                 </div>
               </div>
             </Card>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {(["coach","joueur","observateur"] as Role[]).map(r=>{
-                const rc=ROLE_CFG[r];
+                const rc=ROLES[r];
                 const actions=r==="coach"?ph.coachActions:r==="joueur"?ph.playerActions:"observerActions" in ph?(ph as typeof ph&{observerActions:string[]}).observerActions:[];
                 if(!actions.length)return null;
                 return (
-                  <Card key={r} className="p-4">
+                  <AccentCard key={r} color={rc.color} bg={rc.bg}>
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm flex-shrink-0"
-                        style={{background:rc.light}}>{rc.emoji}</div>
-                      <span className="text-sm font-semibold" style={{color:rc.color}}>{rc.label}</span>
+                      <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs"
+                        style={{background:"#fff"}}>{rc.emoji}</div>
+                      <span className="text-xs font-extrabold" style={{color:rc.color}}>{rc.label}</span>
                     </div>
                     <ul className="space-y-2">
                       {actions.map((a,i)=>(
-                        <li key={i} className="flex items-start gap-2 text-xs" style={{color:"#374151"}}>
-                          <span className="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{background:rc.color}}/>
-                          {a}
+                        <li key={i} className="flex items-start gap-2 text-[13px] text-[#2d2d2d] leading-snug">
+                          <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{background:rc.color}}/>{a}
                         </li>
                       ))}
                     </ul>
-                  </Card>
+                  </AccentCard>
                 );
               })}
             </div>
 
             {["solo","duos","scenes"].includes(ph.id)&&(
-              <Card className="p-4">
-                <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{color:"#94a3b8"}}>🎭 Contextes disponibles</div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <Card>
+                <div className="font-extrabold text-xs uppercase tracking-[0.15em] text-[#a0a0a0] mb-3">🎭 Contextes</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                   {(ph.id==="solo"?CONTEXTES_SOLO:ph.id==="duos"?CONTEXTES_DUOS:CONTEXTES_SCENES).map((c,i)=>(
-                    <div key={i} className="rounded-xl px-3 py-2 text-xs font-medium flex items-center gap-2"
-                      style={{background:pc.light,color:pc.dark}}>
+                    <div key={i} className="rounded-xl px-4 py-3 text-sm font-bold"
+                      style={{background:bg, color:"#2d2d2d"}}>
                       {c.emoji} {c.label}
                     </div>
                   ))}
@@ -507,103 +484,95 @@ function FichesTab() {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// PARTICIPANTS
+// PARTICIPANTS TAB
 // ══════════════════════════════════════════════════════════════════════════════
 function ParticipantsTab() {
-  const [parts,setParts]=useState<Participant[]>([
+  const [parts, setParts] = useState<Participant[]>([
     {id:"1",name:"Alice",role:"joueur",passages:0},
     {id:"2",name:"Bruno",role:"coach",passages:0},
     {id:"3",name:"Chloé",role:"observateur",passages:0},
   ]);
-  const [name,setName]=useState("");
+  const [name, setName] = useState("");
 
-  const add=()=>{if(!name.trim())return;setParts(p=>[...p,{id:Date.now()+"",name:name.trim(),role:"joueur",passages:0}]);setName("");};
-  const setRole=(id:string,r:Role)=>setParts(p=>p.map(x=>x.id===id?{...x,role:r}:x));
+  const add=()=>{ if(!name.trim())return; setParts(p=>[...p,{id:Date.now()+"",name:name.trim(),role:"joueur",passages:0}]); setName(""); };
+  const setRoleFn=(id:string,r:Role)=>setParts(p=>p.map(x=>x.id===id?{...x,role:r}:x));
   const inc=(id:string)=>setParts(p=>p.map(x=>x.id===id?{...x,passages:x.passages+1}:x));
   const rem=(id:string)=>setParts(p=>p.filter(x=>x.id!==id));
   const total=parts.reduce((s,p)=>s+p.passages,0);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6 fade-up">
+    <div className="px-4 py-6 max-w-3xl mx-auto w-full fade-up space-y-5">
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        {[
-          {l:"Participants",v:parts.length,c:"#22c55e",bg:"#dcfce7"},
-          {l:"Passages total",v:total,c:"#3b82f6",bg:"#dbeafe"},
-          {l:"Moy./joueur",v:parts.length?(total/parts.length).toFixed(1):0,c:"#9333ea",bg:"#f3e8ff"},
-        ].map(s=>(
-          <Card key={s.l} className="p-4 text-center">
-            <div className="text-4xl font-bold mb-1" style={{color:s.c}}>{s.v}</div>
-            <Badge color={s.c} bg={s.bg}>{s.l}</Badge>
-          </Card>
-        ))}
+      <div className="grid grid-cols-3 gap-3 stagger">
+        <StatPill value={parts.length} label="Présents" color="#00b67a" bg="#e6f9f2"/>
+        <StatPill value={total} label="Passages" color="#6b2fa0" bg="#f3ebfa"/>
+        <StatPill value={parts.length?(total/parts.length).toFixed(1):"0"} label="Moyenne" color="#f58220" bg="#fff3e6"/>
       </div>
 
       {/* Add */}
-      <Card className="p-4 mb-4">
-        <div className="text-sm font-semibold mb-3" style={{color:"#64748b"}}>Ajouter un participant</div>
+      <Card>
+        <div className="font-extrabold text-xs uppercase tracking-[0.15em] text-[#a0a0a0] mb-3">➕ Ajouter un participant</div>
         <div className="flex gap-3">
-          <input
-            className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none"
-            style={{background:"#f8fafc",border:"1.5px solid #e2e8f0",color:"#1e1b4b",fontFamily:"'Inter',sans-serif"}}
-            placeholder="Prénom…" value={name}
+          <input className="flex-1 px-4 py-3 rounded-full text-sm font-bold outline-none border-2 border-[#e5e5e5] bg-[#f9f9f9] focus:border-[#6b2fa0] focus:ring-2 focus:ring-[#6b2fa020] transition-all text-[#2d2d2d] placeholder:text-[#c0c0c0]"
+            placeholder="Prénom..." value={name}
             onChange={e=>setName(e.target.value)}
             onKeyDown={e=>e.key==="Enter"&&add()}/>
-          <Btn color="#6c63ff" onClick={add}>＋ Ajouter</Btn>
+          <CTA color="#00b67a" onClick={add}>Ajouter</CTA>
         </div>
       </Card>
 
       {/* List */}
-      <div className="space-y-2 mb-5">
+      <div className="space-y-2 stagger">
         {parts.map(p=>{
-          const cfg=ROLE_CFG[p.role];
+          const cfg=ROLES[p.role];
           return (
-            <Card key={p.id} className="px-4 py-3 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0"
-                style={{background:cfg.light,color:cfg.color}}>
+            <Card key={p.id} className="!p-3 flex items-center gap-3">
+              <div className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0"
+                style={{background:cfg.bg,color:cfg.color,border:`2px solid ${cfg.color}40`}}>
                 {p.name.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-sm">{p.name}</div>
-                <Badge color={cfg.color} bg={cfg.light}>{cfg.label} · {p.passages} passage{p.passages>1?"s":""}</Badge>
+                <div className="font-extrabold text-sm text-[#2d2d2d]">{p.name}</div>
+                <div className="text-xs font-bold text-[#a0a0a0]">{p.passages} passage{p.passages>1?"s":""}</div>
               </div>
-              {/* Role switcher */}
               <div className="flex gap-1">
                 {(["coach","joueur","observateur"] as Role[]).map(r=>{
-                  const rc=ROLE_CFG[r];
+                  const rc=ROLES[r];
+                  const active = p.role===r;
                   return (
-                    <button key={r} onClick={()=>setRole(p.id,r)}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-sm cursor-pointer transition-all hover:scale-110"
+                    <button key={r} onClick={()=>setRoleFn(p.id,r)}
+                      className="w-9 h-9 rounded-full flex items-center justify-center text-sm cursor-pointer"
                       style={{
-                        background: p.role===r?rc.light:"transparent",
-                        border:`1.5px solid ${p.role===r?rc.color:"#e2e8f0"}`,
+                        background: active ? rc.bg : "#f5f5f5",
+                        border: active ? `2px solid ${rc.color}` : "2px solid #e5e5e5",
                       }}
                       title={rc.label}>{rc.emoji}</button>
                   );
                 })}
               </div>
-              <Btn sm color="#6c63ff" onClick={()=>inc(p.id)}>+1</Btn>
-              <button onClick={()=>rem(p.id)} className="text-xl leading-none cursor-pointer text-[#cbd5e1] hover:text-[#ef4444] transition-colors">×</button>
+              <CTA color="#00b67a" variant="soft" onClick={()=>inc(p.id)} className="!px-3 !py-1.5 text-xs">+1</CTA>
+              <button onClick={()=>rem(p.id)} className="text-[#e5e5e5] hover:text-[#e63946] text-xl cursor-pointer transition-colors leading-none font-bold">×</button>
             </Card>
           );
         })}
       </div>
 
-      {/* Progress bars */}
+      {/* Chart */}
       {parts.length>0&&(
-        <Card className="p-5">
-          <div className="text-xs font-bold uppercase tracking-widest mb-4" style={{color:"#94a3b8"}}>📊 Équilibre des passages</div>
+        <Card>
+          <div className="font-extrabold text-xs uppercase tracking-[0.15em] text-[#a0a0a0] mb-4">📊 Équilibre des passages</div>
           <div className="space-y-3">
             {parts.map(p=>{
               const max=Math.max(...parts.map(x=>x.passages),1);
-              const cfg=ROLE_CFG[p.role];
+              const cfg=ROLES[p.role];
               return (
                 <div key={p.id} className="flex items-center gap-3">
-                  <div className="w-20 text-sm font-medium truncate" style={{color:"#374151"}}>{p.name}</div>
-                  <div className="flex-1 h-2.5 rounded-full overflow-hidden bg-[#f1f5f9]">
-                    <div className="h-full rounded-full transition-all duration-700" style={{width:`${(p.passages/max)*100}%`,background:cfg.color}}/>
+                  <div className="w-14 text-xs font-bold text-[#6b6b6b] truncate">{p.name}</div>
+                  <div className="flex-1 h-3 rounded-full overflow-hidden bg-[#f5f5f5]">
+                    <div className="h-full rounded-full transition-all duration-700"
+                      style={{ width:`${(p.passages/max)*100}%`, background:cfg.color }}/>
                   </div>
-                  <div className="w-6 text-right text-sm font-bold" style={{color:cfg.color}}>{p.passages}</div>
+                  <div className="w-5 text-right text-xs font-black" style={{color:cfg.color}}>{p.passages}</div>
                 </div>
               );
             })}
@@ -615,7 +584,7 @@ function ParticipantsTab() {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// PROJECTOR
+// PROJECTOR TAB
 // ══════════════════════════════════════════════════════════════════════════════
 function ProjectorTab({onBack}:{onBack:()=>void}) {
   const [pi,setPi]=useState(0);
@@ -625,7 +594,7 @@ function ProjectorTab({onBack}:{onBack:()=>void}) {
   const [ctx,setCtx]=useState<{emoji:string;label:string}|null>(null);
   const [ctxKey,setCtxKey]=useState(0);
   const ref=useRef<ReturnType<typeof setInterval>|null>(null);
-  const ph=PHASES[pi]; const pc=PC[pi];
+  const ph=PHASES[pi]; const color=PC[pi]; const bg=PBG[pi];
 
   useEffect(()=>{
     if(run){ref.current=setInterval(()=>setT(v=>{if(v<=1){setRun(false);setAlarm(true);return 0;}return v-1;}),1000);}
@@ -639,118 +608,145 @@ function ProjectorTab({onBack}:{onBack:()=>void}) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{background:"#f4f6fb"}}>
-      {/* Top bar */}
-      <div className="bg-white border-b border-[#e2e8f0] px-4 py-3 flex items-center justify-between">
-        <button onClick={onBack}
-          className="px-4 py-2 rounded-xl text-sm font-semibold cursor-pointer"
-          style={{background:"#f1f5f9",color:"#64748b"}}>← Retour</button>
-        <div className="flex gap-2 overflow-x-auto" style={{scrollbarWidth:"none"}}>
-          {PHASES.map((p,i)=>(
-            <button key={p.id} onClick={()=>go(i)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all whitespace-nowrap flex-shrink-0"
-              style={{
-                background: i===pi?PC[i].bg:"white",
-                color: i===pi?"white":PC[i].bg,
-                border:`2px solid ${i===pi?PC[i].bg:PC[i].bg+"33"}`,
-              }}>
-              {p.emoji} {p.label}
-            </button>
-          ))}
-        </div>
+    <div className={`min-h-dvh flex flex-col items-center justify-center p-8 relative bg-white ${alarm?"alarm-bounce":""}`}>
+      <button onClick={onBack}
+        className="fixed top-4 left-4 z-50 px-5 py-2.5 rounded-full text-sm font-extrabold cursor-pointer bg-[#f5f5f5] text-[#6b6b6b] hover:bg-[#e5e5e5] transition-colors border-2 border-[#e5e5e5]">
+        ← Retour
+      </button>
+
+      <div className="fixed top-0 left-0 right-0 z-30 bg-white border-b border-[#f0f0f0] px-4">
+        <PhasePills active={pi} onSelect={go}/>
       </div>
 
-      {/* Main projector */}
-      <div className="flex-1 flex flex-col items-center justify-center p-8">
-        <Badge color={pc.dark} bg={pc.light}>Phase {pi+1}/{PHASES.length}</Badge>
-        <div className="my-8">
-          <Ring pct={t/ph.duration} color={pc.bg} size={300}>
-            <span className="text-7xl font-bold" style={{color:pc.bg,fontFamily:"'Inter',sans-serif",letterSpacing:"-2px"}}>{fmt(t)}</span>
-          </Ring>
-        </div>
+      <div className="mt-14">
+        <TimerRing pct={t/ph.duration} color={color} size={280} time={fmt(t)} alarm={alarm}/>
+      </div>
 
-        <h1 className="text-5xl font-bold text-center mb-2" style={{color:"#1e1b4b"}}>{ph.emoji} {ph.subtitle}</h1>
-        <p className="text-xl text-center mb-8" style={{color:"#64748b"}}>{ph.description}</p>
+      <h1 className="font-black text-4xl md:text-5xl text-center mt-8 mb-2" style={{color:"#6b2fa0"}}>
+        {ph.emoji} {ph.subtitle}
+      </h1>
+      <p className="text-lg text-center text-[#6b6b6b] mb-8 max-w-lg">{ph.description}</p>
 
-        <div className="flex gap-4 flex-wrap justify-center">
-          <Btn color={pc.bg} onClick={()=>{setRun(!run);setAlarm(false);}}>
-            {run?"⏸ Pause":"▶ Démarrer"}
-          </Btn>
-          <Btn outline color={pc.bg} onClick={()=>{setT(ph.duration);setRun(false);setAlarm(false);}}>↺ Reset</Btn>
-          {["solo","duos","scenes"].includes(ph.id)&&<Btn outline color={pc.bg} onClick={draw}>🎲 Contexte</Btn>}
-        </div>
-
-        {ctx&&(
-          <div key={ctxKey} className="mt-8 px-10 py-5 rounded-2xl text-2xl font-bold text-center bounce-in"
-            style={{background:pc.light,color:pc.dark,border:`2px solid ${pc.bg}33`}}>
-            {ctx.emoji} {ctx.label}
-          </div>
+      <div className="flex gap-3 flex-wrap justify-center">
+        <CTA color={color} onClick={()=>{setRun(!run);setAlarm(false);}}>
+          {run ? "⏸ Pause" : "▶ Démarrer"}
+        </CTA>
+        <CTA color="#6b6b6b" variant="outline" onClick={()=>{setT(ph.duration);setRun(false);setAlarm(false);}}>↻ Reset</CTA>
+        {["solo","duos","scenes"].includes(ph.id) && (
+          <CTA color={color} variant="outline" onClick={draw}>🎲 Contexte</CTA>
         )}
-        {alarm&&<div className="mt-6 text-2xl font-bold bounce-in" style={{color:pc.bg}}>🎉 Temps écoulé !</div>}
       </div>
+
+      {ctx&&(
+        <div key={ctxKey} className="mt-8 px-8 py-5 rounded-[20px] font-black text-2xl pop"
+          style={{background:bg,color,border:`3px solid ${color}`,boxShadow:"0 8px 30px rgba(0,0,0,0.08)"}}>
+          {ctx.emoji} {ctx.label}
+        </div>
+      )}
+
+      {alarm&&(
+        <div className="mt-6 font-black text-2xl pop" style={{color}}>
+          🔔 Temps écoulé !
+        </div>
+      )}
     </div>
   );
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// MAIN
+// MAIN APP
 // ══════════════════════════════════════════════════════════════════════════════
 export default function ImproApp() {
-  const [tab,setTab]=useState<Tab>("session");
+  const [tab, setTab] = useState<Tab>("session");
 
-  if(tab==="projector") return <ProjectorTab onBack={()=>setTab("session")}/>;
+  if (tab==="projector") return <ProjectorTab onBack={()=>setTab("session")}/>;
 
-  const TABS=[
-    {id:"session" as Tab, icon:"⏱", label:"Séance"},
-    {id:"fiches"  as Tab, icon:"📋", label:"Fiches"},
-    {id:"participants" as Tab, icon:"👥", label:"Équipe"},
-    {id:"projector" as Tab, icon:"📽", label:"Projecteur"},
+  const TABS: {id:Tab; icon:string; label:string}[] = [
+    {id:"session", icon:"⏱", label:"Session"},
+    {id:"fiches",  icon:"📋", label:"Fiches"},
+    {id:"participants", icon:"👥", label:"Troupe"},
+    {id:"projector", icon:"📽", label:"Scène"},
   ];
 
   return (
-    <div style={{minHeight:"100vh",background:"#f4f6fb"}}>
-      {/* Header */}
-      <header className="bg-white border-b border-[#e2e8f0] sticky top-0 z-40"
-        style={{boxShadow:"0 1px 3px rgba(0,0,0,0.06)"}}>
-        <div className="max-w-5xl mx-auto px-4">
-          <div className="flex items-center gap-6 h-14">
+    <div className="min-h-dvh bg-white">
+      {/* Header — Comme J'aime style: white, clean, purple accents */}
+      <header className="bg-white border-b-[3px] border-[#6b2fa0] sticky top-0 z-40">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="flex items-center h-16">
             {/* Logo */}
-            <div className="flex items-center gap-2.5 flex-shrink-0">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-sm font-bold"
-                style={{background:"linear-gradient(135deg,#6c63ff,#9333ea)"}}>🎭</div>
-              <span className="font-bold text-base" style={{color:"#1e1b4b",fontFamily:"'Inter',sans-serif"}}>
-                Qui · Quoi · Où
-              </span>
+            <div className="flex items-center gap-2.5 flex-shrink-0 mr-8">
+              <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-lg"
+                style={{background:"#f3ebfa",border:"2px solid #6b2fa040"}}>
+                🎭
+              </div>
+              <div className="hidden sm:block">
+                <div className="font-black text-base" style={{color:"#6b2fa0"}}>Qui · Quoi · Où</div>
+                <div className="text-[10px] font-bold text-[#a0a0a0] -mt-0.5">Impro Coach</div>
+              </div>
             </div>
 
-            {/* Nav tabs */}
-            <nav className="flex flex-1 overflow-x-auto h-full" style={{scrollbarWidth:"none"}}>
-              {TABS.map(t=>(
-                <button key={t.id} onClick={()=>setTab(t.id)}
-                  className="flex items-center gap-2 px-4 text-sm font-semibold transition-all cursor-pointer whitespace-nowrap h-full border-b-2 flex-shrink-0"
-                  style={{
-                    color: tab===t.id?"#6c63ff":"#64748b",
-                    borderColor: tab===t.id?"#6c63ff":"transparent",
-                    background:"transparent",
-                    fontFamily:"'Inter',sans-serif",
-                  }}>
-                  <span>{t.icon}</span>
-                  <span className="hidden sm:inline">{t.label}</span>
-                </button>
-              ))}
+            {/* Desktop tabs */}
+            <nav className="hidden md:flex flex-1 h-full">
+              {TABS.map(t=>{
+                const active = tab===t.id;
+                return (
+                  <button key={t.id} onClick={()=>setTab(t.id)}
+                    className="flex items-center gap-2 px-5 h-full text-sm font-extrabold cursor-pointer relative"
+                    style={{ color: active ? "#6b2fa0" : "#a0a0a0" }}>
+                    <span className="text-base">{t.icon}</span>
+                    <span>{t.label}</span>
+                    {active && (
+                      <div className="absolute bottom-0 left-3 right-3 h-[3px] rounded-full bg-[#e4007c]"/>
+                    )}
+                  </button>
+                );
+              })}
             </nav>
 
-            <div className="hidden md:flex items-center gap-2 flex-shrink-0">
-              <Badge color="#6c63ff" bg="#ede9ff">1h · 10 joueurs</Badge>
+            {/* Mobile title */}
+            <div className="flex-1 md:hidden text-center">
+              <span className="font-black text-sm" style={{color:"#6b2fa0"}}>
+                {TABS.find(t=>t.id===tab)?.icon} {TABS.find(t=>t.id===tab)?.label}
+              </span>
             </div>
           </div>
         </div>
       </header>
 
+      {/* Announcement bar */}
+      <div className="bg-[#6b2fa0] text-white text-center py-2 px-4">
+        <span className="text-xs font-extrabold">
+          🎭 Séance Qui · Quoi · Où — 6 phases · 1h de pratique · {PHASES.length} exercices
+        </span>
+      </div>
+
       {/* Content */}
-      {tab==="session"&&<SessionTab/>}
-      {tab==="fiches"&&<FichesTab/>}
-      {tab==="participants"&&<ParticipantsTab/>}
+      <main className="pb-20 md:pb-8">
+        {tab==="session"&&<SessionTab/>}
+        {tab==="fiches"&&<FichesTab/>}
+        {tab==="participants"&&<ParticipantsTab/>}
+      </main>
+
+      {/* Mobile bottom nav */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-[#6b2fa0] z-40 safe-bottom">
+        <div className="flex justify-around py-2 max-w-md mx-auto">
+          {TABS.map(t=>{
+            const active = tab===t.id;
+            return (
+              <button key={t.id} onClick={()=>setTab(t.id)}
+                className="flex flex-col items-center gap-0.5 py-1 px-4 cursor-pointer rounded-xl transition-all"
+                style={{
+                  color: active ? "#6b2fa0" : "#a0a0a0",
+                  background: active ? "#f3ebfa" : "transparent",
+                }}>
+                <span className="text-lg">{t.icon}</span>
+                <span className="text-[10px] font-extrabold">{t.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
     </div>
   );
 }
