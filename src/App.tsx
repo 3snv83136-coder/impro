@@ -5,7 +5,7 @@
 
 import { motion, AnimatePresence } from "motion/react";
 import { ReactNode, useState, FormEvent, useEffect, useRef, ChangeEvent } from "react";
-import { Clock, Users, GraduationCap, Lightbulb, Target, Info, MessageSquare, ArrowRight, Plus, Trash2, UserPlus, Mail, CheckCircle2, Play, Pause, RotateCcw, Sparkles, RefreshCw, MapPin, User, Activity, Camera, Star, Edit3, Award, X } from "lucide-react";
+import { Clock, Users, GraduationCap, Lightbulb, Target, Info, MessageSquare, ArrowRight, Plus, Trash2, UserPlus, Mail, CheckCircle2, Play, Pause, RotateCcw, Sparkles, RefreshCw, MapPin, User, Activity, Camera, Star, Edit3, Award, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Participant {
   id: string;
@@ -13,6 +13,73 @@ interface Participant {
   contact: string;
   level: string;
 }
+
+interface ProfData {
+  id: string;
+  photo: string | null;
+  name: string;
+  bio: string;
+  attributes: { id: string; label: string; value: number }[];
+}
+
+const defaultProfs: ProfData[] = [
+  {
+    id: 'mondorito',
+    photo: null,
+    name: 'Mondorito',
+    bio: "Coach d'impro depuis 15 ans. Spécialité : le jeu corporel et l'écoute active.",
+    attributes: [
+      { id: '1', label: 'Présence scénique', value: 8 },
+      { id: '2', label: 'Écoute', value: 9 },
+      { id: '3', label: 'Lâcher-prise', value: 7 },
+      { id: '4', label: 'Réactivité', value: 8 },
+      { id: '5', label: 'Direction de jeu', value: 9 },
+      { id: '6', label: 'Pédagogie', value: 8 },
+    ],
+  },
+  {
+    id: 'michel',
+    photo: null,
+    name: 'Michel',
+    bio: "Émotion volcanique. Spécialiste du jeu intense et des montées dramatiques qui emportent tout sur leur passage.",
+    attributes: [
+      { id: '1', label: 'Intensité émotionnelle', value: 10 },
+      { id: '2', label: 'Présence scénique', value: 9 },
+      { id: '3', label: 'Énergie brute', value: 9 },
+      { id: '4', label: 'Improvisation dramatique', value: 8 },
+      { id: '5', label: 'Charisme', value: 8 },
+      { id: '6', label: 'Pédagogie', value: 6 },
+    ],
+  },
+  {
+    id: 'cathy',
+    photo: null,
+    name: 'Cathy',
+    bio: "Chanteuse et danseuse émérite. Elle mêle le mouvement, la voix et le rythme pour une impro totalement incarnée.",
+    attributes: [
+      { id: '1', label: 'Chant', value: 10 },
+      { id: '2', label: 'Danse', value: 10 },
+      { id: '3', label: 'Rythme corporel', value: 9 },
+      { id: '4', label: 'Expression vocale', value: 9 },
+      { id: '5', label: 'Présence scénique', value: 8 },
+      { id: '6', label: 'Pédagogie', value: 7 },
+    ],
+  },
+  {
+    id: 'gwen',
+    photo: null,
+    name: 'Gwen',
+    bio: "Créative de génie. Reine de l'inattendu, elle transforme chaque scène en univers singulier et surprenant.",
+    attributes: [
+      { id: '1', label: 'Créativité', value: 10 },
+      { id: '2', label: 'Originalité', value: 9 },
+      { id: '3', label: 'Construction narrative', value: 9 },
+      { id: '4', label: 'Spontanéité', value: 8 },
+      { id: '5', label: 'Écoute', value: 7 },
+      { id: '6', label: 'Direction artistique', value: 9 },
+    ],
+  },
+];
 
 export default function App() {
   const [participants, setParticipants] = useState<Participant[]>([
@@ -30,42 +97,39 @@ export default function App() {
   // Tab state
   const [activeTab, setActiveTab] = useState<'cours' | 'prof'>('cours');
 
-  // Prof state
-  const [profPhoto, setProfPhoto] = useState<string | null>(null);
-  const [profName, setProfName] = useState('Mondorito');
-  const [profBio, setProfBio] = useState('');
-  const [profAttributes, setProfAttributes] = useState<{id: string; label: string; value: number}[]>([
-    { id: '1', label: 'Présence scénique', value: 8 },
-    { id: '2', label: 'Écoute', value: 9 },
-    { id: '3', label: 'Lâcher-prise', value: 7 },
-    { id: '4', label: 'Réactivité', value: 8 },
-    { id: '5', label: 'Direction de jeu', value: 9 },
-    { id: '6', label: 'Pédagogie', value: 8 },
-  ]);
+  // Prof state — multi-prof
+  const [profs, setProfs] = useState<ProfData[]>(defaultProfs);
+  const [activeProfIndex, setActiveProfIndex] = useState(0);
   const [editingAttr, setEditingAttr] = useState<string | null>(null);
   const [newAttrLabel, setNewAttrLabel] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const activeProf = profs[activeProfIndex];
+
+  const updateProf = (patch: Partial<ProfData>) => {
+    setProfs(prev => prev.map((p, i) => i === activeProfIndex ? { ...p, ...patch } : p));
+  };
 
   const handlePhotoUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (ev) => setProfPhoto(ev.target?.result as string);
+      reader.onload = (ev) => updateProf({ photo: ev.target?.result as string });
       reader.readAsDataURL(file);
     }
   };
 
   const updateAttribute = (id: string, value: number) => {
-    setProfAttributes(prev => prev.map(a => a.id === id ? { ...a, value: Math.max(0, Math.min(10, value)) } : a));
+    updateProf({ attributes: activeProf.attributes.map(a => a.id === id ? { ...a, value: Math.max(0, Math.min(10, value)) } : a) });
   };
 
   const removeAttribute = (id: string) => {
-    setProfAttributes(prev => prev.filter(a => a.id !== id));
+    updateProf({ attributes: activeProf.attributes.filter(a => a.id !== id) });
   };
 
   const addAttribute = () => {
     if (!newAttrLabel.trim()) return;
-    setProfAttributes(prev => [...prev, { id: Math.random().toString(36).substr(2, 9), label: newAttrLabel, value: 5 }]);
+    updateProf({ attributes: [...activeProf.attributes, { id: Math.random().toString(36).substr(2, 9), label: newAttrLabel, value: 5 }] });
     setNewAttrLabel('');
   };
 
@@ -219,14 +283,11 @@ export default function App() {
         
         {activeTab === 'prof' && (
           <ProfTab
-            profPhoto={profPhoto}
-            setProfPhoto={setProfPhoto}
-            profName={profName}
-            setProfName={setProfName}
-            profBio={profBio}
-            setProfBio={setProfBio}
-            profAttributes={profAttributes}
-            setProfAttributes={setProfAttributes}
+            profs={profs}
+            activeProfIndex={activeProfIndex}
+            setActiveProfIndex={setActiveProfIndex}
+            activeProf={activeProf}
+            updateProf={updateProf}
             editingAttr={editingAttr}
             setEditingAttr={setEditingAttr}
             newAttrLabel={newAttrLabel}
@@ -765,13 +826,53 @@ function getObjClass(obj: string) {
   }
 }
 
-function ProfTab({ profPhoto, setProfPhoto, profName, setProfName, profBio, setProfBio, profAttributes, setProfAttributes, editingAttr, setEditingAttr, newAttrLabel, setNewAttrLabel, fileInputRef, handlePhotoUpload, updateAttribute, removeAttribute, addAttribute }: any) {
+function ProfTab({ profs, activeProfIndex, setActiveProfIndex, activeProf, updateProf, editingAttr, setEditingAttr, newAttrLabel, setNewAttrLabel, fileInputRef, handlePhotoUpload, updateAttribute, removeAttribute, addAttribute }: any) {
+  const profPhoto = activeProf.photo;
+  const profName = activeProf.name;
+  const profBio = activeProf.bio;
+  const profAttributes = activeProf.attributes;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
+      {/* PROF SELECTOR */}
+      <section className="mb-6">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setActiveProfIndex((activeProfIndex - 1 + profs.length) % profs.length)}
+            className="p-2 rounded-full bg-white border border-warm hover:bg-warm/30 transition-colors shrink-0"
+          >
+            <ChevronLeft size={16} className="text-ink" />
+          </button>
+          <div className="flex-1 overflow-x-auto scrollbar-hide">
+            <div className="flex gap-2 min-w-0">
+              {profs.map((prof: ProfData, idx: number) => (
+                <button
+                  key={prof.id}
+                  onClick={() => setActiveProfIndex(idx)}
+                  className={`shrink-0 px-3 py-2 rounded-lg font-mono text-[0.7rem] uppercase tracking-wider transition-all ${
+                    idx === activeProfIndex
+                      ? 'bg-stage text-cream shadow-md'
+                      : 'bg-white border border-warm text-muted hover:text-ink hover:border-gold/50'
+                  }`}
+                >
+                  {prof.name}
+                </button>
+              ))}
+            </div>
+          </div>
+          <button
+            onClick={() => setActiveProfIndex((activeProfIndex + 1) % profs.length)}
+            className="p-2 rounded-full bg-white border border-warm hover:bg-warm/30 transition-colors shrink-0"
+          >
+            <ChevronRight size={16} className="text-ink" />
+          </button>
+        </div>
+      </section>
+
       {/* PHOTO + IDENTITE */}
       <section className="mb-8">
         <div className="bg-white rounded-xl p-6 shadow-md border border-warm">
@@ -792,7 +893,7 @@ function ProfTab({ profPhoto, setProfPhoto, profName, setProfName, profBio, setP
               </div>
               {profPhoto && (
                 <button
-                  onClick={() => setProfPhoto(null)}
+                  onClick={() => updateProf({ photo: null })}
                   className="absolute -top-1 -right-1 bg-accent text-cream rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <X size={12} />
@@ -800,18 +901,18 @@ function ProfTab({ profPhoto, setProfPhoto, profName, setProfName, profBio, setP
               )}
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
             </div>
-            <div className="flex-1 text-center sm:text-left w-full">
+            <div className="flex-1 text-center sm:text-left w-full min-w-0">
               <div className="font-mono text-[0.65rem] uppercase tracking-wider text-muted mb-1">Nom du professeur</div>
               <input
                 type="text"
                 value={profName}
-                onChange={(e: any) => setProfName(e.target.value)}
+                onChange={(e: any) => updateProf({ name: e.target.value })}
                 className="font-serif text-2xl sm:text-3xl font-bold text-ink bg-transparent border-b-2 border-transparent hover:border-warm focus:border-gold focus:outline-none w-full pb-1 transition-colors"
               />
               <div className="font-mono text-[0.65rem] uppercase tracking-wider text-muted mt-4 mb-1">Bio / parcours</div>
               <textarea
                 value={profBio}
-                onChange={(e: any) => setProfBio(e.target.value)}
+                onChange={(e: any) => updateProf({ bio: e.target.value })}
                 placeholder="Coach d'impro depuis 15 ans. Spécialité : le jeu corporel et l'écoute active..."
                 rows={3}
                 className="w-full bg-cream/50 border border-warm rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gold resize-none leading-relaxed"
@@ -841,7 +942,7 @@ function ProfTab({ profPhoto, setProfPhoto, profName, setProfName, profBio, setP
                     <input
                       type="text"
                       value={attr.label}
-                      onChange={(e: any) => setProfAttributes((prev: any) => prev.map((a: any) => a.id === attr.id ? { ...a, label: e.target.value } : a))}
+                      onChange={(e: any) => updateProf({ attributes: profAttributes.map((a: any) => a.id === attr.id ? { ...a, label: e.target.value } : a) })}
                       onBlur={() => setEditingAttr(null)}
                       onKeyDown={(e: any) => e.key === 'Enter' && setEditingAttr(null)}
                       autoFocus
