@@ -69,7 +69,7 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* HEADER — rideau de théâtre */}
-      <header className="bg-stage text-cream pt-12 px-8 pb-10 relative overflow-hidden">
+      <header className="bg-stage text-cream pt-8 sm:pt-12 px-4 sm:px-8 pb-8 sm:pb-10 relative overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-[repeating-linear-gradient(90deg,#c8440a_0px,#c8440a_20px,#b8860b_20px,#b8860b_40px)]" />
         
         <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 items-start md:items-end">
@@ -81,9 +81,10 @@ export default function App() {
             <div className="font-mono text-[0.7rem] tracking-[0.2em] uppercase text-gold mb-2">
               Cours d'improvisation théâtrale
             </div>
-            <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">
+            <h1 className="font-serif text-2xl sm:text-4xl md:text-5xl font-bold leading-tight">
               Le <em className="italic text-accent not-italic">Qui ?</em> le <em className="italic text-accent not-italic">Quoi ?</em><br className="hidden sm:block" /> le <em className="italic text-accent not-italic">Où ?</em>
             </h1>
+            <div className="font-mono text-[0.65rem] sm:text-[0.7rem] tracking-[0.15em] uppercase text-gold/70 mt-1">By Mondorito</div>
             <p className="mt-3 text-muted-foreground/80 text-sm max-w-lg">
               Poser un décor incarné en moins de 30 secondes — par le corps, la voix et l'espace, avec ou sans paroles.
             </p>
@@ -123,7 +124,7 @@ export default function App() {
       </header>
 
       {/* TIMELINE TOTALE */}
-      <div className="bg-stage px-8 pb-6">
+      <div className="bg-stage px-4 sm:px-8 pb-6">
         <div className="max-w-3xl mx-auto">
           <div className="font-mono text-[0.65rem] tracking-[0.15em] uppercase text-muted mb-2">
             Structure de la séance
@@ -148,7 +149,7 @@ export default function App() {
       </div>
 
       {/* MAIN CONTENT */}
-      <main className="max-w-3xl mx-auto px-8 py-10 flex-grow">
+      <main className="max-w-3xl mx-auto px-4 sm:px-8 py-6 sm:py-10 flex-grow">
         
         {/* GENERATEUR D'IDEES */}
         <section className="mb-12">
@@ -368,7 +369,7 @@ export default function App() {
           onToggle={() => togglePhase('admin')}
         >
           <div className="bg-white rounded-lg p-6 shadow-sm mb-6">
-            <form onSubmit={addParticipant} className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_auto] gap-4 items-end mb-8">
+            <form onSubmit={addParticipant} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[1fr_1fr_1fr_auto] gap-3 sm:gap-4 items-end mb-8">
               <div>
                 <label className="block font-mono text-[0.65rem] uppercase tracking-wider text-muted mb-1.5">Nom complet</label>
                 <input 
