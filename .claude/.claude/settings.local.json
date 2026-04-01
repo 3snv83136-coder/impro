@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /c/Users/frede/AppData/Local/Temp/impro-repo -not -path */node_modules/* -not -path */.git/* -type f ! -name package-lock.json)",
+      "Bash(cd:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx vite:*)",
+      "Bash(node -e \"const l = require\\(''lucide-react''\\); console.log\\(''Theater:'', !!l.Theater, ''Drama:'', !!l.Drama\\)\")",
+      "Bash(node -e \"const l = require\\(''lucide-react''\\); console.log\\(''Theater:'', typeof l.Theater, ''Drama:'', typeof l.Drama\\)\")",
+      "Bash(npm install:*)"
+    ]
+  }
+}

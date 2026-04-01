@@ -8,7 +8,7 @@ import { ReactNode, useState, FormEvent, useEffect, useRef } from "react";
 import { Clock, Users, GraduationCap, Lightbulb, ArrowRight, Trash2, UserPlus, CheckCircle2, Play, Pause, RotateCcw, Sparkles, RefreshCw, MapPin, User, Activity, Lock, BookOpen } from "lucide-react";
 import { quiList, quoiList, ouList, emotionsList, contraintesList } from "./data/ideas";
 import { courseTemplates } from "./data/courseTemplates";
-import { useLocalStorage } from "./hooks/useLocalStorage";
+import { useSupabaseStorage } from "./hooks/useSupabase";
 import BackOffice from "./components/BackOffice";
 import CourseBuilder from "./components/CourseBuilder";
 import ProfEditor from "./components/ProfEditor";
@@ -129,7 +129,142 @@ const defaultProfs: ProfData[] = [
   },
 ];
 
+// ── Splash / Landing Screen ──────────────────────────────────────────
+function SplashScreen({ onFinished }: { onFinished: () => void }) {
+  const [phase, setPhase] = useState<'typewriter' | 'countdown' | 'explode' | 'done'>('typewriter');
+  const [typewriterText, setTypewriterText] = useState('');
+  const [countdownNum, setCountdownNum] = useState<number | null>(null);
+
+  const fullText = "ICI C'EST.....";
+
+  useEffect(() => {
+    // Phase 1: Typewriter (0-2s)
+    let charIndex = 0;
+    const typeInterval = setInterval(() => {
+      charIndex++;
+      setTypewriterText(fullText.slice(0, charIndex));
+      if (charIndex >= fullText.length) clearInterval(typeInterval);
+    }, 2000 / fullText.length);
+
+    // Phase 2: Countdown (2-6s) — each number for ~800ms
+    const countdownStart = setTimeout(() => {
+      setPhase('countdown');
+      setCountdownNum(5);
+    }, 2000);
+    const c4 = setTimeout(() => setCountdownNum(4), 2800);
+    const c3 = setTimeout(() => setCountdownNum(3), 3600);
+    const c2 = setTimeout(() => setCountdownNum(2), 4400);
+    const c1 = setTimeout(() => setCountdownNum(1), 5200);
+
+    // Phase 3: Explode (6-7s)
+    const explodeTimeout = setTimeout(() => setPhase('explode'), 6000);
+
+    // Done
+    const doneTimeout = setTimeout(() => {
+      setPhase('done');
+      onFinished();
+    }, 7000);
+
+    return () => {
+      clearInterval(typeInterval);
+      clearTimeout(countdownStart);
+      clearTimeout(c4);
+      clearTimeout(c3);
+      clearTimeout(c2);
+      clearTimeout(c1);
+      clearTimeout(explodeTimeout);
+      clearTimeout(doneTimeout);
+    };
+  }, []);
+
+  return (
+    <motion.div
+      key="splash"
+      initial={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.6 }}
+      className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
+      style={{
+        background: 'radial-gradient(ellipse at center, rgba(184,134,11,0.12) 0%, #2a1f14 60%, #1a1208 100%)',
+      }}
+    >
+      {/* Subtle spotlight layers */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: 'radial-gradient(circle at 50% 30%, rgba(200,68,10,0.08) 0%, transparent 50%)',
+      }} />
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: 'radial-gradient(circle at 50% 70%, rgba(184,134,11,0.06) 0%, transparent 40%)',
+      }} />
+
+      <div className="text-center px-4">
+        {/* Phase 1: Typewriter */}
+        {(phase === 'typewriter') && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold text-gold tracking-wide"
+          >
+            {typewriterText}
+            <motion.span
+              animate={{ opacity: [1, 0] }}
+              transition={{ repeat: Infinity, duration: 0.5 }}
+              className="text-accent"
+            >
+              |
+            </motion.span>
+          </motion.div>
+        )}
+
+        {/* Phase 2: Countdown */}
+        {phase === 'countdown' && countdownNum !== null && (
+          <div className="relative">
+            <motion.div
+              className="font-serif text-2xl sm:text-3xl md:text-4xl text-gold/60 mb-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              {fullText}
+            </motion.div>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={countdownNum}
+                initial={{ scale: 0.3, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 1.8, opacity: 0 }}
+                transition={{ duration: 0.35, ease: 'easeOut' }}
+                className="font-serif text-8xl sm:text-9xl font-black"
+                style={{ color: '#c8440a', textShadow: '0 0 40px rgba(200,68,10,0.5), 0 0 80px rgba(200,68,10,0.2)' }}
+              >
+                {countdownNum}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        )}
+
+        {/* Phase 3: Explode */}
+        {phase === 'explode' && (
+          <motion.div
+            initial={{ scale: 0.1, opacity: 0, rotate: -5 }}
+            animate={{ scale: 1, opacity: 1, rotate: 0 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 12, duration: 0.8 }}
+            className="font-serif text-5xl sm:text-7xl md:text-8xl font-black uppercase tracking-tight"
+            style={{
+              color: '#b8860b',
+              textShadow: '0 0 30px rgba(184,134,11,0.6), 0 0 60px rgba(184,134,11,0.3), 0 0 120px rgba(200,68,10,0.3)',
+            }}
+          >
+            IMPROOOOOOO ?
+          </motion.div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
 export default function App() {
+  // ── Splash state ───────────────────────────────────────────────────
+  const [showSplash, setShowSplash] = useState(true);
+
   const [participants, setParticipants] = useState<Participant[]>([
     { id: '1', name: 'Alice Martin', contact: 'alice@example.com', level: 'Intermédiaire' },
     { id: '2', name: 'Julien Bernard', contact: '06 12 34 56 78', level: 'Débutant' },
@@ -145,8 +280,8 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'cours' | 'prof' | 'backoffice'>('cours');
 
   // Persistent data via localStorage
-  const [profs, setProfs] = useLocalStorage<ProfData[]>('impro-profs', defaultProfs);
-  const [courses, setCourses] = useLocalStorage<Course[]>('impro-courses', []);
+  const [profs, setProfs] = useSupabaseStorage<ProfData[]>('profs', 'impro-profs', defaultProfs);
+  const [courses, setCourses] = useSupabaseStorage<Course[]>('courses', 'impro-courses', []);
 
   // Back office sub-views
   const [boView, setBoView] = useState<'list' | 'editCourse' | 'editProf'>('list');
@@ -239,7 +374,16 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col overflow-x-hidden">
+    <>
+      <AnimatePresence>
+        {showSplash && <SplashScreen onFinished={() => setShowSplash(false)} />}
+      </AnimatePresence>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: showSplash ? 0 : 1 }}
+        transition={{ duration: 0.6, delay: showSplash ? 0 : 0.3 }}
+        className="min-h-screen flex flex-col overflow-x-hidden">
       {/* HEADER */}
       <header className="bg-stage text-cream pt-8 sm:pt-12 px-4 sm:px-8 pb-8 sm:pb-10 relative overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-[repeating-linear-gradient(90deg,#c8440a_0px,#c8440a_20px,#b8860b_20px,#b8860b_40px)]" />
@@ -849,7 +993,8 @@ export default function App() {
       <footer className="bg-stage text-muted text-center py-6 font-mono text-[0.7rem] tracking-widest">
         Cours préparé pour une séance de 10 participants · <span className="text-accent">Improvisation théâtrale</span> · Niveau intermédiaire
       </footer>
-    </div>
+    </motion.div>
+    </>
   );
 }
 
