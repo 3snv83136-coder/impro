@@ -129,6 +129,138 @@ const defaultProfs: ProfData[] = [
   },
 ];
 
+const defaultCourses: Course[] = [
+  {
+    id: 'qui-quoi-ou',
+    title: 'Le Qui ? Le Quoi ? Le Où ?',
+    duration: 60,
+    level: 'Intermédiaire',
+    description: 'Poser un décor incarné en moins de 30 secondes — par le corps, la voix et l\'espace, avec ou sans paroles.',
+    objectives: ['Installer le Qui par le corps', 'Poser le Quoi par le geste', 'Créer le Où par l\'espace', 'Écoute et réactivité'],
+    profId: 'mondorito',
+    createdAt: '2025-01-01',
+    phases: [
+      {
+        id: 'warmup',
+        title: 'Échauffement — Le Corps dans l\'Espace',
+        duration: 10,
+        color: '#4a7c59',
+        description: 'Activer le corps, libérer les inhibitions, occuper l\'espace ensemble.',
+        exercises: [{
+          name: 'La Marche des Statuts',
+          tag: 'Collectif',
+          description: 'Marche libre dans l\'espace. Le coach crie un chiffre de 1 à 10 qui désigne un statut social/état émotionnel. Tout le monde adapte immédiatement sa posture, son regard, son allure.',
+          steps: [
+            'Marche neutre 1 min — on remplit tout l\'espace, on évite de tourner en rond.',
+            'Coach crie « 2 » (timide, effacé) → corps rentré, regard bas.',
+            'Coach crie « 9 » (PDG du monde) → port de tête haut, pas lent et assuré.',
+            'Alterner rapidement 2-8-1-10 — observer ce que ça change en soi.',
+            'Variante finale : chaque participant choisit son statut et on essaie de lire ceux des autres.',
+          ],
+          tip: 'On cherche à ancrer que le corps raconte avant la bouche. C\'est le cœur du cours.',
+          objectives: ['Qui', 'Corps'],
+        }],
+      },
+      {
+        id: 'theory',
+        title: 'Mini-cours — Les 3 questions, les 3 couches',
+        duration: 5,
+        color: '#b8860b',
+        description: 'On ne fait pas la théorie au tableau : on l\'énonce debout, en cercle, en 5 min.',
+        exercises: [{
+          name: 'Le Triptyque du Décor',
+          description: 'Le coach pose les trois questions et leurs trois couches d\'expression possibles. Chaque participant peut donner un exemple vite fait.',
+          steps: [
+            'QUI ? → Identité, relation, statut. Vecteurs : posture, costume imaginaire, manière de regarder l\'autre.',
+            'QUOI ? → L\'action, l\'activité, l\'enjeu. Vecteurs : geste fonctionnel précis, objet imaginaire manipulé, rythme.',
+            'OÙ ? → Le lieu, l\'atmosphère, la période. Vecteurs : résistances physiques (sol, air, lumière), points d\'ancrage dans l\'espace, réactions à l\'environnement.',
+          ],
+          tip: 'Règle d\'or : « Dans les 30 premières secondes d\'une scène, au moins deux des trois questions doivent avoir une réponse claire pour le public — sans qu\'on l\'explique. »',
+        }],
+      },
+      {
+        id: 'ex1',
+        title: 'Exercice 1 — L\'Objet Révélateur',
+        duration: 15,
+        color: '#5b8fd4',
+        description: 'Utiliser un geste ou un objet imaginaire pour installer simultanément Qui, Quoi et Où — sans un mot.',
+        exercises: [{
+          name: 'Entrée en scène silencieuse',
+          tag: 'Solo / 1 min chacun',
+          description: 'Chaque participant entre seul sur la « scène » et installe un début de scène en 45 secondes, sans parole. Le groupe observe et tente de répondre aux 3 questions.',
+          steps: [
+            'Le coach tire une carte (ou dit à voix basse) un contexte parmi : chirurgien en salle d\'op, enfant le matin de Noël, plombier sous un évier, astronaute en sortie EVA, boulanger à 4h du mat, accusé au tribunal.',
+            'L\'improvisateur entre, s\'installe, fait une action physique précise — 45 sec max.',
+            'Arrêt. Le public répond : Qui ? Quoi ? Où ? — main levée, une réponse par personne.',
+            'L\'improvisateur révèle son intention et on compare. Discussion 1 min max.',
+            'Passer au suivant. Viser 5 passages en 15 min (groupes de 2 si besoin).',
+          ],
+          tip: 'Ce qu\'on cherche : la précision du geste (pas une indication floue, mais la résistance d\'un couvercle qui résiste, l\'odeur d\'un produit, le poids d\'un instrument). Le vague ne raconte rien.',
+          objectives: ['Qui', 'Quoi', 'Où', 'Corps'],
+        }],
+      },
+      {
+        id: 'ex2',
+        title: 'Exercice 2 — Tableau Vivant à Deux',
+        duration: 15,
+        color: '#9b59b6',
+        description: 'Construire un contexte à deux joueurs — la relation crée le Qui et densifie tout le reste.',
+        exercises: [{
+          name: 'Freeze & Read',
+          tag: 'Duos · 2 min / scène',
+          description: 'Deux joueurs entrent et démarrent une scène sans parole. Au bout de 30 secondes le coach crie « Freeze ! » — les deux se figent. Le reste du groupe lit la scène.',
+          steps: [
+            'Former 5 duos. Chaque duo reçoit un contexte.',
+            'Les deux entrent, s\'installent, commencent à jouer — sans parole ou avec très peu.',
+            'Freeze à 30 sec. Lecture par les observateurs : Qui est qui ? Quelle relation ? Où ? Que se passe-t-il ?',
+            'Dégel : le duo continue 1 min, peut parler maintenant pour confirmer ou infirmer les lectures.',
+            'Bref retour collectif : qu\'est-ce qui a immédiatement installé le contexte ? Qu\'est-ce qui était ambigu ?',
+          ],
+          tip: 'Point coaching clé : regarder si les deux joueurs habitent le même espace — même sol, même lumière, même température.',
+          objectives: ['Qui', 'Où', 'Écoute', 'Corps'],
+        }],
+      },
+      {
+        id: 'ex3',
+        title: 'Exercice 3 — Scènes Courtes',
+        duration: 15,
+        color: '#c8440a',
+        description: 'Intégration finale. On joue de vraies scènes de 2 à 4 min avec la contrainte que le décor soit posé en 20 secondes.',
+        exercises: [{
+          name: 'Le Chrono du Décor',
+          tag: 'Groupes de 3 · 3 min / scène',
+          description: 'Former des groupes de 3. Une personne observe et chronomètre mentalement. Le coach donne un contexte tiré au hasard — les joueurs ont 20 secondes pour installer le Qui Quoi Où.',
+          steps: [
+            'Le coach donne le contexte. Les 2 joueurs entrent immédiatement.',
+            'L\'observateur chronomètre et note mentalement à quel moment il a compris les 3 éléments.',
+            'Scène libre jusqu\'à 3-4 min ou jusqu\'au signal du coach.',
+            'L\'observateur donne son retour : « J\'ai compris le Où à 8 sec, le Qui à 12 sec... »',
+            'On passe au trio suivant.',
+          ],
+          tip: 'Règle pour les joueurs : ne jamais annoncer le contexte. Montrer, ne pas dire.',
+          objectives: ['Qui', 'Quoi', 'Où', 'Écoute', 'Corps'],
+        }],
+      },
+      {
+        id: 'debrief',
+        title: 'Bilan — Le Cercle des 3 Questions',
+        duration: 5,
+        color: '#e67e22',
+        description: 'Debriefing debout, en cercle, 5 min. Chacun répond à une seule question.',
+        exercises: [{
+          name: 'Tour de cercle',
+          description: 'Chaque participant partage une chose facile, une chose difficile, et une chose à retenir.',
+          steps: [
+            'Ce que j\'ai trouvé facile : installer le Où par le sol, la relation physique à l\'autre, le geste fonctionnel.',
+            'Ce qui m\'a résisté : résister à l\'envie d\'expliquer, habiter le même espace que l\'autre, maintenir sans parole sous tension.',
+            'À retenir : le corps parle avant la voix, un geste précis vaut 10 lignes, le Où se ressent il ne s\'annonce pas.',
+          ],
+        }],
+      },
+    ],
+  },
+];
+
 // ── Splash / Landing Screen ──────────────────────────────────────────
 function SplashScreen({ onFinished }: { onFinished: () => void }) {
   const [phase, setPhase] = useState<'typewriter' | 'countdown' | 'explode' | 'done'>('typewriter');
@@ -363,7 +495,7 @@ export default function App() {
 
   // Persistent data via localStorage
   const [profs, setProfs] = useSupabaseStorage<ProfData[]>('profs', 'impro-profs', defaultProfs);
-  const [courses, setCourses] = useSupabaseStorage<Course[]>('courses', 'impro-courses', []);
+  const [courses, setCourses] = useSupabaseStorage<Course[]>('courses', 'impro-courses', defaultCourses);
 
   // Back office sub-views
   const [boView, setBoView] = useState<'list' | 'editCourse' | 'editProf'>('list');
