@@ -14,11 +14,37 @@
   --color-muted: #7a6e60;
   --color-stage: #2a1f14;
 
+  /* Fun colors */
+  --color-fun-pink: #e84393;
+  --color-fun-purple: #6c5ce7;
+  --color-fun-teal: #00b894;
+  --color-fun-coral: #fd7272;
+  --color-fun-sky: #74b9ff;
+
   @keyframes spin-once {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
   }
   --animate-spin-once: spin-once 0.5s ease-in-out;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+  }
+  --animate-float: float 3s ease-in-out infinite;
+
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  --animate-shimmer: shimmer 3s linear infinite;
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+    20%, 40%, 60%, 80% { transform: translateX(4px); }
+  }
+  --animate-shake: shake 0.5s ease-in-out;
 }
 
 @layer base {
