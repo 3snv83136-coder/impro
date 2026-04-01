@@ -136,9 +136,9 @@ function SplashScreen({ onFinished }: { onFinished: () => void }) {
   const [countdownNum, setCountdownNum] = useState<number | null>(null);
 
   const fullText = "ICI C'EST.....";
+  const countdownColors = ['#e84393', '#6c5ce7', '#00b894', '#fd7272', '#fdcb6e'];
 
   useEffect(() => {
-    // Phase 1: Typewriter (0-2s)
     let charIndex = 0;
     const typeInterval = setInterval(() => {
       charIndex++;
@@ -146,34 +146,17 @@ function SplashScreen({ onFinished }: { onFinished: () => void }) {
       if (charIndex >= fullText.length) clearInterval(typeInterval);
     }, 2000 / fullText.length);
 
-    // Phase 2: Countdown (2-6s) — each number for ~800ms
-    const countdownStart = setTimeout(() => {
-      setPhase('countdown');
-      setCountdownNum(5);
-    }, 2000);
+    const countdownStart = setTimeout(() => { setPhase('countdown'); setCountdownNum(5); }, 2000);
     const c4 = setTimeout(() => setCountdownNum(4), 2800);
     const c3 = setTimeout(() => setCountdownNum(3), 3600);
     const c2 = setTimeout(() => setCountdownNum(2), 4400);
     const c1 = setTimeout(() => setCountdownNum(1), 5200);
-
-    // Phase 3: Explode (6-7s)
     const explodeTimeout = setTimeout(() => setPhase('explode'), 6000);
-
-    // Done
-    const doneTimeout = setTimeout(() => {
-      setPhase('done');
-      onFinished();
-    }, 7000);
+    const doneTimeout = setTimeout(() => { setPhase('done'); onFinished(); }, 7200);
 
     return () => {
       clearInterval(typeInterval);
-      clearTimeout(countdownStart);
-      clearTimeout(c4);
-      clearTimeout(c3);
-      clearTimeout(c2);
-      clearTimeout(c1);
-      clearTimeout(explodeTimeout);
-      clearTimeout(doneTimeout);
+      [countdownStart, c4, c3, c2, c1, explodeTimeout, doneTimeout].forEach(clearTimeout);
     };
   }, []);
 
@@ -182,58 +165,114 @@ function SplashScreen({ onFinished }: { onFinished: () => void }) {
       key="splash"
       initial={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.6 }}
+      transition={{ duration: 0.5 }}
       className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
-      style={{
-        background: 'radial-gradient(ellipse at center, rgba(184,134,11,0.12) 0%, #2a1f14 60%, #1a1208 100%)',
-      }}
+      style={{ background: '#1a0a2e' }}
     >
-      {/* Subtle spotlight layers */}
+      {/* Cartoon starburst background */}
       <div className="absolute inset-0 pointer-events-none" style={{
-        background: 'radial-gradient(circle at 50% 30%, rgba(200,68,10,0.08) 0%, transparent 50%)',
+        background: 'repeating-conic-gradient(from 0deg, rgba(255,255,255,0.03) 0deg 10deg, transparent 10deg 20deg)',
       }} />
-      <div className="absolute inset-0 pointer-events-none" style={{
-        background: 'radial-gradient(circle at 50% 70%, rgba(184,134,11,0.06) 0%, transparent 40%)',
-      }} />
+      {/* Colored spotlight blobs */}
+      <motion.div
+        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+        transition={{ repeat: Infinity, duration: 2 }}
+        className="absolute w-96 h-96 rounded-full blur-3xl pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(232,67,147,0.3), transparent 70%)', top: '-10%', left: '-10%' }}
+      />
+      <motion.div
+        animate={{ scale: [1.2, 1, 1.2], opacity: [0.3, 0.5, 0.3] }}
+        transition={{ repeat: Infinity, duration: 2, delay: 0.5 }}
+        className="absolute w-96 h-96 rounded-full blur-3xl pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(108,92,231,0.3), transparent 70%)', bottom: '-10%', right: '-10%' }}
+      />
+      <motion.div
+        animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }}
+        transition={{ repeat: Infinity, duration: 3 }}
+        className="absolute w-80 h-80 rounded-full blur-3xl pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(253,203,110,0.25), transparent 70%)', top: '30%', right: '20%' }}
+      />
 
-      <div className="text-center px-4">
-        {/* Phase 1: Typewriter */}
-        {(phase === 'typewriter') && (
+      {/* Speed lines — manga style */}
+      {phase === 'explode' && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {Array.from({ length: 24 }).map((_, i) => (
+            <motion.div
+              key={i}
+              initial={{ scaleX: 0, opacity: 0 }}
+              animate={{ scaleX: 1, opacity: [0, 0.6, 0] }}
+              transition={{ duration: 0.6, delay: i * 0.02 }}
+              className="absolute left-1/2 top-1/2 origin-left"
+              style={{
+                width: '150vmax',
+                height: '2px',
+                background: `linear-gradient(90deg, transparent, ${countdownColors[i % 5]}80, transparent)`,
+                transform: `rotate(${i * 15}deg)`,
+                marginLeft: '-75vmax',
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      <div className="text-center px-4 relative z-10">
+        {/* Phase 1: Typewriter — comic book style */}
+        {phase === 'typewriter' && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold text-gold tracking-wide"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           >
-            {typewriterText}
-            <motion.span
-              animate={{ opacity: [1, 0] }}
-              transition={{ repeat: Infinity, duration: 0.5 }}
-              className="text-accent"
+            <motion.div
+              className="font-serif text-4xl sm:text-6xl md:text-7xl font-black tracking-wide relative inline-block"
+              style={{
+                color: '#fdcb6e',
+                WebkitTextStroke: '2px #e17055',
+                textShadow: '4px 4px 0px #e84393, 8px 8px 0px rgba(0,0,0,0.3)',
+                letterSpacing: '0.05em',
+              }}
             >
-              |
-            </motion.span>
+              {typewriterText}
+              <motion.span
+                animate={{ opacity: [1, 0] }}
+                transition={{ repeat: Infinity, duration: 0.4 }}
+                style={{ color: '#fd7272', WebkitTextStroke: '0px' }}
+              >
+                |
+              </motion.span>
+            </motion.div>
           </motion.div>
         )}
 
-        {/* Phase 2: Countdown */}
+        {/* Phase 2: Countdown — bouncy cartoon numbers */}
         {phase === 'countdown' && countdownNum !== null && (
           <div className="relative">
             <motion.div
-              className="font-serif text-2xl sm:text-3xl md:text-4xl text-gold/60 mb-4"
+              className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold mb-6"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
+              style={{
+                color: '#fdcb6e',
+                WebkitTextStroke: '1px #e17055',
+                textShadow: '3px 3px 0px #e84393',
+              }}
             >
               {fullText}
             </motion.div>
             <AnimatePresence mode="wait">
               <motion.div
                 key={countdownNum}
-                initial={{ scale: 0.3, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 1.8, opacity: 0 }}
-                transition={{ duration: 0.35, ease: 'easeOut' }}
-                className="font-serif text-8xl sm:text-9xl font-black"
-                style={{ color: '#c8440a', textShadow: '0 0 40px rgba(200,68,10,0.5), 0 0 80px rgba(200,68,10,0.2)' }}
+                initial={{ scale: 3, opacity: 0, rotate: -20, y: -50 }}
+                animate={{ scale: 1, opacity: 1, rotate: 0, y: 0 }}
+                exit={{ scale: 0.2, opacity: 0, rotate: 30, y: 50 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 15, duration: 0.4 }}
+                className="font-serif text-[10rem] sm:text-[14rem] font-black leading-none"
+                style={{
+                  color: countdownColors[5 - countdownNum],
+                  WebkitTextStroke: `4px ${countdownNum > 3 ? '#2d3436' : '#fff'}`,
+                  textShadow: `6px 6px 0px rgba(0,0,0,0.4), -2px -2px 0px ${countdownColors[(5 - countdownNum + 2) % 5]}`,
+                  filter: 'drop-shadow(0 0 30px currentColor)',
+                }}
               >
                 {countdownNum}
               </motion.div>
@@ -241,20 +280,61 @@ function SplashScreen({ onFinished }: { onFinished: () => void }) {
           </div>
         )}
 
-        {/* Phase 3: Explode */}
+        {/* Phase 3: IMPRO explosion — manga burst */}
         {phase === 'explode' && (
-          <motion.div
-            initial={{ scale: 0.1, opacity: 0, rotate: -5 }}
-            animate={{ scale: 1, opacity: 1, rotate: 0 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 12, duration: 0.8 }}
-            className="font-serif text-5xl sm:text-7xl md:text-8xl font-black uppercase tracking-tight"
-            style={{
-              color: '#b8860b',
-              textShadow: '0 0 30px rgba(184,134,11,0.6), 0 0 60px rgba(184,134,11,0.3), 0 0 120px rgba(200,68,10,0.3)',
-            }}
-          >
-            IMPROOOOOOO ?
-          </motion.div>
+          <div className="relative">
+            {/* Comic burst shape behind text */}
+            <motion.div
+              initial={{ scale: 0, rotate: 0 }}
+              animate={{ scale: [0, 1.2, 1], rotate: [0, 10, 0] }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+              className="absolute inset-0 -m-16 sm:-m-24 flex items-center justify-center pointer-events-none"
+            >
+              <svg viewBox="0 0 200 200" className="w-full h-full max-w-[500px] opacity-90">
+                <polygon
+                  points={Array.from({ length: 20 }).map((_, i) => {
+                    const angle = (i * Math.PI * 2) / 20 - Math.PI / 2;
+                    const r = i % 2 === 0 ? 100 : 60;
+                    return `${100 + r * Math.cos(angle)},${100 + r * Math.sin(angle)}`;
+                  }).join(' ')}
+                  fill="#fdcb6e"
+                  stroke="#e17055"
+                  strokeWidth="3"
+                />
+              </svg>
+            </motion.div>
+            {/* Main text */}
+            <motion.div
+              initial={{ scale: 0, rotate: -15 }}
+              animate={{ scale: [0, 1.3, 1], rotate: [-15, 5, -2] }}
+              transition={{ type: 'spring', stiffness: 300, damping: 10, duration: 0.6 }}
+              className="font-serif text-5xl sm:text-7xl md:text-[6rem] font-black uppercase relative z-10"
+              style={{
+                color: '#e84393',
+                WebkitTextStroke: '3px #2d3436',
+                textShadow: '5px 5px 0px #fdcb6e, 10px 10px 0px rgba(0,0,0,0.3)',
+                letterSpacing: '-0.02em',
+              }}
+            >
+              IMPROOOOOOO
+            </motion.div>
+            {/* Little stars around */}
+            {[...Array(8)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: [0, 1.5, 1], opacity: [0, 1, 0.8] }}
+                transition={{ delay: 0.2 + i * 0.05, duration: 0.4 }}
+                className="absolute text-2xl sm:text-3xl"
+                style={{
+                  top: `${20 + Math.sin(i * 0.8) * 40}%`,
+                  left: `${10 + (i * 12)}%`,
+                }}
+              >
+                {['✦', '★', '⚡', '💥', '✦', '⭐', '💫', '✨'][i]}
+              </motion.div>
+            ))}
+          </div>
         )}
       </div>
     </motion.div>
