@@ -629,7 +629,7 @@ export default function App() {
             <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold leading-tight tracking-tight">
               <span className="text-accent">Le Qui ?</span>{' '}
               <span className="text-fun-azur">Le Quoi ?</span>{' '}
-              <span className="text-fun-olive">Le Ou ?</span>
+              <span className="text-fun-olive">Le Où ?</span>
             </h1>
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
