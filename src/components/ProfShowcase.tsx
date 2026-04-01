@@ -55,7 +55,7 @@ function FullRadar({
             key={level}
             points={points.map((p) => `${p.x},${p.y}`).join(" ")}
             fill="none"
-            stroke="rgba(124,58,237,0.2)"
+            stroke="rgba(42,125,225,0.15)"
             strokeWidth={level === 10 ? 1.5 : 0.5}
           />
         );
@@ -63,7 +63,7 @@ function FullRadar({
       {attributes.map((_, i) => {
         const p = getPoint(i, 10);
         return (
-          <line key={i} x1={center} y1={center} x2={p.x} y2={p.y} stroke="rgba(124,58,237,0.2)" strokeWidth={0.5} />
+          <line key={i} x1={center} y1={center} x2={p.x} y2={p.y} stroke="rgba(42,125,225,0.15)" strokeWidth={0.5} />
         );
       })}
       <polygon
@@ -134,7 +134,7 @@ function MiniRadar({
             key={level}
             points={points.map((p) => `${p.x},${p.y}`).join(" ")}
             fill="none"
-            stroke="rgba(124,58,237,0.2)"
+            stroke="rgba(42,125,225,0.15)"
             strokeWidth={level === 10 ? 1 : 0.3}
           />
         );
@@ -206,7 +206,7 @@ function ProfDetail({ prof, onBack }: { key?: string; prof: ProfData; onBack: ()
     >
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-muted hover:text-fun-pink font-mono text-sm mb-6 transition-colors"
+        className="flex items-center gap-2 text-muted hover:text-accent font-mono text-sm mb-6 transition-colors"
       >
         <ArrowLeft size={16} />
         Retour à l'équipe
@@ -226,7 +226,7 @@ function ProfDetail({ prof, onBack }: { key?: string; prof: ProfData; onBack: ()
             )}
           </div>
           <div className="flex-1 text-center sm:text-left">
-            <h1 className="font-serif text-3xl sm:text-4xl font-bold text-cream mb-2">{prof.name}</h1>
+            <h1 className="font-serif text-3xl sm:text-4xl font-bold text-ink mb-2">{prof.name}</h1>
             <p className="text-muted leading-relaxed mb-4">{prof.bio}</p>
             {prof.specialties.length > 0 && (
               <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
@@ -253,7 +253,7 @@ function ProfDetail({ prof, onBack }: { key?: string; prof: ProfData; onBack: ()
               <Award size={20} style={{ color: prof.color }} />
             </div>
             <div>
-              <h2 className="font-serif text-xl font-bold text-cream">Compétences</h2>
+              <h2 className="font-serif text-xl font-bold text-ink">Compétences</h2>
               <p className="text-xs text-muted font-mono uppercase tracking-wider">Profil du professeur</p>
             </div>
           </div>
@@ -261,10 +261,10 @@ function ProfDetail({ prof, onBack }: { key?: string; prof: ProfData; onBack: ()
             {prof.attributes.map((attr) => (
               <div key={attr.id}>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-mono text-[0.75rem] uppercase tracking-wider text-cream">{attr.label}</span>
+                  <span className="font-mono text-[0.75rem] uppercase tracking-wider text-ink">{attr.label}</span>
                   <span className="font-mono text-sm font-medium" style={{ color: prof.color }}>{attr.value}/10</span>
                 </div>
-                <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(124,58,237,0.15)' }}>
+                <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(42,125,225,0.1)' }}>
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${attr.value * 10}%` }}
@@ -287,7 +287,7 @@ function ProfDetail({ prof, onBack }: { key?: string; prof: ProfData; onBack: ()
               <Star size={20} className="text-gold" />
             </div>
             <div>
-              <h2 className="font-serif text-xl font-bold text-cream">Profil Radar</h2>
+              <h2 className="font-serif text-xl font-bold text-ink">Profil Radar</h2>
               <p className="text-xs text-muted font-mono uppercase tracking-wider">Visualisation des compétences</p>
             </div>
           </div>
@@ -337,7 +337,7 @@ function ProfCard({ prof, index, onClick }: { prof: ProfData; index: number; key
         </div>
 
         {/* Name */}
-        <h3 className="text-xl font-serif font-bold text-cream text-center">
+        <h3 className="text-xl font-serif font-bold text-ink text-center">
           {prof.name}
         </h3>
 
@@ -386,10 +386,10 @@ function EmptyState() {
       animate={{ opacity: 1 }}
       className="flex flex-col items-center justify-center py-20 gap-4 text-center"
     >
-      <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: 'rgba(124,58,237,0.15)' }}>
-        <Users className="w-10 h-10 text-fun-purple" />
+      <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: 'rgba(42,125,225,0.1)' }}>
+        <Users className="w-10 h-10 text-fun-azur" />
       </div>
-      <h3 className="font-serif text-xl text-cream">Aucun professeur</h3>
+      <h3 className="font-serif text-xl text-ink">Aucun professeur</h3>
       <p className="text-sm text-muted max-w-sm">
         L'équipe pédagogique n'a pas encore été constituée. Revenez bientôt pour
         découvrir nos incroyables coachs d'impro !
@@ -434,7 +434,7 @@ export default function ProfShowcase({ profs }: ProfShowcaseProps) {
                 </span>
                 <Sparkles className="w-5 h-5 text-gold" />
               </div>
-              <h2 className="text-4xl md:text-5xl font-serif font-bold text-cream">
+              <h2 className="text-4xl md:text-5xl font-serif font-bold text-ink">
                 Notre Equipe
               </h2>
               <p className="mt-3 text-muted text-sm max-w-md mx-auto leading-relaxed">
@@ -442,7 +442,7 @@ export default function ProfShowcase({ profs }: ProfShowcaseProps) {
                 énergie unique pour faire briller votre talent d'improvisateur.
               </p>
               <motion.div
-                className="mt-4 mx-auto w-16 h-1 rounded-full bg-fun-pink"
+                className="mt-4 mx-auto w-16 h-1 rounded-full bg-accent"
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
                 transition={{ delay: 0.4, duration: 0.5 }}

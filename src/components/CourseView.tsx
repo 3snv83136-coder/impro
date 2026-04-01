@@ -73,7 +73,7 @@ export default function CourseView({ course, prof, onBack }: CourseViewProps) {
       {/* Back button */}
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-muted hover:text-fun-pink font-mono text-sm mb-6 transition-colors"
+        className="flex items-center gap-2 text-muted hover:text-accent font-mono text-sm mb-6 transition-colors"
       >
         <ArrowLeft size={16} />
         Retour aux cours
@@ -83,7 +83,7 @@ export default function CourseView({ course, prof, onBack }: CourseViewProps) {
       <div className="card-pop rounded-2xl p-6 mb-8">
         <div className="flex flex-col sm:flex-row sm:items-start gap-4 justify-between">
           <div className="flex-1">
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-cream mb-2">{course.title}</h1>
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-ink mb-2">{course.title}</h1>
             <p className="text-sm text-muted leading-relaxed mb-4">{course.description}</p>
             <div className="flex flex-wrap gap-3 items-center">
               <span className="flex items-center gap-1.5 font-mono text-[0.7rem] text-muted">
@@ -92,7 +92,7 @@ export default function CourseView({ course, prof, onBack }: CourseViewProps) {
               </span>
               <span className={`font-mono text-[0.65rem] px-2.5 py-0.5 rounded-full uppercase tracking-wider font-semibold ${
                 course.level === 'Débutant' ? 'bg-fun-teal/20 text-fun-teal' :
-                course.level === 'Avancé' ? 'bg-fun-purple/20 text-fun-purple' :
+                course.level === 'Avancé' ? 'bg-fun-azur/15 text-fun-azur' :
                 'bg-fun-sky/20 text-fun-sky'
               }`}>
                 {course.level}
@@ -100,7 +100,7 @@ export default function CourseView({ course, prof, onBack }: CourseViewProps) {
             </div>
           </div>
           {prof && (
-            <div className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.2)' }}>
+            <div className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ background: 'rgba(42,125,225,0.08)', border: '1px solid rgba(42,125,225,0.15)' }}>
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center text-white font-serif font-bold text-sm overflow-hidden border-2"
                 style={{ borderColor: prof.color, backgroundColor: prof.color + '20' }}
@@ -113,7 +113,7 @@ export default function CourseView({ course, prof, onBack }: CourseViewProps) {
               </div>
               <div>
                 <div className="font-mono text-[0.6rem] uppercase tracking-wider text-muted">Prof</div>
-                <div className="font-medium text-sm text-cream">{prof.name}</div>
+                <div className="font-medium text-sm text-ink">{prof.name}</div>
               </div>
             </div>
           )}
@@ -121,7 +121,7 @@ export default function CourseView({ course, prof, onBack }: CourseViewProps) {
 
         {/* Objectives */}
         {course.objectives.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-fun-purple/15">
+          <div className="mt-4 pt-4 border-t border-warm">
             <div className="font-mono text-[0.65rem] uppercase tracking-wider text-muted mb-2">Objectifs</div>
             <div className="flex flex-wrap gap-2">
               {course.objectives.map((obj, i) => (
@@ -215,10 +215,10 @@ function PhaseSection({ id, time, duration, title, color, intro, isCompleted, on
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-4">
         <div className="flex items-baseline gap-3 flex-wrap">
-          <span className="font-mono text-[0.65rem] px-2.5 py-0.5 rounded-full whitespace-nowrap" style={{ background: 'rgba(124,58,237,0.15)', color: '#8b7fa8' }}>
+          <span className="font-mono text-[0.65rem] px-2.5 py-0.5 rounded-full whitespace-nowrap" style={{ background: 'rgba(42,125,225,0.1)', color: '#8b7fa8' }}>
             {time}
           </span>
-          <h2 className={`font-serif text-lg sm:text-xl font-bold transition-all ${isCompleted ? 'text-muted line-through' : 'text-cream'}`}>
+          <h2 className={`font-serif text-lg sm:text-xl font-bold transition-all ${isCompleted ? 'text-muted line-through' : 'text-ink'}`}>
             {title}
           </h2>
         </div>
@@ -228,7 +228,7 @@ function PhaseSection({ id, time, duration, title, color, intro, isCompleted, on
           <button
             onClick={onToggle}
             className={`flex items-center gap-2 px-3 py-1.5 sm:py-1 rounded-full text-[0.65rem] sm:text-[0.7rem] font-mono uppercase tracking-wider transition-colors whitespace-nowrap ${
-              isCompleted ? 'bg-fun-teal/20 text-fun-teal' : 'bg-fun-purple/15 text-muted hover:bg-fun-purple/25'
+              isCompleted ? 'bg-fun-teal/20 text-fun-teal' : 'bg-fun-azur/10 text-muted hover:bg-fun-azur/20'
             }`}
           >
             {isCompleted ? <CheckCircle2 size={14} /> : null}
@@ -276,7 +276,7 @@ function PhaseTimer({ duration }: { duration: number }) {
   const isFinished = timeLeft === 0;
 
   return (
-    <div className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full font-mono text-[0.65rem] sm:text-[0.75rem] text-cream ${isFinished ? 'animate-pulse bg-fun-pink' : ''}`} style={!isFinished ? { background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.3)' } : {}}>
+    <div className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full font-mono text-[0.65rem] sm:text-[0.75rem] text-ink ${isFinished ? 'animate-pulse bg-accent text-white' : ''}`} style={!isFinished ? { background: 'rgba(42,125,225,0.15)', border: '1px solid rgba(42,125,225,0.2)' } : {}}>
       <span className="w-8 sm:w-10 text-center">{formatTime(timeLeft)}</span>
       <div className="flex items-center gap-1 border-l border-muted/30 pl-1.5 sm:pl-2">
         <button onClick={toggle} className="hover:text-gold transition-colors p-0.5">
@@ -302,15 +302,15 @@ function ExerciseCard({ name, tag, description, steps, tip, objectifs }: {
   return (
     <div className="card-pop rounded-xl p-5 mb-4">
       <div className="flex items-center gap-3 mb-1.5">
-        <h3 className="font-sans font-medium text-base text-cream">{name}</h3>
-        {tag && <span className="font-mono text-[0.6rem] uppercase tracking-wider px-2 py-0.5 rounded-full bg-fun-purple/15 text-fun-purple">{tag}</span>}
+        <h3 className="font-sans font-medium text-base text-ink">{name}</h3>
+        {tag && <span className="font-mono text-[0.6rem] uppercase tracking-wider px-2 py-0.5 rounded-full bg-fun-azur/10 text-fun-azur">{tag}</span>}
       </div>
       <p className="text-[0.88rem] text-muted mb-3 leading-relaxed">{description}</p>
 
       <ul className="space-y-2 mb-4">
         {steps.map((step, i) => (
-          <li key={i} className="text-[0.85rem] pl-7 relative border-t border-fun-purple/10 pt-2 first:border-t-0 first:pt-0 text-cream/80">
-            <span className="absolute left-0 top-2 first:top-0 w-5 h-5 rounded-full bg-fun-purple/20 text-fun-purple font-mono text-[0.7rem] flex items-center justify-center">
+          <li key={i} className="text-[0.85rem] pl-7 relative border-t border-warm pt-2 first:border-t-0 first:pt-0 text-ink/80">
+            <span className="absolute left-0 top-2 first:top-0 w-5 h-5 rounded-full bg-fun-azur/15 text-fun-azur font-mono text-[0.7rem] flex items-center justify-center">
               {i + 1}
             </span>
             {step}
@@ -344,9 +344,9 @@ function getObjClass(obj: string) {
   switch (obj.toLowerCase()) {
     case 'qui': return 'bg-fun-teal/20 text-fun-teal';
     case 'quoi': return 'bg-fun-sky/20 text-fun-sky';
-    case 'où': return 'bg-fun-pink/20 text-fun-pink';
-    case 'corps': return 'bg-fun-purple/20 text-fun-purple';
+    case 'où': return 'bg-accent/15 text-accent';
+    case 'corps': return 'bg-fun-azur/15 text-fun-azur';
     case 'écoute': return 'bg-fun-orange/20 text-fun-orange';
-    default: return 'bg-fun-purple/10 text-muted';
+    default: return 'bg-fun-azur/10 text-muted';
   }
 }

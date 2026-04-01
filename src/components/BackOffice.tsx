@@ -237,10 +237,10 @@ export default function BackOffice({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="
-                  mt-6 w-full bg-gradient-to-r from-fun-pink to-fun-purple
+                  mt-6 w-full bg-gradient-to-r from-accent to-fun-azur
                   text-white font-serif text-lg py-3 rounded-xl
-                  shadow-lg shadow-fun-pink/20
-                  hover:shadow-xl hover:shadow-fun-pink/30
+                  shadow-lg shadow-accent/20
+                  hover:shadow-xl hover:shadow-accent/30
                   transition-shadow duration-200
                 "
               >
@@ -259,9 +259,9 @@ export default function BackOffice({
 
   // ─── Authenticated View ────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-ink">
+    <div className="min-h-screen bg-cream">
       {/* Header */}
-      <header className="bg-stage border-b border-gold/10 px-4 sm:px-8 py-4">
+      <header className="bg-stage border-b border-warm px-4 sm:px-8 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Theater size={24} className="text-gold" />
@@ -285,7 +285,7 @@ export default function BackOffice({
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setAuthenticated(false)}
-              className="flex items-center gap-2 text-muted hover:text-cream transition-colors text-sm font-mono"
+              className="flex items-center gap-2 text-cream/70 hover:text-cream transition-colors text-sm font-mono"
             >
               <LogOut size={16} />
             </motion.button>
@@ -294,7 +294,7 @@ export default function BackOffice({
       </header>
 
       {/* Tab Navigation */}
-      <div className="bg-stage/50 border-b border-gold/10 sticky top-0 z-30">
+      <div className="bg-cream border-b border-warm sticky top-0 z-30">
         <div className="max-w-6xl mx-auto flex">
           <button
             onClick={() => {
@@ -306,15 +306,15 @@ export default function BackOffice({
               border-b-2 transition-all duration-200
               ${
                 activeTab === "cours"
-                  ? "border-fun-pink text-fun-pink"
-                  : "border-transparent text-muted hover:text-cream"
+                  ? "border-accent text-accent"
+                  : "border-transparent text-muted hover:text-ink"
               }
             `}
           >
             <BookOpen size={16} />
             Cours
             {courses.length > 0 && (
-              <span className="bg-fun-pink/20 text-fun-pink text-xs px-2 py-0.5 rounded-full">
+              <span className="bg-accent/15 text-accent text-xs px-2 py-0.5 rounded-full">
                 {courses.length}
               </span>
             )}
@@ -329,8 +329,8 @@ export default function BackOffice({
               border-b-2 transition-all duration-200
               ${
                 activeTab === "profs"
-                  ? "border-fun-pink text-fun-pink"
-                  : "border-transparent text-muted hover:text-cream"
+                  ? "border-accent text-accent"
+                  : "border-transparent text-muted hover:text-ink"
               }
             `}
           >
@@ -358,7 +358,7 @@ export default function BackOffice({
             >
               {/* Cours Header */}
               <div className="flex items-center justify-between mb-6">
-                <h2 className="font-serif text-2xl text-cream">
+                <h2 className="font-serif text-2xl text-ink">
                   Les Cours
                 </h2>
                 <motion.button
@@ -366,9 +366,9 @@ export default function BackOffice({
                   whileTap={{ scale: 0.95 }}
                   onClick={onCreateCourse}
                   className="
-                    flex items-center gap-2 bg-gradient-to-r from-fun-pink to-fun-purple
+                    flex items-center gap-2 bg-gradient-to-r from-accent to-fun-azur
                     text-white font-sans text-sm px-5 py-2.5 rounded-xl
-                    shadow-lg shadow-fun-pink/20 hover:shadow-xl hover:shadow-fun-pink/30
+                    shadow-lg shadow-accent/20 hover:shadow-xl hover:shadow-accent/30
                     transition-shadow
                   "
                 >
@@ -391,7 +391,7 @@ export default function BackOffice({
                   >
                     <Sparkles size={48} className="text-gold/40" />
                   </motion.div>
-                  <h3 className="font-serif text-xl text-cream/60 mb-2">
+                  <h3 className="font-serif text-xl text-ink/60 mb-2">
                     Aucun cours pour l&apos;instant !
                   </h3>
                   <p className="text-muted/60 font-sans text-sm max-w-md mx-auto">
@@ -408,8 +408,8 @@ export default function BackOffice({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.05 }}
                       className="
-                        bg-stage/80 border border-gold/10 rounded-xl p-5
-                        hover:border-gold/25 transition-all duration-200
+                        bg-white border border-warm rounded-xl p-5
+                        hover:border-accent/25 transition-all duration-200
                         group
                       "
                     >
@@ -417,7 +417,7 @@ export default function BackOffice({
                         {/* Course Info */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-3 mb-2 flex-wrap">
-                            <h3 className="font-serif text-lg text-cream truncate">
+                            <h3 className="font-serif text-lg text-ink truncate">
                               {course.title}
                             </h3>
                             <span
@@ -526,7 +526,7 @@ export default function BackOffice({
             >
               {/* Profs Header */}
               <div className="flex items-center justify-between mb-6">
-                <h2 className="font-serif text-2xl text-cream">
+                <h2 className="font-serif text-2xl text-ink">
                   Les Profs
                 </h2>
                 <motion.button
@@ -559,7 +559,7 @@ export default function BackOffice({
                   >
                     <Drama size={48} className="text-accent/40" />
                   </motion.div>
-                  <h3 className="font-serif text-xl text-cream/60 mb-2">
+                  <h3 className="font-serif text-xl text-ink/60 mb-2">
                     Pas encore de profs !
                   </h3>
                   <p className="text-muted/60 font-sans text-sm max-w-md mx-auto">
@@ -576,8 +576,8 @@ export default function BackOffice({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.08 }}
                       className="
-                        bg-stage/80 border border-gold/10 rounded-xl overflow-hidden
-                        hover:border-gold/25 transition-all duration-200 group
+                        bg-white border border-warm rounded-xl overflow-hidden
+                        hover:border-accent/25 transition-all duration-200 group
                       "
                     >
                       <div
@@ -594,7 +594,7 @@ export default function BackOffice({
                             className="
                               w-16 h-16 rounded-full shrink-0 flex items-center justify-center
                               border-2 border-gold/20 overflow-hidden
-                              bg-gradient-to-br from-stage to-ink
+                              bg-gradient-to-br from-warm to-cream
                             "
                           >
                             {prof.photo ? (
@@ -613,7 +613,7 @@ export default function BackOffice({
 
                           {/* Info */}
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-serif text-lg text-cream mb-1">
+                            <h3 className="font-serif text-lg text-ink mb-1">
                               {prof.name}
                             </h3>
 
@@ -647,7 +647,7 @@ export default function BackOffice({
                                 <span className="text-muted/50 text-xs font-mono">
                                   {attr.label}
                                 </span>
-                                <div className="w-16 h-1.5 bg-ink/60 rounded-full overflow-hidden">
+                                <div className="w-16 h-1.5 bg-warm/40 rounded-full overflow-hidden">
                                   <motion.div
                                     initial={{ width: 0 }}
                                     animate={{
@@ -663,7 +663,7 @@ export default function BackOffice({
                                     }}
                                   />
                                 </div>
-                                <span className="text-cream/50 text-xs font-mono">
+                                <span className="text-ink/50 text-xs font-mono">
                                   {attr.value}
                                 </span>
                               </div>

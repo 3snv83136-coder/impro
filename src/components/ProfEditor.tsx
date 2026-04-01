@@ -172,7 +172,7 @@ export default function ProfEditor({ prof, onSave, onCancel }: ProfEditorProps) 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="max-w-2xl mx-auto bg-stage rounded-2xl shadow-xl border border-fun-purple/20 overflow-hidden"
+      className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl border border-warm overflow-hidden"
     >
       {/* Header */}
       <div
@@ -180,7 +180,7 @@ export default function ProfEditor({ prof, onSave, onCancel }: ProfEditorProps) 
         style={{ backgroundColor: data.color + "18" }}
       >
         <Sparkles className="w-5 h-5" style={{ color: data.color }} />
-        <h2 className="font-serif text-xl text-cream">
+        <h2 className="font-serif text-xl text-ink">
           {isNew ? "Nouveau Professeur" : `Modifier ${data.name}`}
         </h2>
       </div>
@@ -237,7 +237,7 @@ export default function ProfEditor({ prof, onSave, onCancel }: ProfEditorProps) 
               <input
                 type="text"
                 placeholder="ou URL photo..."
-                className="w-full text-[0.6rem] font-mono bg-stage/50 border border-fun-purple/20 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-gold text-muted"
+                className="w-full text-[0.6rem] font-mono bg-cream border border-warm rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-gold text-muted"
                 onBlur={(e) => {
                   const url = e.target.value.trim();
                   if (url) {
@@ -269,7 +269,7 @@ export default function ProfEditor({ prof, onSave, onCancel }: ProfEditorProps) 
               value={data.name}
               onChange={(e) => setData((d) => ({ ...d, name: e.target.value }))}
               placeholder="Entrez le nom..."
-              className="w-full text-2xl font-serif text-cream bg-transparent border-b-2 border-fun-purple/20 focus:border-fun-pink outline-none pb-2 placeholder:text-muted/40 transition-colors"
+              className="w-full text-2xl font-serif text-ink bg-transparent border-b-2 border-warm focus:border-accent outline-none pb-2 placeholder:text-muted/40 transition-colors"
             />
           </div>
         </div>
@@ -284,7 +284,7 @@ export default function ProfEditor({ prof, onSave, onCancel }: ProfEditorProps) 
             onChange={(e) => setData((d) => ({ ...d, bio: e.target.value }))}
             placeholder="Racontez l'histoire de ce professeur, son parcours, sa passion pour l'impro..."
             rows={4}
-            className="w-full bg-ink/60 border border-fun-purple/20 rounded-xl p-4 text-sm text-cream leading-relaxed placeholder:text-muted/40 focus:border-fun-pink focus:ring-1 focus:ring-fun-pink/30 outline-none resize-none transition-colors"
+            className="w-full bg-warm/30 border border-warm rounded-xl p-4 text-sm text-ink leading-relaxed placeholder:text-muted/40 focus:border-accent focus:ring-1 focus:ring-accent/30 outline-none resize-none transition-colors"
           />
         </div>
 
@@ -330,7 +330,7 @@ export default function ProfEditor({ prof, onSave, onCancel }: ProfEditorProps) 
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
               onKeyDown={handleSpecialtyKeyDown}
               placeholder="Tapez une spécialité + Entrée..."
-              className="w-full bg-ink/60 border border-fun-purple/20 rounded-lg px-4 py-2.5 text-sm text-cream placeholder:text-muted/40 focus:border-fun-pink outline-none transition-colors"
+              className="w-full bg-warm/30 border border-warm rounded-lg px-4 py-2.5 text-sm text-ink placeholder:text-muted/40 focus:border-accent outline-none transition-colors"
             />
             {/* Suggestions dropdown */}
             <AnimatePresence>
@@ -339,7 +339,7 @@ export default function ProfEditor({ prof, onSave, onCancel }: ProfEditorProps) 
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
-                  className="absolute z-10 top-full mt-1 left-0 right-0 bg-ink rounded-lg shadow-lg border border-fun-purple/20 overflow-hidden"
+                  className="absolute z-10 top-full mt-1 left-0 right-0 bg-white rounded-lg shadow-lg border border-warm overflow-hidden"
                 >
                   {filteredSuggestions.map((s) => (
                     <button
@@ -347,7 +347,7 @@ export default function ProfEditor({ prof, onSave, onCancel }: ProfEditorProps) 
                       type="button"
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => addSpecialty(s)}
-                      className="w-full text-left px-4 py-2 text-sm text-cream hover:bg-fun-purple/15 transition-colors cursor-pointer"
+                      className="w-full text-left px-4 py-2 text-sm text-ink hover:bg-warm/50 transition-colors cursor-pointer"
                     >
                       {s}
                     </button>
@@ -373,7 +373,7 @@ export default function ProfEditor({ prof, onSave, onCancel }: ProfEditorProps) 
                 className="w-10 h-10 rounded-full border-3 transition-all cursor-pointer hover:scale-110"
                 style={{
                   backgroundColor: color,
-                  borderColor: data.color === color ? "#1a1410" : "transparent",
+                  borderColor: data.color === color ? "#2c1810" : "transparent",
                   boxShadow:
                     data.color === color
                       ? `0 0 0 3px ${color}40, 0 2px 8px ${color}60`
@@ -400,13 +400,13 @@ export default function ProfEditor({ prof, onSave, onCancel }: ProfEditorProps) 
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20, height: 0 }}
-                  className="flex items-center gap-3 bg-ink/60 rounded-xl px-4 py-3 border border-fun-purple/20/60"
+                  className="flex items-center gap-3 bg-warm/30 rounded-xl px-4 py-3 border border-warm/60"
                 >
                   <input
                     type="text"
                     value={attr.label}
                     onChange={(e) => updateAttributeLabel(attr.id, e.target.value)}
-                    className="w-36 text-xs font-mono text-cream bg-transparent border-b border-dashed border-fun-purple/20 focus:border-fun-pink outline-none pb-0.5"
+                    className="w-36 text-xs font-mono text-ink bg-transparent border-b border-dashed border-warm focus:border-accent outline-none pb-0.5"
                   />
                   <input
                     type="range"
@@ -448,7 +448,7 @@ export default function ProfEditor({ prof, onSave, onCancel }: ProfEditorProps) 
                   key={label}
                   type="button"
                   onClick={() => addAttribute(label)}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[0.65rem] font-mono bg-fun-purple/10/50 text-cream hover:bg-fun-purple/10 transition-colors cursor-pointer border border-fun-purple/20"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[0.65rem] font-mono bg-warm/40 text-ink hover:bg-warm/60 transition-colors cursor-pointer border border-warm"
                 >
                   <Plus className="w-3 h-3" />
                   {label}
@@ -469,11 +469,11 @@ export default function ProfEditor({ prof, onSave, onCancel }: ProfEditorProps) 
         </div>
 
         {/* Save / Cancel */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-fun-purple/20">
+        <div className="flex justify-end gap-3 pt-4 border-t border-warm">
           <button
             type="button"
             onClick={onCancel}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-muted bg-fun-purple/10/50 hover:bg-fun-purple/10 transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-muted bg-warm/40 hover:bg-warm/60 transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             Annuler

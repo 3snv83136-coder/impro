@@ -599,12 +599,12 @@ export default function App() {
         transition={{ duration: 0.6, delay: showSplash ? 0 : 0.3 }}
         className="min-h-screen flex flex-col overflow-x-hidden">
       {/* HEADER */}
-      <header className="relative overflow-hidden pt-6 sm:pt-8 pb-6 sm:pb-8 px-4 sm:px-8" style={{ background: 'linear-gradient(135deg, #1a0e2e 0%, #0f0a2a 40%, #0a1628 100%)' }}>
+      <header className="relative overflow-hidden pt-6 sm:pt-8 pb-6 sm:pb-8 px-4 sm:px-8" style={{ background: 'linear-gradient(135deg, #1e3a5f 0%, #2a5080 60%, #1e3a5f 100%)' }}>
         {/* Diagonal stripe overlay */}
         <div className="absolute inset-0 stripe-bg pointer-events-none" />
         {/* Spotlight blobs */}
-        <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(255,45,120,0.12), transparent 70%)' }} />
-        <div className="absolute -bottom-20 -right-20 w-72 h-72 rounded-full blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(76,201,240,0.1), transparent 70%)' }} />
+        <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(224,90,43,0.12), transparent 70%)' }} />
+        <div className="absolute -bottom-20 -right-20 w-72 h-72 rounded-full blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(42,125,225,0.1), transparent 70%)' }} />
         {/* Starburst SVG */}
         <div className="absolute top-2 right-4 sm:right-10 opacity-10 pointer-events-none">
           <svg viewBox="0 0 120 120" className="w-20 h-20 sm:w-28 sm:h-28">
@@ -614,7 +614,7 @@ export default function App() {
                 const r = i % 2 === 0 ? 55 : 30;
                 return `${60 + r * Math.cos(angle)},${60 + r * Math.sin(angle)}`;
               }).join(' ')}
-              fill="#ffd700"
+              fill="#d4a017"
             />
           </svg>
         </div>
@@ -627,18 +627,18 @@ export default function App() {
             className="text-center"
           >
             <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold leading-tight tracking-tight">
-              <span className="text-fun-pink text-glow-pink">Le Qui ?</span>{' '}
-              <span className="text-fun-sky text-glow-blue">Le Quoi ?</span>{' '}
-              <span className="text-fun-teal text-glow-green">Le Ou ?</span>
+              <span className="text-accent">Le Qui ?</span>{' '}
+              <span className="text-fun-azur">Le Quoi ?</span>{' '}
+              <span className="text-fun-olive">Le Ou ?</span>
             </h1>
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3, duration: 0.4 }}
               className="inline-block mt-3 px-4 py-1 rounded-full font-mono text-[0.65rem] sm:text-[0.7rem] tracking-[0.2em] uppercase"
-              style={{ background: 'linear-gradient(90deg, rgba(255,215,0,0.15), rgba(255,159,28,0.15))', border: '1px solid rgba(255,215,0,0.3)' }}
+              style={{ background: 'linear-gradient(90deg, rgba(212,160,23,0.15), rgba(244,162,97,0.15))', border: '1px solid rgba(212,160,23,0.3)' }}
             >
-              <span className="text-gold text-glow-gold">By Mondorito</span>
+              <span className="text-gold">By Mondorito</span>
             </motion.div>
           </motion.div>
         </div>
@@ -647,14 +647,14 @@ export default function App() {
       {/* TIMELINE — removed, now per-course in CourseView */}
 
       {/* TAB BAR */}
-      <div className="sticky top-0 z-30 border-b border-fun-purple/20" style={{ background: 'linear-gradient(180deg, #1a0e2e, #150b26)' }}>
+      <div className="sticky top-0 z-30 bg-cream border-b border-warm">
         <div className="max-w-3xl mx-auto px-4 sm:px-8 flex gap-1">
           <button
             onClick={() => setActiveTab('cours')}
             className={`flex items-center gap-2 px-4 sm:px-5 py-3 font-mono text-[0.75rem] uppercase tracking-wider transition-all rounded-t-lg ${
               activeTab === 'cours'
-                ? 'bg-fun-pink/20 text-fun-pink font-semibold shadow-[0_2px_0_0_#ff2d78]'
-                : 'text-muted hover:text-cream hover:bg-white/5'
+                ? 'bg-accent/10 text-accent font-semibold shadow-[0_2px_0_0_#e05a2b]'
+                : 'text-muted hover:text-ink hover:bg-warm/50'
             }`}
           >
             <motion.span animate={activeTab === 'cours' ? { scale: [1, 1.2, 1] } : {}} transition={{ duration: 0.3 }}>
@@ -666,8 +666,8 @@ export default function App() {
             onClick={() => setActiveTab('prof')}
             className={`flex items-center gap-2 px-4 sm:px-5 py-3 font-mono text-[0.75rem] uppercase tracking-wider transition-all rounded-t-lg ${
               activeTab === 'prof'
-                ? 'bg-fun-purple/20 text-fun-purple font-semibold shadow-[0_2px_0_0_#7c3aed]'
-                : 'text-muted hover:text-cream hover:bg-white/5'
+                ? 'bg-fun-azur/10 text-fun-azur font-semibold shadow-[0_2px_0_0_#2a7de1]'
+                : 'text-muted hover:text-ink hover:bg-warm/50'
             }`}
           >
             <motion.span animate={activeTab === 'prof' ? { scale: [1, 1.2, 1] } : {}} transition={{ duration: 0.3 }}>
@@ -679,8 +679,8 @@ export default function App() {
             onClick={() => { setActiveTab('backoffice'); setBoView('list'); }}
             className={`flex items-center gap-2 px-4 sm:px-5 py-3 font-mono text-[0.75rem] uppercase tracking-wider transition-all rounded-t-lg ${
               activeTab === 'backoffice'
-                ? 'bg-gold/20 text-gold font-semibold shadow-[0_2px_0_0_#ffd700]'
-                : 'text-muted hover:text-cream hover:bg-white/5'
+                ? 'bg-gold/20 text-gold font-semibold shadow-[0_2px_0_0_#d4a017]'
+                : 'text-muted hover:text-ink hover:bg-warm/50'
             }`}
           >
             <motion.span animate={activeTab === 'backoffice' ? { scale: [1, 1.2, 1] } : {}} transition={{ duration: 0.3 }}>
@@ -759,26 +759,26 @@ export default function App() {
         {/* COURSE CARDS GRID */}
         <section className="mb-10">
           <div className="flex items-center gap-3 mb-5">
-            <div className="p-2.5 rounded-xl" style={{ background: 'linear-gradient(135deg, rgba(255,45,120,0.2), rgba(124,58,237,0.2))' }}>
-              <BookOpen size={20} className="text-fun-pink" />
+            <div className="p-2.5 rounded-xl" style={{ background: 'linear-gradient(135deg, rgba(224,90,43,0.15), rgba(42,125,225,0.15))' }}>
+              <BookOpen size={20} className="text-accent" />
             </div>
             <div>
-              <h2 className="font-serif text-xl font-bold text-cream">Nos Cours</h2>
+              <h2 className="font-serif text-xl font-bold text-ink">Nos Cours</h2>
               <p className="text-xs text-muted font-mono uppercase tracking-wider">Cliquez pour entrer en scene</p>
             </div>
           </div>
 
           {courses.length === 0 ? (
             <div className="card-pop rounded-2xl p-10 text-center">
-              <BookOpen size={48} className="text-fun-purple/40 mx-auto mb-4" />
-              <p className="text-cream font-serif text-xl">Pas encore de cours...</p>
+              <BookOpen size={48} className="text-fun-azur/40 mx-auto mb-4" />
+              <p className="text-ink font-serif text-xl">Pas encore de cours...</p>
               <p className="text-muted mt-2 text-sm">Rendez-vous dans les Coulisses pour creer votre premier spectacle !</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {courses.map((course, i) => {
                 const prof = profs.find(p => p.id === course.profId);
-                const funColors = ['#ff2d78', '#7c3aed', '#06d6a0', '#4cc9f0', '#ff9f1c', '#ffd700', '#ff6b6b'];
+                const funColors = ['#e05a2b', '#2a7de1', '#0a9396', '#3d8ecf', '#f4a261', '#d4a017', '#ee6c4d'];
                 const cardColor = funColors[i % funColors.length];
                 return (
                   <motion.button
@@ -791,27 +791,27 @@ export default function App() {
                     onClick={() => setSelectedCourseId(course.id)}
                     className="relative rounded-2xl overflow-hidden text-left group aspect-square flex flex-col transition-all duration-200"
                     style={{
-                      background: 'linear-gradient(135deg, rgba(26,14,46,0.95), rgba(15,10,26,0.98))',
+                      background: '#ffffff',
                       borderLeft: `4px solid ${cardColor}`,
-                      border: `1px solid rgba(124,58,237,0.15)`,
+                      border: `1px solid rgba(240,230,212,0.8)`,
                       borderLeftWidth: '4px',
                       borderLeftColor: cardColor,
-                      boxShadow: `0 4px 20px rgba(0,0,0,0.3)`,
+                      boxShadow: `0 2px 12px rgba(0,0,0,0.06)`,
                     }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = `0 8px 30px ${cardColor}30, 0 4px 20px rgba(0,0,0,0.3)`; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 20px rgba(0,0,0,0.3)`; }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = `0 6px 24px ${cardColor}20, 0 2px 12px rgba(0,0,0,0.08)`; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = `0 2px 12px rgba(0,0,0,0.06)`; }}
                   >
                     <div className="h-1.5 w-full" style={{ background: `linear-gradient(90deg, ${cardColor}, ${cardColor}60)` }} />
                     <div className="flex-1 p-4 flex flex-col justify-between">
                       <div>
                         <span className={`font-mono text-[0.55rem] px-2 py-0.5 rounded-full uppercase tracking-wider font-semibold ${
                           course.level === 'Débutant' ? 'bg-fun-teal/20 text-fun-teal' :
-                          course.level === 'Avancé' ? 'bg-fun-purple/20 text-fun-purple' :
+                          course.level === 'Avancé' ? 'bg-fun-azur/20 text-fun-azur' :
                           'bg-fun-sky/20 text-fun-sky'
                         }`}>
                           {course.level}
                         </span>
-                        <h3 className="font-serif font-bold text-cream text-sm sm:text-base mt-2 leading-snug line-clamp-2 group-hover:text-fun-pink transition-colors">
+                        <h3 className="font-serif font-bold text-ink text-sm sm:text-base mt-2 leading-snug line-clamp-2 group-hover:text-accent transition-colors">
                           {course.title}
                         </h3>
                       </div>
@@ -846,20 +846,20 @@ export default function App() {
 
         {/* GENERATEUR D'IDEES */}
         <section className="mb-12">
-          <div className="rounded-2xl p-6 relative overflow-hidden neon-border" style={{ background: 'linear-gradient(135deg, rgba(26,14,46,0.97), rgba(15,10,26,0.99))' }}>
+          <div className="rounded-2xl p-6 relative overflow-hidden border border-warm" style={{ background: '#ffffff' }}>
             {/* Decorative glow spots */}
-            <div className="absolute top-0 right-0 w-40 h-40 rounded-full blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(255,45,120,0.08), transparent 70%)' }} />
-            <div className="absolute bottom-0 left-0 w-32 h-32 rounded-full blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.08), transparent 70%)' }} />
+            <div className="absolute top-0 right-0 w-40 h-40 rounded-full blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(224,90,43,0.06), transparent 70%)' }} />
+            <div className="absolute bottom-0 left-0 w-32 h-32 rounded-full blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(42,125,225,0.06), transparent 70%)' }} />
             <div className="absolute top-3 right-4 opacity-15 pointer-events-none">
               <Sparkles size={60} className="text-gold" />
             </div>
 
             <div className="flex items-center gap-3 mb-6 relative">
-              <div className="p-2.5 rounded-xl" style={{ background: 'linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,45,120,0.15))' }}>
+              <div className="p-2.5 rounded-xl" style={{ background: 'linear-gradient(135deg, rgba(212,160,23,0.15), rgba(224,90,43,0.1))' }}>
                 <Sparkles size={20} className="text-gold" />
               </div>
               <div>
-                <h2 className="font-serif text-xl font-bold text-cream">Generateur d'Impro</h2>
+                <h2 className="font-serif text-xl font-bold text-ink">Generateur d'Impro</h2>
                 <p className="text-xs text-muted font-mono uppercase tracking-wider">
                   {quiList.length} personnages · {quoiList.length} situations · {ouList.length} lieux
                 </p>
@@ -867,9 +867,9 @@ export default function App() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <IdeaPart icon={<User size={16} />} label="Qui ?" value={generatedIdea?.qui} color="bg-fun-pink/20 text-fun-pink" />
-              <IdeaPart icon={<Activity size={16} />} label="Quoi ?" value={generatedIdea?.quoi} color="bg-fun-sky/20 text-fun-sky" />
-              <IdeaPart icon={<MapPin size={16} />} label="Où ?" value={generatedIdea?.ou} color="bg-fun-teal/20 text-fun-teal" />
+              <IdeaPart icon={<User size={16} />} label="Qui ?" value={generatedIdea?.qui} color="bg-accent/15 text-accent" />
+              <IdeaPart icon={<Activity size={16} />} label="Quoi ?" value={generatedIdea?.quoi} color="bg-fun-azur/15 text-fun-azur" />
+              <IdeaPart icon={<MapPin size={16} />} label="Où ?" value={generatedIdea?.ou} color="bg-fun-olive/15 text-fun-olive" />
             </div>
 
             {generatedIdea && (
@@ -882,9 +882,9 @@ export default function App() {
                   <span className="font-mono text-[0.6rem] uppercase tracking-wider text-fun-orange/70">Emotion</span>
                   <span className="font-medium text-fun-orange">{generatedIdea.emotion}</span>
                 </div>
-                <div className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm" style={{ background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.2)' }}>
-                  <span className="font-mono text-[0.6rem] uppercase tracking-wider text-fun-purple/70">Contrainte</span>
-                  <span className="font-medium text-fun-purple">{generatedIdea.contrainte}</span>
+                <div className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm" style={{ background: 'rgba(42,125,225,0.1)', border: '1px solid rgba(42,125,225,0.15)' }}>
+                  <span className="font-mono text-[0.6rem] uppercase tracking-wider text-fun-azur/70">Contrainte</span>
+                  <span className="font-medium text-fun-azur">{generatedIdea.contrainte}</span>
                 </div>
               </motion.div>
             )}
@@ -892,7 +892,7 @@ export default function App() {
             <button
               onClick={generateIdea}
               className="w-full py-3.5 rounded-full font-serif font-bold text-lg text-white transition-all flex items-center justify-center gap-3 active:scale-[0.97] animate-glow-pulse"
-              style={{ background: 'linear-gradient(135deg, #ff2d78, #7c3aed)', boxShadow: '0 4px 20px rgba(255,45,120,0.3)' }}
+              style={{ background: 'linear-gradient(135deg, #e05a2b, #2a7de1)', boxShadow: '0 4px 20px rgba(224,90,43,0.2)' }}
             >
               <RefreshCw size={18} className={generatedIdea ? "animate-spin-once" : ""} />
               {generatedIdea ? "Generer une autre idee" : "Lancer l'inspiration"}
@@ -907,8 +907,8 @@ export default function App() {
         )}
       </main>
 
-      <footer className="text-center py-6 font-mono text-[0.7rem] tracking-widest border-t border-fun-purple/15" style={{ background: 'linear-gradient(180deg, #0f0a1a, #1a0e2e)' }}>
-        <span className="text-muted">Improvisation theatrale</span> <span className="text-fun-pink">*</span> <span className="text-muted">By Mondorito</span> <span className="text-fun-sky">*</span> <span className="text-gold">Le spectacle continue</span>
+      <footer className="text-center py-6 font-mono text-[0.7rem] tracking-widest border-t border-warm" style={{ background: 'linear-gradient(180deg, #1e3a5f, #162d4a)' }}>
+        <span className="text-cream/70">Improvisation theatrale</span> <span className="text-accent">*</span> <span className="text-cream/70">By Mondorito</span> <span className="text-fun-azur">*</span> <span className="text-gold">Le spectacle continue</span>
       </footer>
     </motion.div>
     </>
@@ -947,10 +947,10 @@ function Phase({ id, time, duration, title, color, intro, isCompleted, onToggle,
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-4">
         <div className="flex items-baseline gap-3 flex-wrap">
-          <span className="font-mono text-[0.65rem] px-2.5 py-0.5 rounded-full whitespace-nowrap" style={{ background: 'rgba(124,58,237,0.15)', color: '#8b7fa8' }}>
+          <span className="font-mono text-[0.65rem] px-2.5 py-0.5 rounded-full whitespace-nowrap" style={{ background: 'rgba(42,125,225,0.1)', color: '#6b8aaa' }}>
             {time}
           </span>
-          <h2 className={`font-serif text-lg sm:text-xl font-bold transition-all ${isCompleted ? 'text-muted line-through' : 'text-cream'}`}>
+          <h2 className={`font-serif text-lg sm:text-xl font-bold transition-all ${isCompleted ? 'text-muted line-through' : 'text-ink'}`}>
             {title}
           </h2>
         </div>
@@ -960,7 +960,7 @@ function Phase({ id, time, duration, title, color, intro, isCompleted, onToggle,
           <button
             onClick={onToggle}
             className={`flex items-center gap-2 px-3 py-1.5 sm:py-1 rounded-full text-[0.65rem] sm:text-[0.7rem] font-mono uppercase tracking-wider transition-colors whitespace-nowrap ${
-              isCompleted ? 'bg-fun-teal/20 text-fun-teal' : 'bg-fun-purple/15 text-muted hover:bg-fun-purple/25'
+              isCompleted ? 'bg-fun-teal/20 text-fun-teal' : 'bg-fun-azur/10 text-muted hover:bg-fun-azur/20'
             }`}
           >
             {isCompleted ? <CheckCircle2 size={14} /> : null}
@@ -1008,7 +1008,7 @@ function PhaseTimer({ duration, color }: { duration: number; color: string }) {
   const isFinished = timeLeft === 0;
 
   return (
-    <div className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full font-mono text-[0.65rem] sm:text-[0.75rem] text-cream ${isFinished ? 'animate-pulse bg-fun-pink' : ''}`} style={!isFinished ? { background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.3)' } : {}}>
+    <div className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full font-mono text-[0.65rem] sm:text-[0.75rem] text-ink ${isFinished ? 'animate-pulse bg-accent text-white' : ''}`} style={!isFinished ? { background: 'rgba(42,125,225,0.1)', border: '1px solid rgba(42,125,225,0.2)' } : {}}>
       <span className="w-8 sm:w-10 text-center">{formatTime(timeLeft)}</span>
       <div className="flex items-center gap-1 border-l border-muted/30 pl-1.5 sm:pl-2">
         <button onClick={toggle} className="hover:text-gold transition-colors p-0.5">
@@ -1035,15 +1035,15 @@ function ExerciseCard({ name, tag, description, steps, tip, objectifs, variante,
   return (
     <div className="card-pop rounded-xl p-5 mb-4">
       <div className="flex items-center gap-3 mb-1.5">
-        <h3 className="font-sans font-medium text-base text-cream">{name}</h3>
-        {tag && <span className="font-mono text-[0.6rem] uppercase tracking-wider px-2 py-0.5 rounded-full bg-fun-purple/15 text-fun-purple">{tag}</span>}
+        <h3 className="font-sans font-medium text-base text-ink">{name}</h3>
+        {tag && <span className="font-mono text-[0.6rem] uppercase tracking-wider px-2 py-0.5 rounded-full bg-fun-azur/10 text-fun-azur">{tag}</span>}
       </div>
       <p className="text-[0.88rem] text-muted mb-3 leading-relaxed">{description}</p>
 
       <ul className="space-y-2 mb-4">
         {steps.map((step, i) => (
-          <li key={i} className="text-[0.85rem] pl-7 relative border-t border-fun-purple/10 pt-2 first:border-t-0 first:pt-0 text-cream/80">
-            <span className="absolute left-0 top-2 first:top-0 w-5 h-5 rounded-full bg-fun-purple/20 text-fun-purple font-mono text-[0.7rem] flex items-center justify-center">
+          <li key={i} className="text-[0.85rem] pl-7 relative border-t border-warm pt-2 first:border-t-0 first:pt-0 text-ink/80">
+            <span className="absolute left-0 top-2 first:top-0 w-5 h-5 rounded-full bg-fun-azur/15 text-fun-azur font-mono text-[0.7rem] flex items-center justify-center">
               {i + 1}
             </span>
             {step}
@@ -1063,7 +1063,7 @@ function ExerciseCard({ name, tag, description, steps, tip, objectifs, variante,
       )}
 
       {variante && (
-        <div className="border-l-3 border-fun-purple p-3 rounded-r-md mt-3 text-[0.82rem] text-fun-purple/80" style={{ background: 'rgba(124,58,237,0.08)' }}>
+        <div className="border-l-3 border-fun-azur p-3 rounded-r-md mt-3 text-[0.82rem] text-fun-azur/80" style={{ background: 'rgba(42,125,225,0.06)' }}>
           <strong>Variante :</strong> {variante}
         </div>
       )}
@@ -1084,13 +1084,13 @@ function ExerciseCard({ name, tag, description, steps, tip, objectifs, variante,
 function BilanCard({ title, items }: { title: string; items: string[] }) {
   return (
     <div className="card-pop rounded-xl p-4">
-      <h4 className="font-sans font-medium text-[0.85rem] mb-2 flex items-center gap-2 text-cream">
+      <h4 className="font-sans font-medium text-[0.85rem] mb-2 flex items-center gap-2 text-ink">
         {title}
       </h4>
       <ul className="space-y-1.5">
         {items.map((item, i) => (
           <li key={i} className="text-[0.8rem] text-muted flex gap-2 items-start">
-            <ArrowRight size={12} className="text-fun-pink mt-1 shrink-0" />
+            <ArrowRight size={12} className="text-accent mt-1 shrink-0" />
             {item}
           </li>
         ))}
@@ -1103,10 +1103,10 @@ function getObjClass(obj: string) {
   switch (obj.toLowerCase()) {
     case 'qui': return 'bg-fun-teal/20 text-fun-teal';
     case 'quoi': return 'bg-fun-sky/20 text-fun-sky';
-    case 'où': return 'bg-fun-pink/20 text-fun-pink';
-    case 'corps': return 'bg-fun-purple/20 text-fun-purple';
+    case 'où': return 'bg-accent/15 text-accent';
+    case 'corps': return 'bg-fun-azur/15 text-fun-azur';
     case 'écoute': return 'bg-fun-orange/20 text-fun-orange';
-    default: return 'bg-fun-purple/10 text-muted';
+    default: return 'bg-fun-azur/10 text-muted';
   }
 }
 
@@ -1123,7 +1123,7 @@ function IdeaPart({ icon, label, value, color }: { icon: ReactNode, label: strin
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
-          className={`min-h-[60px] flex items-center justify-center text-center p-3 rounded-xl text-sm font-bold leading-tight ${value ? color : 'text-muted italic border border-dashed border-fun-purple/20'}`}
+          className={`min-h-[60px] flex items-center justify-center text-center p-3 rounded-xl text-sm font-bold leading-tight ${value ? color : 'text-muted italic border border-dashed border-warm'}`}
         >
           {value || "???"}
         </motion.div>
