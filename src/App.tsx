@@ -627,8 +627,8 @@ export default function App() {
         {activeTab === 'cours' && (
           <>
 
-        {/* Course View — dynamic course from back office */}
-        {selectedCourseId && selectedCourseId !== 'default' && (() => {
+        {/* Course View — when a course is selected */}
+        {selectedCourseId && (() => {
           const course = courses.find(c => c.id === selectedCourseId);
           if (!course) return null;
           const prof = profs.find(p => p.id === course.profId) || null;
@@ -641,22 +641,29 @@ export default function App() {
           );
         })()}
 
-        {/* Course Grid + Default Course */}
-        {(!selectedCourseId || selectedCourseId === 'default') && (
+        {/* Home: Course Grid + Generator */}
+        {!selectedCourseId && (
           <>
 
         {/* COURSE CARDS GRID */}
-        {courses.length > 0 && !selectedCourseId && (
-          <section className="mb-10">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="bg-gradient-to-br from-accent/15 to-gold/10 p-2 rounded-lg">
-                <BookOpen size={20} className="text-accent" />
-              </div>
-              <div>
-                <h2 className="font-serif text-xl font-bold text-ink">Nos Cours</h2>
-                <p className="text-xs text-muted font-mono uppercase tracking-wider">Cliquez pour accéder au cours</p>
-              </div>
+        <section className="mb-10">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="bg-gradient-to-br from-accent/15 to-gold/10 p-2 rounded-lg">
+              <BookOpen size={20} className="text-accent" />
             </div>
+            <div>
+              <h2 className="font-serif text-xl font-bold text-ink">Nos Cours</h2>
+              <p className="text-xs text-muted font-mono uppercase tracking-wider">Cliquez pour accéder au cours</p>
+            </div>
+          </div>
+
+          {courses.length === 0 ? (
+            <div className="bg-white rounded-xl p-10 shadow-sm border border-warm text-center">
+              <BookOpen size={40} className="text-muted/30 mx-auto mb-3" />
+              <p className="text-muted font-serif text-lg">Aucun cours pour le moment</p>
+              <p className="text-sm text-muted/70 mt-1">Créez votre premier cours dans les Coulisses !</p>
+            </div>
+          ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {courses.map((course, i) => {
                 const prof = profs.find(p => p.id === course.profId);
@@ -672,7 +679,6 @@ export default function App() {
                     onClick={() => setSelectedCourseId(course.id)}
                     className="relative bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow text-left group aspect-square flex flex-col"
                   >
-                    {/* Color bar top */}
                     <div className="h-2 w-full" style={{ background: `linear-gradient(90deg, ${mainColor}, ${course.phases[1]?.color || mainColor})` }} />
                     <div className="flex-1 p-4 flex flex-col justify-between">
                       <div>
@@ -713,21 +719,10 @@ export default function App() {
                 );
               })}
             </div>
-          </section>
-        )}
+          )}
+        </section>
 
-        {/* Back button when viewing default course from grid */}
-        {selectedCourseId === 'default' && courses.length > 0 && (
-          <button
-            onClick={() => setSelectedCourseId(null)}
-            className="flex items-center gap-2 text-muted hover:text-accent font-mono text-sm mb-6 transition-colors"
-          >
-            <ArrowRight size={16} className="rotate-180" />
-            Retour aux cours
-          </button>
-        )}
-
-        {/* GENERATEUR D'IDEES — enrichi */}
+        {/* GENERATEUR D'IDEES */}
         <section className="mb-12">
           <div className="bg-white rounded-xl p-6 shadow-md border-2 border-gold/20 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-10">
@@ -753,7 +748,6 @@ export default function App() {
               <IdeaPart icon={<MapPin size={16} />} label="Où ?" value={generatedIdea?.ou} color="bg-[#f5d4d4] text-[#6a1a1a]" />
             </div>
 
-            {/* Bonus: emotion & contrainte */}
             {generatedIdea && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
@@ -780,291 +774,6 @@ export default function App() {
             </button>
           </div>
         </section>
-
-        {/* PHASE 1 */}
-        <Phase
-          id="warmup"
-          time="0 – 10 min"
-          duration={10}
-          title="Échauffement — Le Corps dans l'Espace"
-          color="#4a7c59"
-          intro="Activer le corps, libérer les inhibitions, occuper l'espace ensemble."
-          isCompleted={completedPhases['warmup']}
-          onToggle={() => togglePhase('warmup')}
-        >
-          <ExerciseCard
-            name="La Marche des Statuts"
-            tag="Collectif"
-            description="Marche libre dans l'espace. Le coach crie un chiffre de 1 à 10 qui désigne un statut social/état émotionnel. Tout le monde adapte immédiatement sa posture, son regard, son allure."
-            steps={[
-              "Marche neutre 1 min — on remplit tout l'espace, on évite de tourner en rond.",
-              "Coach crie « 2 » (timide, effacé) → corps rentré, regard bas.",
-              "Coach crie « 9 » (PDG du monde) → port de tête haut, pas lent et assuré.",
-              "Alterner rapidement 2-8-1-10 — observer ce que ça change en soi.",
-              "Variante finale : chaque participant choisit son statut et on essaie de lire ceux des autres."
-            ]}
-            tip="On cherche à ancrer que le corps raconte avant la bouche. C'est le cœur du cours."
-            objectifs={["Qui", "Corps"]}
-          />
-        </Phase>
-
-        {/* PHASE 2 */}
-        <Phase
-          id="theory"
-          time="10 – 15 min"
-          duration={5}
-          title="Mini-cours — Les 3 questions, les 3 couches"
-          color="#b8860b"
-          intro="On ne fait pas la théorie au tableau : on l'énonce debout, en cercle, en 5 min."
-          isCompleted={completedPhases['theory']}
-          onToggle={() => togglePhase('theory')}
-        >
-          <ExerciseCard
-            name="Le Triptyque du Décor"
-            description="Le coach pose les trois questions et leurs trois couches d'expression possibles. Chaque participant peut donner un exemple vite fait."
-            steps={[
-              "QUI ? → Identité, relation, statut. Vecteurs : posture, costume imaginaire, manière de regarder l'autre.",
-              "QUOI ? → L'action, l'activité, l'enjeu. Vecteurs : geste fonctionnel précis, objet imaginaire manipulé, rythme.",
-              "OÙ ? → Le lieu, l'atmosphère, la période. Vecteurs : résistances physiques (sol, air, lumière), points d'ancrage dans l'espace, réactions à l'environnement."
-            ]}
-            tip="Règle d'or : « Dans les 30 premières secondes d'une scène, au moins deux des trois questions doivent avoir une réponse claire pour le public — sans qu'on l'explique. »"
-          />
-        </Phase>
-
-        {/* PHASE 3 */}
-        <Phase
-          id="ex1"
-          time="15 – 30 min"
-          duration={15}
-          title="Exercice 1 — L'Objet Révélateur"
-          color="#5b8fd4"
-          intro="Utiliser un geste ou un objet imaginaire pour installer simultanément Qui, Quoi et Où — sans un mot."
-          isCompleted={completedPhases['ex1']}
-          onToggle={() => togglePhase('ex1')}
-        >
-          <ExerciseCard
-            name="Entrée en scène silencieuse"
-            tag="Solo / 1 min chacun"
-            description="Chaque participant entre seul sur la « scène » et installe un début de scène en 45 secondes, sans parole. Le groupe observe et tente de répondre aux 3 questions."
-            steps={[
-              "Le coach tire une carte (ou dit à voix basse) un contexte parmi : chirurgien en salle d'op, enfant le matin de Noël, plombier sous un évier, astronaute en sortie EVA, boulanger à 4h du mat, accusé au tribunal.",
-              "L'improvisateur entre, s'installe, fait une action physique précise — 45 sec max.",
-              "Arrêt. Le public répond : Qui ? Quoi ? Où ? — main levée, une réponse par personne.",
-              "L'improvisateur révèle son intention et on compare. Discussion 1 min max.",
-              "Passer au suivant. Viser 5 passages en 15 min (groupes de 2 si besoin)."
-            ]}
-            tip="Ce qu'on cherche : la précision du geste (pas une indication floue, mais la résistance d'un couvercle qui résiste, l'odeur d'un produit, le poids d'un instrument). Le vague ne raconte rien."
-            variante="Imposer que la réponse au Où soit donnée uniquement par la relation du corps au sol et à l'air — sans aucun objet manipulé."
-            objectifs={["Qui", "Quoi", "Où", "Corps"]}
-          />
-        </Phase>
-
-        {/* PHASE 4 */}
-        <Phase
-          id="ex2"
-          time="30 – 45 min"
-          duration={15}
-          title="Exercice 2 — Tableau Vivant à Deux"
-          color="#9b59b6"
-          intro="Construire un contexte à deux joueurs — la relation crée le Qui et densifie tout le reste."
-          isCompleted={completedPhases['ex2']}
-          onToggle={() => togglePhase('ex2')}
-        >
-          <ExerciseCard
-            name="Freeze & Read"
-            tag="Duos · 2 min / scène"
-            description="Deux joueurs entrent et démarrent une scène sans parole. Au bout de 30 secondes le coach crie « Freeze ! » — les deux se figent. Le reste du groupe lit la scène."
-            steps={[
-              "Former 5 duos. Chaque duo reçoit un contexte.",
-              "Les deux entrent, s'installent, commencent à jouer — sans parole ou avec très peu.",
-              "Freeze à 30 sec. Lecture par les observateurs : Qui est qui ? Quelle relation ? Où ? Que se passe-t-il ?",
-              "Dégel : le duo continue 1 min, peut parler maintenant pour confirmer ou infirmer les lectures.",
-              "Bref retour collectif : qu'est-ce qui a immédiatement installé le contexte ? Qu'est-ce qui était ambigu ?"
-            ]}
-            tip="Point coaching clé : regarder si les deux joueurs habitent le même espace — même sol, même lumière, même température. Une des erreurs les plus fréquentes est de jouer côte à côte dans des univers différents."
-            objectifs={["Qui", "Où", "Écoute", "Corps"]}
-          >
-            <div className="bg-warm/30 rounded-lg p-4 mt-4">
-              <div className="font-mono text-[0.65rem] uppercase tracking-wider text-muted mb-2">Contextes suggérés pour les duos</div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                <div>👨‍⚕️ Dentiste / patient très anxieux</div>
-                <div>🚀 Deux astronautes (attente décollage)</div>
-                <div>📚 Bibliothécaire / étudiant épuisé</div>
-                <div>🍳 Chef étoilé / stagiaire maladroit</div>
-                <div>⚖️ Avocat / client en plein déni</div>
-                <div>🏕️ Deux randonneurs perdus (brouillard)</div>
-                <div>🎭 Metteur en scène / acteur (répétition)</div>
-                <div>🛒 Caissière / client pressé</div>
-              </div>
-            </div>
-          </ExerciseCard>
-        </Phase>
-
-        {/* PHASE 5 */}
-        <Phase
-          id="ex3"
-          time="45 – 60 min"
-          duration={15}
-          title="Exercice 3 — Scènes Courtes"
-          color="#c8440a"
-          intro="Intégration finale. On joue de vraies scènes de 2 à 4 min avec la contrainte que le décor soit posé en 20 secondes."
-          isCompleted={completedPhases['ex3']}
-          onToggle={() => togglePhase('ex3')}
-        >
-          <ExerciseCard
-            name="Le Chrono du Décor"
-            tag="Groupes de 3 · 3 min / scène"
-            description="Former des groupes de 3. Une personne observe et chronomètre mentalement. Le coach donne un contexte tiré au hasard — les joueurs ont 20 secondes pour installer le Qui Quoi Où."
-            steps={[
-              "Le coach donne le contexte. Les 2 joueurs entrent immédiatement.",
-              "L'observateur chronomètre et note mentalement à quel moment il a compris les 3 éléments.",
-              "Scène libre jusqu'à 3-4 min ou jusqu'au signal du coach.",
-              "L'observateur donne son retour : « J'ai compris le Où à 8 sec, le Qui à 12 sec... »",
-              "On passe au trio suivant."
-            ]}
-            tip="Règle pour les joueurs : ne jamais annoncer le contexte. Montrer, ne pas dire."
-            variante="Le coach peut crier « Silence ! » à n'importe quel moment — les joueurs doivent maintenir la scène par le corps."
-            objectifs={["Qui", "Quoi", "Où", "Écoute", "Corps"]}
-          />
-        </Phase>
-
-        {/* BILAN */}
-        <Phase
-          id="debrief"
-          time="55 – 60 min"
-          duration={5}
-          title="Bilan — Le Cercle des 3 Questions"
-          color="#e67e22"
-          intro="Debriefing debout, en cercle, 5 min. Chacun répond à une seule question."
-          isCompleted={completedPhases['debrief']}
-          onToggle={() => togglePhase('debrief')}
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-            <BilanCard
-              title="🟢 Ce que j'ai trouvé facile"
-              items={["Installer le Où par le sol", "La relation physique à l'autre", "Le geste fonctionnel"]}
-            />
-            <BilanCard
-              title="🔴 Ce qui m'a résisté"
-              items={["Résister à l'envie d'expliquer", "Habiter le même espace que l'autre", "Maintenir sans parole sous tension"]}
-            />
-            <BilanCard
-              title="🎯 À retenir"
-              items={["Le corps parle avant la voix", "Un geste précis vaut 10 lignes", "Le Où se ressent, il ne s'annonce pas"]}
-            />
-          </div>
-        </Phase>
-
-        {/* GESTION DES PARTICIPANTS */}
-        <Phase
-          id="admin"
-          time="Administration"
-          title="Gestion des Participants"
-          color="#1a1410"
-          intro="Suivi des élèves présents pour cette séance d'improvisation."
-          isCompleted={completedPhases['admin']}
-          onToggle={() => togglePhase('admin')}
-        >
-          <div className="bg-white rounded-lg p-6 shadow-sm mb-6">
-            <form onSubmit={addParticipant} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[1fr_1fr_1fr_auto] gap-3 sm:gap-4 items-end mb-8">
-              <div>
-                <label className="block font-mono text-[0.65rem] uppercase tracking-wider text-muted mb-1.5">Nom complet</label>
-                <input
-                  type="text"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  placeholder="Ex: Marie Curie"
-                  className="w-full bg-cream/50 border border-warm rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gold"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block font-mono text-[0.65rem] uppercase tracking-wider text-muted mb-1.5">Contact</label>
-                <input
-                  type="text"
-                  value={newContact}
-                  onChange={(e) => setNewContact(e.target.value)}
-                  placeholder="Email ou Tél"
-                  className="w-full bg-cream/50 border border-warm rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gold"
-                />
-              </div>
-              <div>
-                <label className="block font-mono text-[0.65rem] uppercase tracking-wider text-muted mb-1.5">Niveau</label>
-                <select
-                  value={newLevel}
-                  onChange={(e) => setNewLevel(e.target.value)}
-                  className="w-full bg-cream/50 border border-warm rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gold appearance-none"
-                >
-                  <option>Débutant</option>
-                  <option>Intermédiaire</option>
-                  <option>Avancé</option>
-                </select>
-              </div>
-              <button
-                type="submit"
-                className="bg-gradient-to-r from-stage to-ink text-cream px-4 py-2 rounded-md text-sm font-medium hover:from-ink hover:to-stage transition-colors flex items-center justify-center gap-2"
-              >
-                <UserPlus size={16} />
-                Ajouter
-              </button>
-            </form>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-warm">
-                    <th className="py-3 font-mono text-[0.65rem] uppercase tracking-wider text-muted">Nom</th>
-                    <th className="py-3 font-mono text-[0.65rem] uppercase tracking-wider text-muted">Contact</th>
-                    <th className="py-3 font-mono text-[0.65rem] uppercase tracking-wider text-muted">Niveau</th>
-                    <th className="py-3 text-right"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-warm/50">
-                  <AnimatePresence initial={false}>
-                    {participants.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="py-8 text-center text-sm text-muted italic">
-                          Aucun participant inscrit pour le moment.
-                        </td>
-                      </tr>
-                    ) : (
-                      participants.map((p) => (
-                        <motion.tr
-                          key={p.id}
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="group"
-                        >
-                          <td className="py-4 text-sm font-medium text-ink">{p.name}</td>
-                          <td className="py-4 text-sm text-muted">{p.contact || '—'}</td>
-                          <td className="py-4">
-                            <span className={`text-[0.65rem] px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                              p.level === 'Débutant' ? 'bg-green-100 text-green-800' :
-                              p.level === 'Avancé' ? 'bg-purple-100 text-purple-800' :
-                              'bg-blue-100 text-blue-800'
-                            }`}>
-                              {p.level}
-                            </span>
-                          </td>
-                          <td className="py-4 text-right">
-                            <button
-                              onClick={() => removeParticipant(p.id)}
-                              className="text-muted hover:text-accent transition-colors p-1"
-                              title="Supprimer"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </td>
-                        </motion.tr>
-                      ))
-                    )}
-                  </AnimatePresence>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </Phase>
 
         </>
         )}
