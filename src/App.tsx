@@ -64,7 +64,7 @@ interface Course {
 const defaultProfs: ProfData[] = [
   {
     id: 'mondorito',
-    photo: null,
+    photo: '/photos/mondorito.jpg',
     name: 'Mondorito',
     bio: "Coach d'impro depuis 15 ans. Spécialité : le jeu corporel et l'écoute active.",
     specialties: ['Jeu corporel', 'Écoute active', 'Direction de jeu'],
@@ -80,7 +80,7 @@ const defaultProfs: ProfData[] = [
   },
   {
     id: 'michel',
-    photo: null,
+    photo: '/photos/michel.jpg',
     name: 'Michel',
     bio: "Émotion volcanique. Spécialiste du jeu intense et des montées dramatiques qui emportent tout sur leur passage.",
     specialties: ['Jeu intense', 'Émotion', 'Charisme'],
@@ -96,7 +96,7 @@ const defaultProfs: ProfData[] = [
   },
   {
     id: 'cathy',
-    photo: null,
+    photo: '/photos/cathy.jpg',
     name: 'Cathy',
     bio: "Chanteuse et danseuse émérite. Elle mêle le mouvement, la voix et le rythme pour une impro totalement incarnée.",
     specialties: ['Chant', 'Danse', 'Rythme', 'Expression vocale'],
@@ -112,7 +112,7 @@ const defaultProfs: ProfData[] = [
   },
   {
     id: 'gwen',
-    photo: null,
+    photo: '/photos/gwen.jpg',
     name: 'Gwen',
     bio: "Créative de génie. Reine de l'inattendu, elle transforme chaque scène en univers singulier et surprenant.",
     specialties: ['Créativité', 'Narration', 'Direction artistique'],

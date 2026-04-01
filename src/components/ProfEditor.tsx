@@ -224,6 +224,39 @@ export default function ProfEditor({ prof, onSave, onCancel }: ProfEditorProps) 
                 <Camera className="w-6 h-6 text-white" />
               </div>
             </button>
+            {data.photo && (
+              <button
+                type="button"
+                onClick={() => setData((d) => ({ ...d, photo: null }))}
+                className="mt-1 text-[0.6rem] font-mono text-accent hover:underline"
+              >
+                Supprimer
+              </button>
+            )}
+            <div className="mt-2 w-28">
+              <input
+                type="text"
+                placeholder="ou URL photo..."
+                className="w-full text-[0.6rem] font-mono bg-cream/50 border border-warm rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-gold text-muted"
+                onBlur={(e) => {
+                  const url = e.target.value.trim();
+                  if (url) {
+                    setData((d) => ({ ...d, photo: url }));
+                    e.target.value = '';
+                  }
+                }}
+                onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const url = (e.target as HTMLInputElement).value.trim();
+                    if (url) {
+                      setData((d) => ({ ...d, photo: url }));
+                      (e.target as HTMLInputElement).value = '';
+                    }
+                  }
+                }}
+              />
+            </div>
           </div>
 
           {/* Name */}
