@@ -5,7 +5,7 @@
 
 import { motion, AnimatePresence } from "motion/react";
 import { ReactNode, useState, FormEvent, useEffect, useRef } from "react";
-import { Clock, Users, GraduationCap, Lightbulb, ArrowRight, Trash2, UserPlus, CheckCircle2, Play, Pause, RotateCcw, Sparkles, RefreshCw, MapPin, User, Activity, Lock } from "lucide-react";
+import { Clock, Users, GraduationCap, Lightbulb, ArrowRight, Trash2, UserPlus, CheckCircle2, Play, Pause, RotateCcw, Sparkles, RefreshCw, MapPin, User, Activity, Lock, BookOpen } from "lucide-react";
 import { quiList, quoiList, ouList, emotionsList, contraintesList } from "./data/ideas";
 import { courseTemplates } from "./data/courseTemplates";
 import { useLocalStorage } from "./hooks/useLocalStorage";
@@ -13,6 +13,7 @@ import BackOffice from "./components/BackOffice";
 import CourseBuilder from "./components/CourseBuilder";
 import ProfEditor from "./components/ProfEditor";
 import ProfShowcase from "./components/ProfShowcase";
+import CourseView from "./components/CourseView";
 
 interface Participant {
   id: string;
@@ -151,6 +152,9 @@ export default function App() {
   const [boView, setBoView] = useState<'list' | 'editCourse' | 'editProf'>('list');
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [editingProf, setEditingProf] = useState<ProfData | null>(null);
+
+  // Course view state — null means show grid, 'default' for built-in course, or course ID
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
 
   // State for impro generator — using enriched lists
   const [generatedIdea, setGeneratedIdea] = useState<{ qui: string, quoi: string, ou: string, emotion?: string, contrainte?: string } | null>(null);
@@ -395,6 +399,107 @@ export default function App() {
         {/* COURS TAB */}
         {activeTab === 'cours' && (
           <>
+
+        {/* Course View — dynamic course from back office */}
+        {selectedCourseId && selectedCourseId !== 'default' && (() => {
+          const course = courses.find(c => c.id === selectedCourseId);
+          if (!course) return null;
+          const prof = profs.find(p => p.id === course.profId) || null;
+          return (
+            <CourseView
+              course={course}
+              prof={prof}
+              onBack={() => setSelectedCourseId(null)}
+            />
+          );
+        })()}
+
+        {/* Course Grid + Default Course */}
+        {(!selectedCourseId || selectedCourseId === 'default') && (
+          <>
+
+        {/* COURSE CARDS GRID */}
+        {courses.length > 0 && !selectedCourseId && (
+          <section className="mb-10">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="bg-gradient-to-br from-accent/15 to-gold/10 p-2 rounded-lg">
+                <BookOpen size={20} className="text-accent" />
+              </div>
+              <div>
+                <h2 className="font-serif text-xl font-bold text-ink">Nos Cours</h2>
+                <p className="text-xs text-muted font-mono uppercase tracking-wider">Cliquez pour accéder au cours</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {courses.map((course, i) => {
+                const prof = profs.find(p => p.id === course.profId);
+                const mainColor = course.phases[0]?.color || '#c8440a';
+                return (
+                  <motion.button
+                    key={course.id}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.08 }}
+                    whileHover={{ scale: 1.04, y: -4 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => setSelectedCourseId(course.id)}
+                    className="relative bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow text-left group aspect-square flex flex-col"
+                  >
+                    {/* Color bar top */}
+                    <div className="h-2 w-full" style={{ background: `linear-gradient(90deg, ${mainColor}, ${course.phases[1]?.color || mainColor})` }} />
+                    <div className="flex-1 p-4 flex flex-col justify-between">
+                      <div>
+                        <span className={`font-mono text-[0.55rem] px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                          course.level === 'Débutant' ? 'bg-green-100 text-green-700' :
+                          course.level === 'Avancé' ? 'bg-purple-100 text-purple-700' :
+                          'bg-blue-100 text-blue-700'
+                        }`}>
+                          {course.level}
+                        </span>
+                        <h3 className="font-serif font-bold text-ink text-sm sm:text-base mt-2 leading-snug line-clamp-2 group-hover:text-accent transition-colors">
+                          {course.title}
+                        </h3>
+                      </div>
+                      <div className="mt-auto pt-3">
+                        <div className="flex items-center gap-1.5 text-muted font-mono text-[0.6rem]">
+                          <Clock size={10} />
+                          {course.duration} min
+                        </div>
+                        {prof && (
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <div
+                              className="w-5 h-5 rounded-full flex items-center justify-center text-[0.5rem] font-bold overflow-hidden border"
+                              style={{ borderColor: prof.color, backgroundColor: prof.color + '20', color: prof.color }}
+                            >
+                              {prof.photo ? (
+                                <img src={prof.photo} alt={prof.name} className="w-full h-full object-cover" />
+                              ) : (
+                                prof.name.charAt(0)
+                              )}
+                            </div>
+                            <span className="font-mono text-[0.6rem] text-muted truncate">{prof.name}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* Back button when viewing default course from grid */}
+        {selectedCourseId === 'default' && courses.length > 0 && (
+          <button
+            onClick={() => setSelectedCourseId(null)}
+            className="flex items-center gap-2 text-muted hover:text-accent font-mono text-sm mb-6 transition-colors"
+          >
+            <ArrowRight size={16} className="rotate-180" />
+            Retour aux cours
+          </button>
+        )}
+
         {/* GENERATEUR D'IDEES — enrichi */}
         <section className="mb-12">
           <div className="bg-white rounded-xl p-6 shadow-md border-2 border-gold/20 relative overflow-hidden">
@@ -733,6 +838,9 @@ export default function App() {
             </div>
           </div>
         </Phase>
+
+        </>
+        )}
 
         </>
         )}
