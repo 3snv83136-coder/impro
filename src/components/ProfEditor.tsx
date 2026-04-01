@@ -172,7 +172,7 @@ export default function ProfEditor({ prof, onSave, onCancel }: ProfEditorProps) 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl border border-warm overflow-hidden"
+      className="max-w-2xl mx-auto bg-parchment rounded-sm shadow-xl border border-gold/20 overflow-hidden"
     >
       {/* Header */}
       <div
@@ -269,7 +269,7 @@ export default function ProfEditor({ prof, onSave, onCancel }: ProfEditorProps) 
               value={data.name}
               onChange={(e) => setData((d) => ({ ...d, name: e.target.value }))}
               placeholder="Entrez le nom..."
-              className="w-full text-2xl font-serif text-ink bg-transparent border-b-2 border-warm focus:border-accent outline-none pb-2 placeholder:text-muted/40 transition-colors"
+              className="w-full text-2xl font-serif text-ink bg-transparent border-b-2 border-warm focus:border-gold outline-none pb-2 placeholder:text-muted/40 transition-colors"
             />
           </div>
         </div>
@@ -284,7 +284,7 @@ export default function ProfEditor({ prof, onSave, onCancel }: ProfEditorProps) 
             onChange={(e) => setData((d) => ({ ...d, bio: e.target.value }))}
             placeholder="Racontez l'histoire de ce professeur, son parcours, sa passion pour l'impro..."
             rows={4}
-            className="w-full bg-warm/30 border border-warm rounded-xl p-4 text-sm text-ink leading-relaxed placeholder:text-muted/40 focus:border-accent focus:ring-1 focus:ring-accent/30 outline-none resize-none transition-colors"
+            className="w-full bg-warm/30 border border-warm rounded-xl p-4 text-sm text-ink leading-relaxed placeholder:text-muted/40 focus:border-gold focus:ring-1 focus:ring-accent/30 outline-none resize-none transition-colors"
           />
         </div>
 
@@ -330,7 +330,7 @@ export default function ProfEditor({ prof, onSave, onCancel }: ProfEditorProps) 
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
               onKeyDown={handleSpecialtyKeyDown}
               placeholder="Tapez une spécialité + Entrée..."
-              className="w-full bg-warm/30 border border-warm rounded-lg px-4 py-2.5 text-sm text-ink placeholder:text-muted/40 focus:border-accent outline-none transition-colors"
+              className="w-full bg-warm/30 border border-warm rounded-lg px-4 py-2.5 text-sm text-ink placeholder:text-muted/40 focus:border-gold outline-none transition-colors"
             />
             {/* Suggestions dropdown */}
             <AnimatePresence>
@@ -339,7 +339,7 @@ export default function ProfEditor({ prof, onSave, onCancel }: ProfEditorProps) 
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
-                  className="absolute z-10 top-full mt-1 left-0 right-0 bg-white rounded-lg shadow-lg border border-warm overflow-hidden"
+                  className="absolute z-10 top-full mt-1 left-0 right-0 bg-parchment rounded-sm shadow-lg border border-gold/20 overflow-hidden"
                 >
                   {filteredSuggestions.map((s) => (
                     <button
@@ -406,7 +406,7 @@ export default function ProfEditor({ prof, onSave, onCancel }: ProfEditorProps) 
                     type="text"
                     value={attr.label}
                     onChange={(e) => updateAttributeLabel(attr.id, e.target.value)}
-                    className="w-36 text-xs font-mono text-ink bg-transparent border-b border-dashed border-warm focus:border-accent outline-none pb-0.5"
+                    className="w-36 text-xs font-mono text-ink bg-transparent border-b border-dashed border-warm focus:border-gold outline-none pb-0.5"
                   />
                   <input
                     type="range"

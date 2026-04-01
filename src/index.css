@@ -1,31 +1,40 @@
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Fredoka", sans-serif;
+  --font-sans: "Crimson Text", Georgia, serif;
+  --font-serif: "Playfair Display", "Times New Roman", serif;
   --font-mono: "JetBrains Mono", monospace;
 
-  /* Méditerranée palette — lumineux & chaleureux */
-  --color-ink: #2c1810;
-  --color-cream: #fdf8f0;
-  --color-warm: #f0e6d4;
-  --color-accent: #e05a2b;
-  --color-gold: #d4a017;
-  --color-muted: #8a7b6b;
-  --color-stage: #1e3a5f;
+  /* Classic Theater palette */
+  --color-ink: #1a0a0a;
+  --color-cream: #fff8e7;
+  --color-warm: #f0e4cc;
+  --color-accent: #c41230;
+  --color-gold: #c5961b;
+  --color-muted: #7a6655;
+  --color-stage: #1a0a0a;
 
-  --color-fun-pink: #e05a2b;
+  --color-curtain: #8b1a2b;
+  --color-curtain-dark: #5c0a1a;
+  --color-curtain-light: #d4243b;
+  --color-gold-light: #e8c252;
+  --color-gold-dark: #8b6914;
+  --color-burgundy: #4a0e1a;
+  --color-parchment: #f5ecd7;
+
+  /* Keep fun-* mapped to theater palette for backward compat */
+  --color-fun-pink: #c41230;
   --color-fun-purple: #6a4c93;
-  --color-fun-teal: #0a9396;
-  --color-fun-coral: #ee6c4d;
-  --color-fun-sky: #3d8ecf;
-  --color-fun-yellow: #e9c46a;
-  --color-fun-orange: #f4a261;
-  --color-fun-olive: #606c38;
-  --color-fun-terracotta: #c65d3e;
-  --color-fun-azur: #2a7de1;
-  --color-fun-safran: #dba506;
+  --color-fun-teal: #8b6914;
+  --color-fun-coral: #c41230;
+  --color-fun-sky: #c5961b;
+  --color-fun-yellow: #e8c252;
+  --color-fun-orange: #c5961b;
+  --color-fun-olive: #7a6655;
+  --color-fun-terracotta: #8b1a2b;
+  --color-fun-azur: #c5961b;
+  --color-fun-safran: #c5961b;
 
   @keyframes spin-once {
     from { transform: rotate(0deg); }
@@ -66,8 +75,8 @@
   --animate-wiggle: wiggle 0.4s ease-in-out;
 
   @keyframes glow-pulse {
-    0%, 100% { box-shadow: 0 0 5px rgba(224, 90, 43, 0.2), 0 0 15px rgba(224, 90, 43, 0.08); }
-    50% { box-shadow: 0 0 12px rgba(224, 90, 43, 0.35), 0 0 30px rgba(224, 90, 43, 0.12); }
+    0%, 100% { box-shadow: 0 0 5px rgba(197, 150, 27, 0.2), 0 0 15px rgba(197, 150, 27, 0.08); }
+    50% { box-shadow: 0 0 12px rgba(197, 150, 27, 0.35), 0 0 30px rgba(197, 150, 27, 0.12); }
   }
   --animate-glow-pulse: glow-pulse 2s ease-in-out infinite;
 
@@ -83,19 +92,20 @@
   }
   --animate-confetti: confetti-fall 1s ease-out forwards;
 
-  @keyframes sun-glow {
+  @keyframes curtain-shimmer {
     0%, 100% { opacity: 0.6; }
     50% { opacity: 1; }
   }
-  --animate-sun-glow: sun-glow 4s ease-in-out infinite;
+  --animate-curtain-shimmer: curtain-shimmer 4s ease-in-out infinite;
 }
 
 @layer base {
   body {
     @apply bg-cream text-ink font-sans font-normal leading-relaxed;
     background-image:
-      radial-gradient(ellipse at 80% 0%, rgba(42, 125, 225, 0.06) 0%, transparent 50%),
-      radial-gradient(ellipse at 20% 100%, rgba(224, 90, 43, 0.05) 0%, transparent 50%);
+      url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E"),
+      radial-gradient(ellipse at 80% 0%, rgba(197, 150, 27, 0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 20% 100%, rgba(139, 26, 43, 0.03) 0%, transparent 50%);
   }
 }
 
@@ -116,30 +126,40 @@
   }
 
   .text-glow-terracotta {
-    text-shadow: 0 2px 8px rgba(224, 90, 43, 0.3);
+    text-shadow: 0 2px 8px rgba(139, 26, 43, 0.3);
   }
 
   .text-glow-azur {
-    text-shadow: 0 2px 8px rgba(42, 125, 225, 0.3);
+    text-shadow: 0 2px 8px rgba(197, 150, 27, 0.3);
   }
 
   .text-glow-olive {
-    text-shadow: 0 2px 8px rgba(96, 108, 56, 0.3);
+    text-shadow: 0 2px 8px rgba(122, 102, 85, 0.3);
   }
 
   .text-glow-gold {
-    text-shadow: 0 2px 8px rgba(212, 160, 23, 0.4);
+    text-shadow: 0 2px 8px rgba(197, 150, 27, 0.4);
   }
 
   .card-pop {
-    background: #ffffff;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+    background: #fff8e7;
+    border: 1px solid rgba(197, 150, 27, 0.2);
+    box-shadow: 0 2px 8px rgba(26, 10, 10, 0.08);
+    border-radius: 4px;
   }
 
   .card-pop:hover {
-    border-color: rgba(0, 0, 0, 0.12);
-    box-shadow: 0 8px 30px rgba(42, 125, 225, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06);
+    border-color: rgba(197, 150, 27, 0.4);
+    box-shadow: 0 4px 16px rgba(197, 150, 27, 0.12);
+  }
+
+  .gold-border {
+    border: 2px solid #c5961b;
+    box-shadow: inset 0 0 0 1px rgba(197, 150, 27, 0.3);
+  }
+
+  .curtain-gradient {
+    background: linear-gradient(180deg, #5c0a1a 0%, #8b1a2b 30%, #a02040 60%, #8b1a2b 100%);
   }
 
   .stripe-bg {
@@ -147,22 +167,22 @@
       -45deg,
       transparent,
       transparent 10px,
-      rgba(42, 125, 225, 0.03) 10px,
-      rgba(42, 125, 225, 0.03) 20px
+      rgba(197, 150, 27, 0.03) 10px,
+      rgba(197, 150, 27, 0.03) 20px
     );
   }
 
   .neon-border {
-    border: 2px solid rgba(42, 125, 225, 0.25);
-    box-shadow: 0 2px 12px rgba(42, 125, 225, 0.08);
+    border: 2px solid rgba(197, 150, 27, 0.25);
+    box-shadow: 0 2px 12px rgba(197, 150, 27, 0.08);
   }
 
   .med-tile {
     background-image:
-      linear-gradient(45deg, rgba(42, 125, 225, 0.03) 25%, transparent 25%),
-      linear-gradient(-45deg, rgba(42, 125, 225, 0.03) 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, rgba(42, 125, 225, 0.03) 75%),
-      linear-gradient(-45deg, transparent 75%, rgba(42, 125, 225, 0.03) 75%);
+      linear-gradient(45deg, rgba(197, 150, 27, 0.03) 25%, transparent 25%),
+      linear-gradient(-45deg, rgba(197, 150, 27, 0.03) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, rgba(197, 150, 27, 0.03) 75%),
+      linear-gradient(-45deg, transparent 75%, rgba(197, 150, 27, 0.03) 75%);
     background-size: 20px 20px;
     background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
   }

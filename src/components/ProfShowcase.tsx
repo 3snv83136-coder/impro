@@ -55,7 +55,7 @@ function FullRadar({
             key={level}
             points={points.map((p) => `${p.x},${p.y}`).join(" ")}
             fill="none"
-            stroke="rgba(42,125,225,0.15)"
+            stroke="rgba(197,150,27,0.15)"
             strokeWidth={level === 10 ? 1.5 : 0.5}
           />
         );
@@ -63,7 +63,7 @@ function FullRadar({
       {attributes.map((_, i) => {
         const p = getPoint(i, 10);
         return (
-          <line key={i} x1={center} y1={center} x2={p.x} y2={p.y} stroke="rgba(42,125,225,0.15)" strokeWidth={0.5} />
+          <line key={i} x1={center} y1={center} x2={p.x} y2={p.y} stroke="rgba(197,150,27,0.15)" strokeWidth={0.5} />
         );
       })}
       <polygon
@@ -134,7 +134,7 @@ function MiniRadar({
             key={level}
             points={points.map((p) => `${p.x},${p.y}`).join(" ")}
             fill="none"
-            stroke="rgba(42,125,225,0.15)"
+            stroke="rgba(197,150,27,0.15)"
             strokeWidth={level === 10 ? 1 : 0.3}
           />
         );
@@ -213,7 +213,7 @@ function ProfDetail({ prof, onBack }: { key?: string; prof: ProfData; onBack: ()
       </button>
 
       {/* Photo + Identity */}
-      <div className="card-pop rounded-2xl p-6 sm:p-8 mb-6">
+      <div className="card-pop rounded-sm p-6 sm:p-8 mb-6">
         <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
           <div
             className="w-32 h-32 sm:w-40 sm:h-40 rounded-full overflow-hidden border-4 shadow-lg flex-shrink-0"
@@ -247,7 +247,7 @@ function ProfDetail({ prof, onBack }: { key?: string; prof: ProfData; onBack: ()
 
       {/* Attributes list */}
       {prof.attributes.length > 0 && (
-        <div className="card-pop rounded-2xl p-6 mb-6">
+        <div className="card-pop rounded-sm p-6 mb-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 rounded-lg" style={{ backgroundColor: prof.color + '15' }}>
               <Award size={20} style={{ color: prof.color }} />
@@ -264,7 +264,7 @@ function ProfDetail({ prof, onBack }: { key?: string; prof: ProfData; onBack: ()
                   <span className="font-mono text-[0.75rem] uppercase tracking-wider text-ink">{attr.label}</span>
                   <span className="font-mono text-sm font-medium" style={{ color: prof.color }}>{attr.value}/10</span>
                 </div>
-                <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(42,125,225,0.1)' }}>
+                <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(197,150,27,0.1)' }}>
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${attr.value * 10}%` }}
@@ -281,7 +281,7 @@ function ProfDetail({ prof, onBack }: { key?: string; prof: ProfData; onBack: ()
 
       {/* Full Radar */}
       {prof.attributes.length >= 3 && (
-        <div className="card-pop rounded-2xl p-6">
+        <div className="card-pop rounded-sm p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="bg-gold/10 p-2 rounded-lg">
               <Star size={20} className="text-gold" />
@@ -313,7 +313,7 @@ function ProfCard({ prof, index, onClick }: { prof: ProfData; index: number; key
       whileHover={{ scale: 1.03, y: -4 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className="card-pop rounded-2xl overflow-hidden transition-shadow flex flex-col text-left cursor-pointer w-full"
+      className="card-pop rounded-sm overflow-hidden transition-shadow flex flex-col text-left cursor-pointer w-full"
     >
       {/* Color accent top bar */}
       <div
@@ -386,8 +386,8 @@ function EmptyState() {
       animate={{ opacity: 1 }}
       className="flex flex-col items-center justify-center py-20 gap-4 text-center"
     >
-      <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: 'rgba(42,125,225,0.1)' }}>
-        <Users className="w-10 h-10 text-fun-azur" />
+      <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: 'rgba(197,150,27,0.1)' }}>
+        <Users className="w-10 h-10 text-gold" />
       </div>
       <h3 className="font-serif text-xl text-ink">Aucun professeur</h3>
       <p className="text-sm text-muted max-w-sm">

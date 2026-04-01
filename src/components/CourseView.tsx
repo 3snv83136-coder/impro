@@ -80,7 +80,7 @@ export default function CourseView({ course, prof, onBack }: CourseViewProps) {
       </button>
 
       {/* Course header */}
-      <div className="card-pop rounded-2xl p-6 mb-8">
+      <div className="card-pop rounded-sm p-6 mb-8">
         <div className="flex flex-col sm:flex-row sm:items-start gap-4 justify-between">
           <div className="flex-1">
             <h1 className="font-serif text-2xl sm:text-3xl font-bold text-ink mb-2">{course.title}</h1>
@@ -90,17 +90,13 @@ export default function CourseView({ course, prof, onBack }: CourseViewProps) {
                 <Clock size={14} className="text-gold" />
                 {course.duration} min
               </span>
-              <span className={`font-mono text-[0.65rem] px-2.5 py-0.5 rounded-full uppercase tracking-wider font-semibold ${
-                course.level === 'Débutant' ? 'bg-fun-teal/20 text-fun-teal' :
-                course.level === 'Avancé' ? 'bg-fun-azur/15 text-fun-azur' :
-                'bg-fun-sky/20 text-fun-sky'
-              }`}>
+              <span className="font-mono text-[0.65rem] px-2.5 py-0.5 rounded-sm uppercase tracking-wider font-semibold bg-accent/15 text-accent">
                 {course.level}
               </span>
             </div>
           </div>
           {prof && (
-            <div className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ background: 'rgba(42,125,225,0.08)', border: '1px solid rgba(42,125,225,0.15)' }}>
+            <div className="flex items-center gap-3 rounded-sm px-4 py-3" style={{ background: 'rgba(197,150,27,0.08)', border: '1px solid rgba(197,150,27,0.15)' }}>
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center text-white font-serif font-bold text-sm overflow-hidden border-2"
                 style={{ borderColor: prof.color, backgroundColor: prof.color + '20' }}
@@ -136,7 +132,7 @@ export default function CourseView({ course, prof, onBack }: CourseViewProps) {
 
       {/* Timeline */}
       {course.phases.length > 0 && (
-        <div className="card-pop rounded-xl p-4 mb-8">
+        <div className="card-pop rounded-sm p-4 mb-8">
           <div className="font-mono text-[0.65rem] tracking-[0.15em] uppercase text-muted mb-2">
             Structure · {totalDuration} min
           </div>
@@ -215,7 +211,7 @@ function PhaseSection({ id, time, duration, title, color, intro, isCompleted, on
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-4">
         <div className="flex items-baseline gap-3 flex-wrap">
-          <span className="font-mono text-[0.65rem] px-2.5 py-0.5 rounded-full whitespace-nowrap" style={{ background: 'rgba(42,125,225,0.1)', color: '#8b7fa8' }}>
+          <span className="font-mono text-[0.65rem] px-2.5 py-0.5 rounded-sm whitespace-nowrap" style={{ background: 'rgba(197,150,27,0.1)', color: '#7a6655' }}>
             {time}
           </span>
           <h2 className={`font-serif text-lg sm:text-xl font-bold transition-all ${isCompleted ? 'text-muted line-through' : 'text-ink'}`}>
@@ -227,8 +223,8 @@ function PhaseSection({ id, time, duration, title, color, intro, isCompleted, on
           <PhaseTimer duration={duration} />
           <button
             onClick={onToggle}
-            className={`flex items-center gap-2 px-3 py-1.5 sm:py-1 rounded-full text-[0.65rem] sm:text-[0.7rem] font-mono uppercase tracking-wider transition-colors whitespace-nowrap ${
-              isCompleted ? 'bg-fun-teal/20 text-fun-teal' : 'bg-fun-azur/10 text-muted hover:bg-fun-azur/20'
+            className={`flex items-center gap-2 px-3 py-1.5 sm:py-1 rounded-sm text-[0.65rem] sm:text-[0.7rem] font-mono uppercase tracking-wider transition-colors whitespace-nowrap ${
+              isCompleted ? 'bg-gold/20 text-gold' : 'bg-gold/10 text-muted hover:bg-gold/20'
             }`}
           >
             {isCompleted ? <CheckCircle2 size={14} /> : null}
@@ -276,7 +272,7 @@ function PhaseTimer({ duration }: { duration: number }) {
   const isFinished = timeLeft === 0;
 
   return (
-    <div className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full font-mono text-[0.65rem] sm:text-[0.75rem] text-ink ${isFinished ? 'animate-pulse bg-accent text-white' : ''}`} style={!isFinished ? { background: 'rgba(42,125,225,0.15)', border: '1px solid rgba(42,125,225,0.2)' } : {}}>
+    <div className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-sm font-mono text-[0.65rem] sm:text-[0.75rem] text-ink ${isFinished ? 'animate-pulse bg-accent text-white' : ''}`} style={!isFinished ? { background: 'rgba(197,150,27,0.12)', border: '1px solid rgba(197,150,27,0.2)' } : {}}>
       <span className="w-8 sm:w-10 text-center">{formatTime(timeLeft)}</span>
       <div className="flex items-center gap-1 border-l border-muted/30 pl-1.5 sm:pl-2">
         <button onClick={toggle} className="hover:text-gold transition-colors p-0.5">
@@ -300,17 +296,17 @@ function ExerciseCard({ name, tag, description, steps, tip, objectifs }: {
   objectifs?: string[];
 }) {
   return (
-    <div className="card-pop rounded-xl p-5 mb-4">
+    <div className="card-pop rounded-sm p-5 mb-4">
       <div className="flex items-center gap-3 mb-1.5">
         <h3 className="font-sans font-medium text-base text-ink">{name}</h3>
-        {tag && <span className="font-mono text-[0.6rem] uppercase tracking-wider px-2 py-0.5 rounded-full bg-fun-azur/10 text-fun-azur">{tag}</span>}
+        {tag && <span className="font-mono text-[0.6rem] uppercase tracking-wider px-2 py-0.5 rounded-sm bg-gold/10 text-gold">{tag}</span>}
       </div>
       <p className="text-[0.88rem] text-muted mb-3 leading-relaxed">{description}</p>
 
       <ul className="space-y-2 mb-4">
         {steps.map((step, i) => (
           <li key={i} className="text-[0.85rem] pl-7 relative border-t border-warm pt-2 first:border-t-0 first:pt-0 text-ink/80">
-            <span className="absolute left-0 top-2 first:top-0 w-5 h-5 rounded-full bg-fun-azur/15 text-fun-azur font-mono text-[0.7rem] flex items-center justify-center">
+            <span className="absolute left-0 top-2 first:top-0 w-5 h-5 rounded-full bg-gold/15 text-gold font-mono text-[0.7rem] flex items-center justify-center">
               {i + 1}
             </span>
             {step}
@@ -319,7 +315,7 @@ function ExerciseCard({ name, tag, description, steps, tip, objectifs }: {
       </ul>
 
       {tip && (
-        <div className="rounded-lg p-3.5 mt-3 flex gap-3 items-start" style={{ background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.15)' }}>
+        <div className="rounded-sm p-3.5 mt-3 flex gap-3 items-start" style={{ background: 'rgba(197,150,27,0.08)', border: '1px solid rgba(197,150,27,0.15)' }}>
           <Lightbulb size={16} className="text-gold mt-0.5 shrink-0" />
           <div className="text-[0.83rem] text-gold/80 leading-relaxed">
             {tip}
@@ -342,11 +338,11 @@ function ExerciseCard({ name, tag, description, steps, tip, objectifs }: {
 
 function getObjClass(obj: string) {
   switch (obj.toLowerCase()) {
-    case 'qui': return 'bg-fun-teal/20 text-fun-teal';
-    case 'quoi': return 'bg-fun-sky/20 text-fun-sky';
-    case 'où': return 'bg-accent/15 text-accent';
-    case 'corps': return 'bg-fun-azur/15 text-fun-azur';
-    case 'écoute': return 'bg-fun-orange/20 text-fun-orange';
-    default: return 'bg-fun-azur/10 text-muted';
+    case 'qui': return 'bg-accent/15 text-accent';
+    case 'quoi': return 'bg-gold/15 text-gold-dark';
+    case 'où': return 'bg-burgundy/15 text-burgundy';
+    case 'corps': return 'bg-curtain/15 text-curtain';
+    case 'écoute': return 'bg-gold/20 text-gold';
+    default: return 'bg-gold/10 text-muted';
   }
 }

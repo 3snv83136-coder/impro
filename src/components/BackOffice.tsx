@@ -144,20 +144,20 @@ export default function BackOffice({
   // ─── Password Gate ─────────────────────────────────────────────
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-ink flex items-center justify-center relative overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ background: 'linear-gradient(180deg, #3a0a14 0%, #5c0a1a 40%, #4a0e1a 100%)' }}>
         {/* Spotlight effect */}
         <div
           className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full pointer-events-none"
           style={{
             background:
-              "radial-gradient(circle, rgba(184,134,11,0.15) 0%, rgba(200,68,10,0.08) 40%, transparent 70%)",
+              "radial-gradient(circle, rgba(197,150,27,0.12) 0%, rgba(139,26,43,0.06) 40%, transparent 70%)",
           }}
         />
         <div
           className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full pointer-events-none"
           style={{
             background:
-              "radial-gradient(circle, rgba(200,68,10,0.1) 0%, transparent 60%)",
+              "radial-gradient(circle, rgba(139,26,43,0.1) 0%, transparent 60%)",
           }}
         />
 
@@ -188,7 +188,7 @@ export default function BackOffice({
               animate={error ? { x: [-12, 12, -8, 8, -4, 4, 0] } : {}}
               transition={{ duration: 0.5 }}
               className={`
-                bg-stage/80 backdrop-blur-sm border-2 rounded-2xl p-8
+                bg-burgundy/80 backdrop-blur-sm border-2 rounded-sm p-8
                 transition-colors duration-300
                 ${error ? "border-red-500/60" : "border-gold/20 focus-within:border-gold/50"}
               `}
@@ -211,7 +211,7 @@ export default function BackOffice({
                 placeholder="Le mot secret..."
                 autoFocus
                 className={`
-                  w-full bg-ink/60 border rounded-lg px-4 py-3
+                  w-full bg-stage/60 border rounded-sm px-4 py-3
                   text-cream placeholder:text-muted/50 font-sans
                   outline-none transition-all duration-200
                   focus:ring-2 focus:ring-gold/30
@@ -237,10 +237,10 @@ export default function BackOffice({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="
-                  mt-6 w-full bg-gradient-to-r from-accent to-fun-azur
-                  text-white font-serif text-lg py-3 rounded-xl
-                  shadow-lg shadow-accent/20
-                  hover:shadow-xl hover:shadow-accent/30
+                  mt-6 w-full bg-gradient-to-r from-gold to-gold-light
+                  text-ink font-serif text-lg py-3 rounded-sm
+                  shadow-lg shadow-gold/20
+                  hover:shadow-xl hover:shadow-gold/30
                   transition-shadow duration-200
                 "
               >
@@ -259,9 +259,9 @@ export default function BackOffice({
 
   // ─── Authenticated View ────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-parchment">
       {/* Header */}
-      <header className="bg-stage border-b border-warm px-4 sm:px-8 py-4">
+      <header className="border-b px-4 sm:px-8 py-4" style={{ background: '#1a0a0a', borderColor: 'rgba(197,150,27,0.3)' }}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Theater size={24} className="text-gold" />
@@ -294,7 +294,7 @@ export default function BackOffice({
       </header>
 
       {/* Tab Navigation */}
-      <div className="bg-cream border-b border-warm sticky top-0 z-30">
+      <div className="bg-parchment border-b border-gold/20 sticky top-0 z-30">
         <div className="max-w-6xl mx-auto flex">
           <button
             onClick={() => {
@@ -366,8 +366,8 @@ export default function BackOffice({
                   whileTap={{ scale: 0.95 }}
                   onClick={onCreateCourse}
                   className="
-                    flex items-center gap-2 bg-gradient-to-r from-accent to-fun-azur
-                    text-white font-sans text-sm px-5 py-2.5 rounded-xl
+                    flex items-center gap-2 bg-accent
+                    text-gold-light font-sans text-sm px-5 py-2.5 rounded-sm
                     shadow-lg shadow-accent/20 hover:shadow-xl hover:shadow-accent/30
                     transition-shadow
                   "
@@ -408,8 +408,8 @@ export default function BackOffice({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.05 }}
                       className="
-                        bg-white border border-warm rounded-xl p-5
-                        hover:border-accent/25 transition-all duration-200
+                        bg-cream border border-gold/20 rounded-sm p-5
+                        hover:border-gold/40 transition-all duration-200
                         group
                       "
                     >
@@ -576,8 +576,8 @@ export default function BackOffice({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.08 }}
                       className="
-                        bg-white border border-warm rounded-xl overflow-hidden
-                        hover:border-accent/25 transition-all duration-200 group
+                        bg-cream border border-gold/20 rounded-sm overflow-hidden
+                        hover:border-gold/40 transition-all duration-200 group
                       "
                     >
                       <div
@@ -622,7 +622,7 @@ export default function BackOffice({
                                 {prof.specialties.slice(0, 3).map((s, si) => (
                                   <span
                                     key={si}
-                                    className="text-[0.65rem] font-mono px-2 py-0.5 rounded-full bg-accent/15 text-accent/80 border border-accent/20"
+                                    className="text-[0.65rem] font-mono px-2 py-0.5 rounded-sm bg-accent/15 text-accent/80 border border-accent/20"
                                   >
                                     {s}
                                   </span>

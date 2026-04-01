@@ -364,13 +364,13 @@ export default function CourseBuilder({
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: i * 0.05 }}
                       onClick={() => applyTemplate(t)}
-                      className="text-left p-4 rounded-xl border-2 border-warm hover:border-accent/50 bg-white hover:bg-accent/5 transition-all group"
+                      className="text-left p-4 rounded-sm border-2 border-gold/20 hover:border-gold/50 bg-parchment hover:bg-gold/5 transition-all group"
                     >
                       <div className="flex items-start justify-between mb-2">
                         <h3 className="font-serif text-ink font-bold text-sm group-hover:text-accent transition-colors">
                           {t.title}
                         </h3>
-                        <span className="text-[10px] font-mono bg-fun-azur/10 text-muted px-2 py-0.5 rounded-full whitespace-nowrap ml-2">
+                        <span className="text-[10px] font-mono bg-gold/10 text-muted px-2 py-0.5 rounded-full whitespace-nowrap ml-2">
                           {t.duration} min
                         </span>
                       </div>
@@ -397,7 +397,7 @@ export default function CourseBuilder({
       {/* ── Basic Info ── */}
       <motion.div
         layout
-        className="bg-white rounded-2xl border-2 border-warm p-5 sm:p-6 mb-6"
+        className="bg-parchment rounded-sm border-2 border-gold/20 p-5 sm:p-6 mb-6"
       >
         <h2 className="font-serif text-lg text-ink font-bold mb-5 flex items-center gap-2">
           <FileText className="w-5 h-5 text-accent" />
@@ -620,7 +620,7 @@ export default function CourseBuilder({
                   ? "bg-red-100 text-red-600"
                   : totalPhaseDuration === form.duration
                   ? "bg-green-100 text-green-700"
-                  : "bg-fun-azur/10 text-muted"
+                  : "bg-gold/10 text-muted"
               }`}
             >
               {totalPhaseDuration}/{form.duration} min
@@ -630,7 +630,7 @@ export default function CourseBuilder({
 
         {/* Duration bar */}
         {form.phases.length > 0 && (
-          <div className="h-3 rounded-full bg-fun-azur/10 overflow-hidden flex mb-5">
+          <div className="h-3 rounded-full bg-gold/10 overflow-hidden flex mb-5">
             {form.phases.map((phase) => (
               <motion.div
                 key={phase.id}
@@ -662,7 +662,7 @@ export default function CourseBuilder({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20, scale: 0.95 }}
                   transition={{ duration: 0.3 }}
-                  className="rounded-2xl border-2 overflow-hidden"
+                  className="rounded-sm border-2 overflow-hidden"
                   style={{ borderColor: phase.color + "40" }}
                 >
                   {/* Phase header */}

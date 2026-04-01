@@ -598,24 +598,44 @@ export default function App() {
         animate={{ opacity: showSplash ? 0 : 1 }}
         transition={{ duration: 0.6, delay: showSplash ? 0 : 0.3 }}
         className="min-h-screen flex flex-col overflow-x-hidden">
-      {/* HEADER */}
-      <header className="relative overflow-hidden pt-6 sm:pt-8 pb-6 sm:pb-8 px-4 sm:px-8" style={{ background: 'linear-gradient(135deg, #1e3a5f 0%, #2a5080 60%, #1e3a5f 100%)' }}>
-        {/* Diagonal stripe overlay */}
-        <div className="absolute inset-0 stripe-bg pointer-events-none" />
-        {/* Spotlight blobs */}
-        <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(224,90,43,0.12), transparent 70%)' }} />
-        <div className="absolute -bottom-20 -right-20 w-72 h-72 rounded-full blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(42,125,225,0.1), transparent 70%)' }} />
-        {/* Starburst SVG */}
-        <div className="absolute top-2 right-4 sm:right-10 opacity-10 pointer-events-none">
-          <svg viewBox="0 0 120 120" className="w-20 h-20 sm:w-28 sm:h-28">
-            <polygon
-              points={Array.from({ length: 16 }).map((_, i) => {
-                const angle = (i * Math.PI * 2) / 16 - Math.PI / 2;
-                const r = i % 2 === 0 ? 55 : 30;
-                return `${60 + r * Math.cos(angle)},${60 + r * Math.sin(angle)}`;
-              }).join(' ')}
-              fill="#d4a017"
-            />
+      {/* HEADER — Grand Theatre */}
+      <header className="relative overflow-hidden pt-8 sm:pt-10 pb-8 sm:pb-10 px-4 sm:px-8" style={{ background: 'linear-gradient(180deg, #3a0a14 0%, #5c0a1a 15%, #8b1a2b 40%, #a02040 60%, #8b1a2b 85%, #4a0e1a 100%)' }}>
+        {/* Left curtain drape */}
+        <div className="absolute top-0 left-0 w-16 sm:w-28 h-full pointer-events-none" style={{
+          background: 'linear-gradient(90deg, #5c0a1a 0%, #8b1a2b 40%, #a02040 60%, rgba(139,26,43,0) 100%)',
+          borderRight: '1px solid rgba(197,150,27,0.15)',
+        }} />
+        <div className="absolute top-0 left-1 sm:left-3 w-8 sm:w-14 h-full pointer-events-none" style={{
+          background: 'linear-gradient(90deg, rgba(92,10,26,0.6) 0%, rgba(139,26,43,0.3) 50%, transparent 100%)',
+        }} />
+        {/* Right curtain drape */}
+        <div className="absolute top-0 right-0 w-16 sm:w-28 h-full pointer-events-none" style={{
+          background: 'linear-gradient(270deg, #5c0a1a 0%, #8b1a2b 40%, #a02040 60%, rgba(139,26,43,0) 100%)',
+          borderLeft: '1px solid rgba(197,150,27,0.15)',
+        }} />
+        <div className="absolute top-0 right-1 sm:right-3 w-8 sm:w-14 h-full pointer-events-none" style={{
+          background: 'linear-gradient(270deg, rgba(92,10,26,0.6) 0%, rgba(139,26,43,0.3) 50%, transparent 100%)',
+        }} />
+        {/* Gold tassel/fringe at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-3 pointer-events-none" style={{
+          background: 'repeating-linear-gradient(90deg, #c5961b 0px, #c5961b 3px, #8b6914 3px, #8b6914 6px, #e8c252 6px, #e8c252 8px, #c5961b 8px, #c5961b 12px)',
+          opacity: 0.7,
+        }} />
+        <div className="absolute bottom-3 left-0 right-0 h-[1px] pointer-events-none" style={{ background: 'linear-gradient(90deg, transparent, rgba(197,150,27,0.5), transparent)' }} />
+        {/* Spotlight glow from above */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] rounded-full blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(232,194,82,0.1), transparent 70%)' }} />
+
+        {/* Ornamental SVG volute */}
+        <div className="absolute top-3 right-6 sm:right-12 opacity-20 pointer-events-none">
+          <svg viewBox="0 0 100 100" className="w-14 h-14 sm:w-20 sm:h-20" fill="none" stroke="#c5961b" strokeWidth="1.5">
+            <path d="M50 10 C70 10, 85 25, 85 45 C85 65, 70 75, 55 70 C40 65, 35 50, 45 40 C55 30, 65 35, 60 45 C55 55, 45 50, 48 44" />
+            <path d="M50 90 C30 90, 15 75, 15 55 C15 35, 30 25, 45 30 C60 35, 65 50, 55 60 C45 70, 35 65, 40 55 C45 45, 55 50, 52 56" />
+          </svg>
+        </div>
+        <div className="absolute top-3 left-6 sm:left-12 opacity-20 pointer-events-none" style={{ transform: 'scaleX(-1)' }}>
+          <svg viewBox="0 0 100 100" className="w-14 h-14 sm:w-20 sm:h-20" fill="none" stroke="#c5961b" strokeWidth="1.5">
+            <path d="M50 10 C70 10, 85 25, 85 45 C85 65, 70 75, 55 70 C40 65, 35 50, 45 40 C55 30, 65 35, 60 45 C55 55, 45 50, 48 44" />
+            <path d="M50 90 C30 90, 15 75, 15 55 C15 35, 30 25, 45 30 C60 35, 65 50, 55 60 C45 70, 35 65, 40 55 C45 45, 55 50, 52 56" />
           </svg>
         </div>
 
@@ -626,19 +646,23 @@ export default function App() {
             transition={{ duration: 0.6 }}
             className="text-center"
           >
-            <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold leading-tight tracking-tight">
-              <span className="text-accent">Le Qui ?</span>{' '}
-              <span className="text-fun-azur">Le Quoi ?</span>{' '}
-              <span className="text-fun-olive">Le Où ?</span>
+            <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold leading-tight tracking-tight" style={{ color: '#e8c252', textShadow: '0 2px 8px rgba(0,0,0,0.5), 0 0 30px rgba(197,150,27,0.2)' }}>
+              Le Qui ? Le Quoi ? Le Ou ?
             </h1>
+            {/* Gold decorative divider */}
+            <div className="flex items-center justify-center gap-3 mt-3 mb-3">
+              <div className="h-[1px] w-12 sm:w-20" style={{ background: 'linear-gradient(90deg, transparent, #c5961b)' }} />
+              <svg viewBox="0 0 20 20" className="w-4 h-4" fill="#c5961b"><path d="M10 2 L12 8 L18 10 L12 12 L10 18 L8 12 L2 10 L8 8 Z" /></svg>
+              <div className="h-[1px] w-12 sm:w-20" style={{ background: 'linear-gradient(270deg, transparent, #c5961b)' }} />
+            </div>
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3, duration: 0.4 }}
-              className="inline-block mt-3 px-4 py-1 rounded-full font-mono text-[0.65rem] sm:text-[0.7rem] tracking-[0.2em] uppercase"
-              style={{ background: 'linear-gradient(90deg, rgba(212,160,23,0.15), rgba(244,162,97,0.15))', border: '1px solid rgba(212,160,23,0.3)' }}
+              className="inline-block px-5 py-1.5 font-mono text-[0.65rem] sm:text-[0.7rem] tracking-[0.2em] uppercase"
+              style={{ background: 'linear-gradient(90deg, rgba(197,150,27,0.1), rgba(197,150,27,0.2), rgba(197,150,27,0.1))', border: '1px solid rgba(197,150,27,0.4)', borderRadius: '2px' }}
             >
-              <span className="text-gold">By Mondorito</span>
+              <span style={{ color: '#e8c252' }}>By Mondorito</span>
             </motion.div>
           </motion.div>
         </div>
@@ -646,16 +670,17 @@ export default function App() {
 
       {/* TIMELINE — removed, now per-course in CourseView */}
 
-      {/* TAB BAR */}
-      <div className="sticky top-0 z-30 bg-cream border-b border-warm">
+      {/* TAB BAR — Theater program style */}
+      <div className="sticky top-0 z-30 border-b" style={{ background: '#1a0a0a', borderColor: 'rgba(197,150,27,0.3)' }}>
         <div className="max-w-3xl mx-auto px-4 sm:px-8 flex gap-1">
           <button
             onClick={() => setActiveTab('cours')}
-            className={`flex items-center gap-2 px-4 sm:px-5 py-3 font-mono text-[0.75rem] uppercase tracking-wider transition-all rounded-t-lg ${
+            className={`flex items-center gap-2 px-4 sm:px-5 py-3 font-mono text-[0.75rem] uppercase tracking-wider transition-all ${
               activeTab === 'cours'
-                ? 'bg-accent/10 text-accent font-semibold shadow-[0_2px_0_0_#e05a2b]'
-                : 'text-muted hover:text-ink hover:bg-warm/50'
+                ? 'text-gold font-semibold'
+                : 'text-cream/50 hover:text-cream/80'
             }`}
+            style={activeTab === 'cours' ? { borderBottom: '2px solid #c5961b' } : {}}
           >
             <motion.span animate={activeTab === 'cours' ? { scale: [1, 1.2, 1] } : {}} transition={{ duration: 0.3 }}>
               <GraduationCap size={16} />
@@ -664,11 +689,12 @@ export default function App() {
           </button>
           <button
             onClick={() => setActiveTab('prof')}
-            className={`flex items-center gap-2 px-4 sm:px-5 py-3 font-mono text-[0.75rem] uppercase tracking-wider transition-all rounded-t-lg ${
+            className={`flex items-center gap-2 px-4 sm:px-5 py-3 font-mono text-[0.75rem] uppercase tracking-wider transition-all ${
               activeTab === 'prof'
-                ? 'bg-fun-azur/10 text-fun-azur font-semibold shadow-[0_2px_0_0_#2a7de1]'
-                : 'text-muted hover:text-ink hover:bg-warm/50'
+                ? 'text-gold font-semibold'
+                : 'text-cream/50 hover:text-cream/80'
             }`}
+            style={activeTab === 'prof' ? { borderBottom: '2px solid #c5961b' } : {}}
           >
             <motion.span animate={activeTab === 'prof' ? { scale: [1, 1.2, 1] } : {}} transition={{ duration: 0.3 }}>
               <User size={16} />
@@ -677,11 +703,12 @@ export default function App() {
           </button>
           <button
             onClick={() => { setActiveTab('backoffice'); setBoView('list'); }}
-            className={`flex items-center gap-2 px-4 sm:px-5 py-3 font-mono text-[0.75rem] uppercase tracking-wider transition-all rounded-t-lg ${
+            className={`flex items-center gap-2 px-4 sm:px-5 py-3 font-mono text-[0.75rem] uppercase tracking-wider transition-all ${
               activeTab === 'backoffice'
-                ? 'bg-gold/20 text-gold font-semibold shadow-[0_2px_0_0_#d4a017]'
-                : 'text-muted hover:text-ink hover:bg-warm/50'
+                ? 'text-gold font-semibold'
+                : 'text-cream/50 hover:text-cream/80'
             }`}
+            style={activeTab === 'backoffice' ? { borderBottom: '2px solid #c5961b' } : {}}
           >
             <motion.span animate={activeTab === 'backoffice' ? { scale: [1, 1.2, 1] } : {}} transition={{ duration: 0.3 }}>
               <Lock size={16} />
@@ -759,8 +786,8 @@ export default function App() {
         {/* COURSE CARDS GRID */}
         <section className="mb-10">
           <div className="flex items-center gap-3 mb-5">
-            <div className="p-2.5 rounded-xl" style={{ background: 'linear-gradient(135deg, rgba(224,90,43,0.15), rgba(42,125,225,0.15))' }}>
-              <BookOpen size={20} className="text-accent" />
+            <div className="p-2.5 rounded-sm" style={{ background: 'rgba(197,150,27,0.1)', border: '1px solid rgba(197,150,27,0.2)' }}>
+              <BookOpen size={20} className="text-gold" />
             </div>
             <div>
               <h2 className="font-serif text-xl font-bold text-ink">Nos Cours</h2>
@@ -769,8 +796,8 @@ export default function App() {
           </div>
 
           {courses.length === 0 ? (
-            <div className="card-pop rounded-2xl p-10 text-center">
-              <BookOpen size={48} className="text-fun-azur/40 mx-auto mb-4" />
+            <div className="card-pop rounded-sm p-10 text-center">
+              <BookOpen size={48} className="text-gold/40 mx-auto mb-4" />
               <p className="text-ink font-serif text-xl">Pas encore de cours...</p>
               <p className="text-muted mt-2 text-sm">Rendez-vous dans les Coulisses pour creer votre premier spectacle !</p>
             </div>
@@ -778,7 +805,7 @@ export default function App() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {courses.map((course, i) => {
                 const prof = profs.find(p => p.id === course.profId);
-                const funColors = ['#e05a2b', '#2a7de1', '#0a9396', '#3d8ecf', '#f4a261', '#d4a017', '#ee6c4d'];
+                const funColors = ['#c5961b', '#8b1a2b', '#c41230', '#8b6914', '#e8c252', '#5c0a1a', '#c5961b'];
                 const cardColor = funColors[i % funColors.length];
                 return (
                   <motion.button
@@ -789,26 +816,22 @@ export default function App() {
                     whileHover={{ scale: 1.04, y: -4, rotate: i % 2 === 0 ? 1 : -1 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={() => setSelectedCourseId(course.id)}
-                    className="relative rounded-2xl overflow-hidden text-left group aspect-square flex flex-col transition-all duration-200"
+                    className="relative rounded-sm overflow-hidden text-left group aspect-square flex flex-col transition-all duration-200"
                     style={{
-                      background: '#ffffff',
-                      borderLeft: `4px solid ${cardColor}`,
-                      border: `1px solid rgba(240,230,212,0.8)`,
-                      borderLeftWidth: '4px',
-                      borderLeftColor: cardColor,
-                      boxShadow: `0 2px 12px rgba(0,0,0,0.06)`,
+                      background: '#fff8e7',
+                      borderLeft: `3px solid #c5961b`,
+                      border: `1px solid rgba(197,150,27,0.2)`,
+                      borderLeftWidth: '3px',
+                      borderLeftColor: '#c5961b',
+                      boxShadow: `0 2px 8px rgba(26,10,10,0.08)`,
                     }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = `0 6px 24px ${cardColor}20, 0 2px 12px rgba(0,0,0,0.08)`; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = `0 2px 12px rgba(0,0,0,0.06)`; }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = `0 6px 24px rgba(197,150,27,0.15), 0 2px 12px rgba(26,10,10,0.08)`; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = `0 2px 8px rgba(26,10,10,0.08)`; }}
                   >
                     <div className="h-1.5 w-full" style={{ background: `linear-gradient(90deg, ${cardColor}, ${cardColor}60)` }} />
                     <div className="flex-1 p-4 flex flex-col justify-between">
                       <div>
-                        <span className={`font-mono text-[0.55rem] px-2 py-0.5 rounded-full uppercase tracking-wider font-semibold ${
-                          course.level === 'Débutant' ? 'bg-fun-teal/20 text-fun-teal' :
-                          course.level === 'Avancé' ? 'bg-fun-azur/20 text-fun-azur' :
-                          'bg-fun-sky/20 text-fun-sky'
-                        }`}>
+                        <span className="font-mono text-[0.55rem] px-2 py-0.5 rounded-sm uppercase tracking-wider font-semibold bg-accent/15 text-accent">
                           {course.level}
                         </span>
                         <h3 className="font-serif font-bold text-ink text-sm sm:text-base mt-2 leading-snug line-clamp-2 group-hover:text-accent transition-colors">
@@ -846,16 +869,16 @@ export default function App() {
 
         {/* GENERATEUR D'IDEES */}
         <section className="mb-12">
-          <div className="rounded-2xl p-6 relative overflow-hidden border border-warm" style={{ background: '#ffffff' }}>
+          <div className="rounded-sm p-6 relative overflow-hidden gold-border" style={{ background: '#fff8e7' }}>
             {/* Decorative glow spots */}
-            <div className="absolute top-0 right-0 w-40 h-40 rounded-full blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(224,90,43,0.06), transparent 70%)' }} />
-            <div className="absolute bottom-0 left-0 w-32 h-32 rounded-full blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(42,125,225,0.06), transparent 70%)' }} />
+            <div className="absolute top-0 right-0 w-40 h-40 rounded-full blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(197,150,27,0.06), transparent 70%)' }} />
+            <div className="absolute bottom-0 left-0 w-32 h-32 rounded-full blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(139,26,43,0.04), transparent 70%)' }} />
             <div className="absolute top-3 right-4 opacity-15 pointer-events-none">
               <Sparkles size={60} className="text-gold" />
             </div>
 
             <div className="flex items-center gap-3 mb-6 relative">
-              <div className="p-2.5 rounded-xl" style={{ background: 'linear-gradient(135deg, rgba(212,160,23,0.15), rgba(224,90,43,0.1))' }}>
+              <div className="p-2.5 rounded-sm" style={{ background: 'rgba(197,150,27,0.12)', border: '1px solid rgba(197,150,27,0.25)' }}>
                 <Sparkles size={20} className="text-gold" />
               </div>
               <div>
@@ -868,8 +891,8 @@ export default function App() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <IdeaPart icon={<User size={16} />} label="Qui ?" value={generatedIdea?.qui} color="bg-accent/15 text-accent" />
-              <IdeaPart icon={<Activity size={16} />} label="Quoi ?" value={generatedIdea?.quoi} color="bg-fun-azur/15 text-fun-azur" />
-              <IdeaPart icon={<MapPin size={16} />} label="Où ?" value={generatedIdea?.ou} color="bg-fun-olive/15 text-fun-olive" />
+              <IdeaPart icon={<Activity size={16} />} label="Quoi ?" value={generatedIdea?.quoi} color="bg-gold/15 text-gold-dark" />
+              <IdeaPart icon={<MapPin size={16} />} label="Ou ?" value={generatedIdea?.ou} color="bg-burgundy/15 text-burgundy" />
             </div>
 
             {generatedIdea && (
@@ -878,21 +901,21 @@ export default function App() {
                 animate={{ opacity: 1, height: 'auto' }}
                 className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4"
               >
-                <div className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm" style={{ background: 'rgba(255,159,28,0.15)', border: '1px solid rgba(255,159,28,0.2)' }}>
-                  <span className="font-mono text-[0.6rem] uppercase tracking-wider text-fun-orange/70">Emotion</span>
-                  <span className="font-medium text-fun-orange">{generatedIdea.emotion}</span>
+                <div className="flex items-center gap-2 rounded-sm px-4 py-2.5 text-sm" style={{ background: 'rgba(197,150,27,0.1)', border: '1px solid rgba(197,150,27,0.2)' }}>
+                  <span className="font-mono text-[0.6rem] uppercase tracking-wider text-gold/70">Emotion</span>
+                  <span className="font-medium text-gold-dark">{generatedIdea.emotion}</span>
                 </div>
-                <div className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm" style={{ background: 'rgba(42,125,225,0.1)', border: '1px solid rgba(42,125,225,0.15)' }}>
-                  <span className="font-mono text-[0.6rem] uppercase tracking-wider text-fun-azur/70">Contrainte</span>
-                  <span className="font-medium text-fun-azur">{generatedIdea.contrainte}</span>
+                <div className="flex items-center gap-2 rounded-sm px-4 py-2.5 text-sm" style={{ background: 'rgba(139,26,43,0.08)', border: '1px solid rgba(139,26,43,0.15)' }}>
+                  <span className="font-mono text-[0.6rem] uppercase tracking-wider text-curtain/70">Contrainte</span>
+                  <span className="font-medium text-curtain">{generatedIdea.contrainte}</span>
                 </div>
               </motion.div>
             )}
 
             <button
               onClick={generateIdea}
-              className="w-full py-3.5 rounded-full font-serif font-bold text-lg text-white transition-all flex items-center justify-center gap-3 active:scale-[0.97] animate-glow-pulse"
-              style={{ background: 'linear-gradient(135deg, #e05a2b, #2a7de1)', boxShadow: '0 4px 20px rgba(224,90,43,0.2)' }}
+              className="w-full py-3.5 rounded-sm font-serif font-bold text-lg transition-all flex items-center justify-center gap-3 active:scale-[0.97] animate-glow-pulse"
+              style={{ background: 'linear-gradient(135deg, #8b1a2b, #c41230)', color: '#e8c252', boxShadow: '0 4px 20px rgba(139,26,43,0.25)' }}
             >
               <RefreshCw size={18} className={generatedIdea ? "animate-spin-once" : ""} />
               {generatedIdea ? "Generer une autre idee" : "Lancer l'inspiration"}
@@ -907,8 +930,13 @@ export default function App() {
         )}
       </main>
 
-      <footer className="text-center py-6 font-mono text-[0.7rem] tracking-widest border-t border-warm" style={{ background: 'linear-gradient(180deg, #1e3a5f, #162d4a)' }}>
-        <span className="text-cream/70">Improvisation theatrale</span> <span className="text-accent">*</span> <span className="text-cream/70">By Mondorito</span> <span className="text-fun-azur">*</span> <span className="text-gold">Le spectacle continue</span>
+      <footer className="text-center py-6 font-mono text-[0.7rem] tracking-widest" style={{ background: 'linear-gradient(180deg, #1a0a0a, #2a0e14)', borderTop: '2px solid rgba(197,150,27,0.3)' }}>
+        <div className="flex items-center justify-center gap-3 mb-2">
+          <div className="h-[1px] w-16" style={{ background: 'linear-gradient(90deg, transparent, rgba(197,150,27,0.4))' }} />
+          <svg viewBox="0 0 20 20" className="w-3 h-3" fill="#c5961b"><path d="M10 2 L12 8 L18 10 L12 12 L10 18 L8 12 L2 10 L8 8 Z" /></svg>
+          <div className="h-[1px] w-16" style={{ background: 'linear-gradient(270deg, transparent, rgba(197,150,27,0.4))' }} />
+        </div>
+        <span className="text-gold/70 italic font-sans">Improvisation theatrale</span> <span className="text-gold/40 mx-1">|</span> <span className="text-cream/60">By Mondorito</span> <span className="text-gold/40 mx-1">|</span> <span className="text-gold">Le spectacle continue</span>
       </footer>
     </motion.div>
     </>
@@ -947,7 +975,7 @@ function Phase({ id, time, duration, title, color, intro, isCompleted, onToggle,
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-4">
         <div className="flex items-baseline gap-3 flex-wrap">
-          <span className="font-mono text-[0.65rem] px-2.5 py-0.5 rounded-full whitespace-nowrap" style={{ background: 'rgba(42,125,225,0.1)', color: '#6b8aaa' }}>
+          <span className="font-mono text-[0.65rem] px-2.5 py-0.5 rounded-sm whitespace-nowrap" style={{ background: 'rgba(197,150,27,0.1)', color: '#7a6655' }}>
             {time}
           </span>
           <h2 className={`font-serif text-lg sm:text-xl font-bold transition-all ${isCompleted ? 'text-muted line-through' : 'text-ink'}`}>
@@ -959,8 +987,8 @@ function Phase({ id, time, duration, title, color, intro, isCompleted, onToggle,
           {duration && <PhaseTimer duration={duration} color={color} />}
           <button
             onClick={onToggle}
-            className={`flex items-center gap-2 px-3 py-1.5 sm:py-1 rounded-full text-[0.65rem] sm:text-[0.7rem] font-mono uppercase tracking-wider transition-colors whitespace-nowrap ${
-              isCompleted ? 'bg-fun-teal/20 text-fun-teal' : 'bg-fun-azur/10 text-muted hover:bg-fun-azur/20'
+            className={`flex items-center gap-2 px-3 py-1.5 sm:py-1 rounded-sm text-[0.65rem] sm:text-[0.7rem] font-mono uppercase tracking-wider transition-colors whitespace-nowrap ${
+              isCompleted ? 'bg-gold/20 text-gold' : 'bg-gold/10 text-muted hover:bg-gold/20'
             }`}
           >
             {isCompleted ? <CheckCircle2 size={14} /> : null}
@@ -1008,7 +1036,7 @@ function PhaseTimer({ duration, color }: { duration: number; color: string }) {
   const isFinished = timeLeft === 0;
 
   return (
-    <div className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full font-mono text-[0.65rem] sm:text-[0.75rem] text-ink ${isFinished ? 'animate-pulse bg-accent text-white' : ''}`} style={!isFinished ? { background: 'rgba(42,125,225,0.1)', border: '1px solid rgba(42,125,225,0.2)' } : {}}>
+    <div className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-sm font-mono text-[0.65rem] sm:text-[0.75rem] text-ink ${isFinished ? 'animate-pulse bg-accent text-white' : ''}`} style={!isFinished ? { background: 'rgba(197,150,27,0.12)', border: '1px solid rgba(197,150,27,0.2)' } : {}}>
       <span className="w-8 sm:w-10 text-center">{formatTime(timeLeft)}</span>
       <div className="flex items-center gap-1 border-l border-muted/30 pl-1.5 sm:pl-2">
         <button onClick={toggle} className="hover:text-gold transition-colors p-0.5">
@@ -1036,14 +1064,14 @@ function ExerciseCard({ name, tag, description, steps, tip, objectifs, variante,
     <div className="card-pop rounded-xl p-5 mb-4">
       <div className="flex items-center gap-3 mb-1.5">
         <h3 className="font-sans font-medium text-base text-ink">{name}</h3>
-        {tag && <span className="font-mono text-[0.6rem] uppercase tracking-wider px-2 py-0.5 rounded-full bg-fun-azur/10 text-fun-azur">{tag}</span>}
+        {tag && <span className="font-mono text-[0.6rem] uppercase tracking-wider px-2 py-0.5 rounded-sm bg-gold/10 text-gold">{tag}</span>}
       </div>
       <p className="text-[0.88rem] text-muted mb-3 leading-relaxed">{description}</p>
 
       <ul className="space-y-2 mb-4">
         {steps.map((step, i) => (
           <li key={i} className="text-[0.85rem] pl-7 relative border-t border-warm pt-2 first:border-t-0 first:pt-0 text-ink/80">
-            <span className="absolute left-0 top-2 first:top-0 w-5 h-5 rounded-full bg-fun-azur/15 text-fun-azur font-mono text-[0.7rem] flex items-center justify-center">
+            <span className="absolute left-0 top-2 first:top-0 w-5 h-5 rounded-full bg-gold/15 text-gold font-mono text-[0.7rem] flex items-center justify-center">
               {i + 1}
             </span>
             {step}
@@ -1054,7 +1082,7 @@ function ExerciseCard({ name, tag, description, steps, tip, objectifs, variante,
       {children}
 
       {tip && (
-        <div className="rounded-lg p-3.5 mt-3 flex gap-3 items-start" style={{ background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.15)' }}>
+        <div className="rounded-sm p-3.5 mt-3 flex gap-3 items-start" style={{ background: 'rgba(197,150,27,0.08)', border: '1px solid rgba(197,150,27,0.15)' }}>
           <Lightbulb size={16} className="text-gold mt-0.5 shrink-0" />
           <div className="text-[0.83rem] text-gold/80 leading-relaxed">
             {tip}
@@ -1063,7 +1091,7 @@ function ExerciseCard({ name, tag, description, steps, tip, objectifs, variante,
       )}
 
       {variante && (
-        <div className="border-l-3 border-fun-azur p-3 rounded-r-md mt-3 text-[0.82rem] text-fun-azur/80" style={{ background: 'rgba(42,125,225,0.06)' }}>
+        <div className="border-l-3 border-gold p-3 rounded-r-sm mt-3 text-[0.82rem] text-gold/80" style={{ background: 'rgba(197,150,27,0.06)' }}>
           <strong>Variante :</strong> {variante}
         </div>
       )}
@@ -1101,12 +1129,12 @@ function BilanCard({ title, items }: { title: string; items: string[] }) {
 
 function getObjClass(obj: string) {
   switch (obj.toLowerCase()) {
-    case 'qui': return 'bg-fun-teal/20 text-fun-teal';
-    case 'quoi': return 'bg-fun-sky/20 text-fun-sky';
-    case 'où': return 'bg-accent/15 text-accent';
-    case 'corps': return 'bg-fun-azur/15 text-fun-azur';
-    case 'écoute': return 'bg-fun-orange/20 text-fun-orange';
-    default: return 'bg-fun-azur/10 text-muted';
+    case 'qui': return 'bg-accent/15 text-accent';
+    case 'quoi': return 'bg-gold/15 text-gold-dark';
+    case 'où': return 'bg-burgundy/15 text-burgundy';
+    case 'corps': return 'bg-curtain/15 text-curtain';
+    case 'écoute': return 'bg-gold/20 text-gold';
+    default: return 'bg-gold/10 text-muted';
   }
 }
 
@@ -1123,7 +1151,7 @@ function IdeaPart({ icon, label, value, color }: { icon: ReactNode, label: strin
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
-          className={`min-h-[60px] flex items-center justify-center text-center p-3 rounded-xl text-sm font-bold leading-tight ${value ? color : 'text-muted italic border border-dashed border-warm'}`}
+          className={`min-h-[60px] flex items-center justify-center text-center p-3 rounded-sm text-sm font-bold leading-tight ${value ? color : 'text-muted italic border border-dashed border-gold/30'}`}
         >
           {value || "???"}
         </motion.div>
