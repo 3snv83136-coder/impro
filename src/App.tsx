@@ -599,6 +599,7 @@ export default function App() {
                 onCreateProf={handleCreateProf}
                 onEditProf={handleEditProf}
                 onDeleteProf={handleDeleteProf}
+                onExit={() => setActiveTab('cours')}
               />
             )}
             {boView === 'editCourse' && (

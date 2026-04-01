@@ -66,6 +66,7 @@ interface BackOfficeProps {
   onCreateProf: () => void;
   onEditProf: (id: string) => void;
   onDeleteProf: (id: string) => void;
+  onExit: () => void;
 }
 
 const PASSWORD = "groupelundi";
@@ -105,6 +106,7 @@ export default function BackOffice({
   onCreateProf,
   onEditProf,
   onDeleteProf,
+  onExit,
 }: BackOfficeProps) {
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
@@ -270,15 +272,24 @@ export default function BackOffice({
               </p>
             </div>
           </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setAuthenticated(false)}
-            className="flex items-center gap-2 text-muted hover:text-cream transition-colors text-sm font-mono"
-          >
-            <LogOut size={16} />
-            <span className="hidden sm:inline">Quitter</span>
-          </motion.button>
+          <div className="flex items-center gap-3">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onExit}
+              className="flex items-center gap-2 bg-gold/20 hover:bg-gold/30 text-gold px-3 py-1.5 rounded-lg transition-colors text-sm font-mono"
+            >
+              <span>Retour au site</span>
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setAuthenticated(false)}
+              className="flex items-center gap-2 text-muted hover:text-cream transition-colors text-sm font-mono"
+            >
+              <LogOut size={16} />
+            </motion.button>
+          </div>
         </div>
       </header>
 
