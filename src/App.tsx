@@ -146,13 +146,15 @@ function SplashScreen({ onFinished }: { onFinished: () => void }) {
       if (charIndex >= fullText.length) clearInterval(typeInterval);
     }, 2000 / fullText.length);
 
-    const countdownStart = setTimeout(() => { setPhase('countdown'); setCountdownNum(5); }, 2000);
-    const c4 = setTimeout(() => setCountdownNum(4), 2800);
-    const c3 = setTimeout(() => setCountdownNum(3), 3600);
-    const c2 = setTimeout(() => setCountdownNum(2), 4400);
-    const c1 = setTimeout(() => setCountdownNum(1), 5200);
-    const explodeTimeout = setTimeout(() => setPhase('explode'), 6000);
-    const doneTimeout = setTimeout(() => { setPhase('done'); onFinished(); }, 7200);
+    // Phase 2: Countdown — 1s par chiffre, bien espacé
+    const countdownStart = setTimeout(() => { setPhase('countdown'); setCountdownNum(5); }, 2200);
+    const c4 = setTimeout(() => setCountdownNum(4), 3200);
+    const c3 = setTimeout(() => setCountdownNum(3), 4200);
+    const c2 = setTimeout(() => setCountdownNum(2), 5200);
+    const c1 = setTimeout(() => setCountdownNum(1), 6200);
+    // Phase 3: Explode
+    const explodeTimeout = setTimeout(() => setPhase('explode'), 7200);
+    const doneTimeout = setTimeout(() => { setPhase('done'); onFinished(); }, 8500);
 
     return () => {
       clearInterval(typeInterval);
@@ -262,10 +264,10 @@ function SplashScreen({ onFinished }: { onFinished: () => void }) {
             <AnimatePresence mode="wait">
               <motion.div
                 key={countdownNum}
-                initial={{ scale: 3, opacity: 0, rotate: -20, y: -50 }}
-                animate={{ scale: 1, opacity: 1, rotate: 0, y: 0 }}
-                exit={{ scale: 0.2, opacity: 0, rotate: 30, y: 50 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 15, duration: 0.4 }}
+                initial={{ scale: 3, opacity: 0, rotate: -15 }}
+                animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                exit={{ scale: 0.3, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 20, duration: 0.3 }}
                 className="font-serif text-[10rem] sm:text-[14rem] font-black leading-none"
                 style={{
                   color: countdownColors[5 - countdownNum],
