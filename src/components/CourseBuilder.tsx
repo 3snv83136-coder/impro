@@ -318,7 +318,7 @@ export default function CourseBuilder({
             <BookOpen className="w-6 h-6 text-accent" />
           </div>
           <div>
-            <h1 className="font-serif text-2xl sm:text-3xl text-ink font-bold">
+            <h1 className="font-serif text-2xl sm:text-3xl text-cream font-bold">
               {isEditing ? "Modifier le cours" : "Créer un cours"}
             </h1>
             <p className="text-muted text-sm font-mono">
@@ -364,13 +364,13 @@ export default function CourseBuilder({
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: i * 0.05 }}
                       onClick={() => applyTemplate(t)}
-                      className="text-left p-4 rounded-xl border-2 border-warm hover:border-accent/50 bg-cream hover:bg-accent/5 transition-all group"
+                      className="text-left p-4 rounded-xl border-2 border-fun-purple/20 hover:border-accent/50 bg-stage hover:bg-accent/5 transition-all group"
                     >
                       <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-serif text-ink font-bold text-sm group-hover:text-accent transition-colors">
+                        <h3 className="font-serif text-cream font-bold text-sm group-hover:text-accent transition-colors">
                           {t.title}
                         </h3>
-                        <span className="text-[10px] font-mono bg-warm text-muted px-2 py-0.5 rounded-full whitespace-nowrap ml-2">
+                        <span className="text-[10px] font-mono bg-fun-purple/10 text-muted px-2 py-0.5 rounded-full whitespace-nowrap ml-2">
                           {t.duration} min
                         </span>
                       </div>
@@ -397,9 +397,9 @@ export default function CourseBuilder({
       {/* ── Basic Info ── */}
       <motion.div
         layout
-        className="bg-white/60 backdrop-blur-sm rounded-2xl border-2 border-warm p-5 sm:p-6 mb-6"
+        className="bg-ink/60 backdrop-blur-sm rounded-2xl border-2 border-fun-purple/20 p-5 sm:p-6 mb-6"
       >
-        <h2 className="font-serif text-lg text-ink font-bold mb-5 flex items-center gap-2">
+        <h2 className="font-serif text-lg text-cream font-bold mb-5 flex items-center gap-2">
           <FileText className="w-5 h-5 text-accent" />
           Informations générales
         </h2>
@@ -415,7 +415,7 @@ export default function CourseBuilder({
               value={form.title}
               onChange={(e) => set("title", e.target.value)}
               placeholder="Ex: L'art de l'écoute active"
-              className="w-full px-4 py-2.5 rounded-xl border-2 border-warm bg-cream/50 text-ink placeholder:text-muted/50 focus:border-accent/50 focus:outline-none transition-colors font-sans"
+              className="w-full px-4 py-2.5 rounded-xl border-2 border-fun-purple/20 bg-stage/50 text-cream placeholder:text-muted/50 focus:border-fun-pink/50 focus:outline-none transition-colors font-sans"
             />
           </div>
 
@@ -434,7 +434,7 @@ export default function CourseBuilder({
                 onChange={(e) =>
                   set("duration", Math.max(1, parseInt(e.target.value) || 0))
                 }
-                className="w-full px-4 py-2.5 rounded-xl border-2 border-warm bg-cream/50 text-ink focus:border-accent/50 focus:outline-none transition-colors font-sans"
+                className="w-full px-4 py-2.5 rounded-xl border-2 border-fun-purple/20 bg-stage/50 text-cream focus:border-fun-pink/50 focus:outline-none transition-colors font-sans"
               />
             </div>
             <div>
@@ -453,7 +453,7 @@ export default function CourseBuilder({
                       | "Avancé"
                   )
                 }
-                className="w-full px-4 py-2.5 rounded-xl border-2 border-warm bg-cream/50 text-ink focus:border-accent/50 focus:outline-none transition-colors font-sans appearance-none cursor-pointer"
+                className="w-full px-4 py-2.5 rounded-xl border-2 border-fun-purple/20 bg-stage/50 text-cream focus:border-fun-pink/50 focus:outline-none transition-colors font-sans appearance-none cursor-pointer"
               >
                 <option value="Débutant">Débutant</option>
                 <option value="Intermédiaire">Intermédiaire</option>
@@ -472,7 +472,7 @@ export default function CourseBuilder({
               onChange={(e) => set("description", e.target.value)}
               placeholder="Décrivez l'esprit et le contenu du cours..."
               rows={3}
-              className="w-full px-4 py-2.5 rounded-xl border-2 border-warm bg-cream/50 text-ink placeholder:text-muted/50 focus:border-accent/50 focus:outline-none transition-colors font-sans resize-none"
+              className="w-full px-4 py-2.5 rounded-xl border-2 border-fun-purple/20 bg-stage/50 text-cream placeholder:text-muted/50 focus:border-fun-pink/50 focus:outline-none transition-colors font-sans resize-none"
             />
           </div>
 
@@ -503,7 +503,7 @@ export default function CourseBuilder({
                         next[i] = e.target.value;
                         set("objectives", next);
                       }}
-                      className="flex-1 px-3 py-2 rounded-lg border-2 border-warm bg-cream/50 text-ink text-sm focus:border-accent/50 focus:outline-none transition-colors"
+                      className="flex-1 px-3 py-2 rounded-lg border-2 border-fun-purple/20 bg-stage/50 text-cream text-sm focus:border-fun-pink/50 focus:outline-none transition-colors"
                     />
                     <button
                       onClick={() =>
@@ -535,7 +535,7 @@ export default function CourseBuilder({
                   }
                 }}
                 placeholder="Ajouter un objectif..."
-                className="flex-1 px-3 py-2 rounded-lg border-2 border-dashed border-warm bg-transparent text-ink text-sm placeholder:text-muted/50 focus:border-accent/50 focus:outline-none transition-colors"
+                className="flex-1 px-3 py-2 rounded-lg border-2 border-dashed border-fun-purple/20 bg-transparent text-cream text-sm placeholder:text-muted/50 focus:border-fun-pink/50 focus:outline-none transition-colors"
               />
               <button
                 onClick={() => {
@@ -566,7 +566,7 @@ export default function CourseBuilder({
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all text-sm ${
                   form.profId === null
                     ? "border-accent bg-accent/10 text-accent"
-                    : "border-warm bg-cream/50 text-muted hover:border-muted/50"
+                    : "border-fun-purple/20 bg-stage/50 text-muted hover:border-muted/50"
                 }`}
               >
                 <span className="font-mono text-xs">Aucun</span>
@@ -577,8 +577,8 @@ export default function CourseBuilder({
                   onClick={() => set("profId", prof.id)}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all text-sm ${
                     form.profId === prof.id
-                      ? "border-accent bg-accent/10 text-ink"
-                      : "border-warm bg-cream/50 text-muted hover:border-muted/50"
+                      ? "border-accent bg-accent/10 text-cream"
+                      : "border-fun-purple/20 bg-stage/50 text-muted hover:border-muted/50"
                   }`}
                 >
                   {prof.photo ? (
@@ -609,7 +609,7 @@ export default function CourseBuilder({
       {/* ── Phase Builder ── */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-serif text-lg text-ink font-bold flex items-center gap-2">
+          <h2 className="font-serif text-lg text-cream font-bold flex items-center gap-2">
             <Palette className="w-5 h-5 text-gold" />
             Phases du cours
           </h2>
@@ -620,7 +620,7 @@ export default function CourseBuilder({
                   ? "bg-red-100 text-red-600"
                   : totalPhaseDuration === form.duration
                   ? "bg-green-100 text-green-700"
-                  : "bg-warm text-muted"
+                  : "bg-fun-purple/10 text-muted"
               }`}
             >
               {totalPhaseDuration}/{form.duration} min
@@ -630,7 +630,7 @@ export default function CourseBuilder({
 
         {/* Duration bar */}
         {form.phases.length > 0 && (
-          <div className="h-3 rounded-full bg-warm overflow-hidden flex mb-5">
+          <div className="h-3 rounded-full bg-fun-purple/10 overflow-hidden flex mb-5">
             {form.phases.map((phase) => (
               <motion.div
                 key={phase.id}
@@ -675,7 +675,7 @@ export default function CourseBuilder({
                       className="w-3 h-3 rounded-full shrink-0"
                       style={{ backgroundColor: phase.color }}
                     />
-                    <span className="font-serif font-bold text-ink flex-1 text-sm">
+                    <span className="font-serif font-bold text-cream flex-1 text-sm">
                       {phase.title || "Nouvelle phase"}
                     </span>
                     <span className="font-mono text-xs text-muted">
@@ -691,14 +691,14 @@ export default function CourseBuilder({
                       <button
                         onClick={() => movePhase(phaseIdx, -1)}
                         disabled={phaseIdx === 0}
-                        className="p-1 rounded text-muted hover:text-ink disabled:opacity-30 transition-colors"
+                        className="p-1 rounded text-muted hover:text-cream disabled:opacity-30 transition-colors"
                       >
                         <ArrowUp className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => movePhase(phaseIdx, 1)}
                         disabled={phaseIdx === form.phases.length - 1}
-                        className="p-1 rounded text-muted hover:text-ink disabled:opacity-30 transition-colors"
+                        className="p-1 rounded text-muted hover:text-cream disabled:opacity-30 transition-colors"
                       >
                         <ArrowDown className="w-3.5 h-3.5" />
                       </button>
@@ -735,7 +735,7 @@ export default function CourseBuilder({
                         transition={{ duration: 0.25 }}
                         className="overflow-hidden"
                       >
-                        <div className="p-4 sm:p-5 space-y-4 bg-white/40">
+                        <div className="p-4 sm:p-5 space-y-4 bg-ink/40">
                           {/* Phase basics */}
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <div className="sm:col-span-2">
@@ -751,7 +751,7 @@ export default function CourseBuilder({
                                   })
                                 }
                                 placeholder="Ex: Échauffement corporel"
-                                className="w-full px-3 py-2 rounded-lg border-2 border-warm bg-cream/50 text-ink text-sm placeholder:text-muted/50 focus:border-accent/50 focus:outline-none transition-colors"
+                                className="w-full px-3 py-2 rounded-lg border-2 border-fun-purple/20 bg-stage/50 text-cream text-sm placeholder:text-muted/50 focus:border-fun-pink/50 focus:outline-none transition-colors"
                               />
                             </div>
                             <div>
@@ -771,7 +771,7 @@ export default function CourseBuilder({
                                     ),
                                   })
                                 }
-                                className="w-full px-3 py-2 rounded-lg border-2 border-warm bg-cream/50 text-ink text-sm focus:border-accent/50 focus:outline-none transition-colors"
+                                className="w-full px-3 py-2 rounded-lg border-2 border-fun-purple/20 bg-stage/50 text-cream text-sm focus:border-fun-pink/50 focus:outline-none transition-colors"
                               />
                             </div>
                           </div>
@@ -814,7 +814,7 @@ export default function CourseBuilder({
                               }
                               placeholder="Décrivez l'objectif et l'ambiance de cette phase..."
                               rows={2}
-                              className="w-full px-3 py-2 rounded-lg border-2 border-warm bg-cream/50 text-ink text-sm placeholder:text-muted/50 focus:border-accent/50 focus:outline-none transition-colors resize-none"
+                              className="w-full px-3 py-2 rounded-lg border-2 border-fun-purple/20 bg-stage/50 text-cream text-sm placeholder:text-muted/50 focus:border-fun-pink/50 focus:outline-none transition-colors resize-none"
                             />
                           </div>
 
@@ -832,7 +832,7 @@ export default function CourseBuilder({
                                   layout
                                   initial={{ opacity: 0 }}
                                   animate={{ opacity: 1 }}
-                                  className="rounded-xl border border-warm bg-cream/30 p-4 space-y-3"
+                                  className="rounded-xl border border-fun-purple/20 bg-stage/30 p-4 space-y-3"
                                 >
                                   <div className="flex items-start justify-between gap-2">
                                     <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -851,7 +851,7 @@ export default function CourseBuilder({
                                             )
                                           }
                                           placeholder="Ex: Le miroir"
-                                          className="w-full px-3 py-1.5 rounded-lg border border-warm bg-white/60 text-ink text-sm placeholder:text-muted/40 focus:border-accent/50 focus:outline-none transition-colors"
+                                          className="w-full px-3 py-1.5 rounded-lg border border-fun-purple/20 bg-ink/60 text-cream text-sm placeholder:text-muted/40 focus:border-fun-pink/50 focus:outline-none transition-colors"
                                         />
                                       </div>
                                       <div>
@@ -870,7 +870,7 @@ export default function CourseBuilder({
                                             )
                                           }
                                           placeholder="écoute, corps..."
-                                          className="w-full px-3 py-1.5 rounded-lg border border-warm bg-white/60 text-ink text-sm placeholder:text-muted/40 focus:border-accent/50 focus:outline-none transition-colors"
+                                          className="w-full px-3 py-1.5 rounded-lg border border-fun-purple/20 bg-ink/60 text-cream text-sm placeholder:text-muted/40 focus:border-fun-pink/50 focus:outline-none transition-colors"
                                         />
                                       </div>
                                     </div>
@@ -905,7 +905,7 @@ export default function CourseBuilder({
                                       }
                                       placeholder="Décrivez l'exercice..."
                                       rows={2}
-                                      className="w-full px-3 py-1.5 rounded-lg border border-warm bg-white/60 text-ink text-sm placeholder:text-muted/40 focus:border-accent/50 focus:outline-none transition-colors resize-none"
+                                      className="w-full px-3 py-1.5 rounded-lg border border-fun-purple/20 bg-ink/60 text-cream text-sm placeholder:text-muted/40 focus:border-fun-pink/50 focus:outline-none transition-colors resize-none"
                                     />
                                   </div>
 
@@ -937,7 +937,7 @@ export default function CourseBuilder({
                                               );
                                             }}
                                             placeholder="Décrivez cette étape..."
-                                            className="flex-1 px-3 py-1.5 rounded-lg border border-warm/60 bg-white/40 text-ink text-xs placeholder:text-muted/40 focus:border-accent/50 focus:outline-none transition-colors"
+                                            className="flex-1 px-3 py-1.5 rounded-lg border border-fun-purple/20/60 bg-ink/40 text-cream text-xs placeholder:text-muted/40 focus:border-fun-pink/50 focus:outline-none transition-colors"
                                           />
                                           <button
                                             onClick={() => {
@@ -990,7 +990,7 @@ export default function CourseBuilder({
                                         })
                                       }
                                       placeholder="Un petit conseil pour bien mener cet exercice..."
-                                      className="w-full px-3 py-1.5 rounded-lg border border-gold/30 bg-gold/5 text-ink text-sm placeholder:text-muted/40 focus:border-gold/50 focus:outline-none transition-colors"
+                                      className="w-full px-3 py-1.5 rounded-lg border border-gold/30 bg-gold/5 text-cream text-sm placeholder:text-muted/40 focus:border-gold/50 focus:outline-none transition-colors"
                                     />
                                   </div>
 
@@ -1005,7 +1005,7 @@ export default function CourseBuilder({
                                         (obj, objIdx) => (
                                           <span
                                             key={objIdx}
-                                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono text-ink"
+                                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono text-cream"
                                             style={{
                                               backgroundColor:
                                                 phase.color + "20",
@@ -1067,7 +1067,7 @@ export default function CourseBuilder({
                                           }
                                         }}
                                         placeholder="Ajouter un objectif..."
-                                        className="flex-1 px-2 py-1 rounded border border-dashed border-warm/60 bg-transparent text-[10px] text-ink placeholder:text-muted/40 focus:border-accent/40 focus:outline-none transition-colors"
+                                        className="flex-1 px-2 py-1 rounded border border-dashed border-fun-purple/20/60 bg-transparent text-[10px] text-cream placeholder:text-muted/40 focus:border-fun-pink/40 focus:outline-none transition-colors"
                                       />
                                       <button
                                         onClick={() => {
@@ -1141,10 +1141,10 @@ export default function CourseBuilder({
       </div>
 
       {/* ── Action buttons ── */}
-      <div className="flex items-center justify-end gap-3 pt-4 border-t-2 border-warm">
+      <div className="flex items-center justify-end gap-3 pt-4 border-t-2 border-fun-purple/20">
         <button
           onClick={onCancel}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-warm text-muted hover:bg-warm/50 transition-all font-mono text-sm"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-fun-purple/20 text-muted hover:bg-fun-purple/15 transition-all font-mono text-sm"
         >
           <X className="w-4 h-4" />
           Annuler

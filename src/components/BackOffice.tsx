@@ -237,10 +237,10 @@ export default function BackOffice({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="
-                  mt-6 w-full bg-gradient-to-r from-accent to-gold
+                  mt-6 w-full bg-gradient-to-r from-fun-pink to-fun-purple
                   text-white font-serif text-lg py-3 rounded-xl
-                  shadow-lg shadow-accent/20
-                  hover:shadow-xl hover:shadow-accent/30
+                  shadow-lg shadow-fun-pink/20
+                  hover:shadow-xl hover:shadow-fun-pink/30
                   transition-shadow duration-200
                 "
               >
@@ -306,7 +306,7 @@ export default function BackOffice({
               border-b-2 transition-all duration-200
               ${
                 activeTab === "cours"
-                  ? "border-accent text-accent"
+                  ? "border-fun-pink text-fun-pink"
                   : "border-transparent text-muted hover:text-cream"
               }
             `}
@@ -314,7 +314,7 @@ export default function BackOffice({
             <BookOpen size={16} />
             Cours
             {courses.length > 0 && (
-              <span className="bg-accent/20 text-accent text-xs px-2 py-0.5 rounded-full">
+              <span className="bg-fun-pink/20 text-fun-pink text-xs px-2 py-0.5 rounded-full">
                 {courses.length}
               </span>
             )}
@@ -329,7 +329,7 @@ export default function BackOffice({
               border-b-2 transition-all duration-200
               ${
                 activeTab === "profs"
-                  ? "border-accent text-accent"
+                  ? "border-fun-pink text-fun-pink"
                   : "border-transparent text-muted hover:text-cream"
               }
             `}
@@ -366,9 +366,9 @@ export default function BackOffice({
                   whileTap={{ scale: 0.95 }}
                   onClick={onCreateCourse}
                   className="
-                    flex items-center gap-2 bg-gradient-to-r from-accent to-accent/80
+                    flex items-center gap-2 bg-gradient-to-r from-fun-pink to-fun-purple
                     text-white font-sans text-sm px-5 py-2.5 rounded-xl
-                    shadow-lg shadow-accent/20 hover:shadow-xl hover:shadow-accent/30
+                    shadow-lg shadow-fun-pink/20 hover:shadow-xl hover:shadow-fun-pink/30
                     transition-shadow
                   "
                 >

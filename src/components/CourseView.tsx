@@ -73,34 +73,34 @@ export default function CourseView({ course, prof, onBack }: CourseViewProps) {
       {/* Back button */}
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-muted hover:text-accent font-mono text-sm mb-6 transition-colors"
+        className="flex items-center gap-2 text-muted hover:text-fun-pink font-mono text-sm mb-6 transition-colors"
       >
         <ArrowLeft size={16} />
         Retour aux cours
       </button>
 
       {/* Course header */}
-      <div className="bg-white rounded-xl p-6 shadow-md border border-warm mb-8">
+      <div className="card-pop rounded-2xl p-6 mb-8">
         <div className="flex flex-col sm:flex-row sm:items-start gap-4 justify-between">
           <div className="flex-1">
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-ink mb-2">{course.title}</h1>
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-cream mb-2">{course.title}</h1>
             <p className="text-sm text-muted leading-relaxed mb-4">{course.description}</p>
             <div className="flex flex-wrap gap-3 items-center">
               <span className="flex items-center gap-1.5 font-mono text-[0.7rem] text-muted">
                 <Clock size={14} className="text-gold" />
                 {course.duration} min
               </span>
-              <span className={`font-mono text-[0.65rem] px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
-                course.level === 'Débutant' ? 'bg-green-100 text-green-800' :
-                course.level === 'Avancé' ? 'bg-purple-100 text-purple-800' :
-                'bg-blue-100 text-blue-800'
+              <span className={`font-mono text-[0.65rem] px-2.5 py-0.5 rounded-full uppercase tracking-wider font-semibold ${
+                course.level === 'Débutant' ? 'bg-fun-teal/20 text-fun-teal' :
+                course.level === 'Avancé' ? 'bg-fun-purple/20 text-fun-purple' :
+                'bg-fun-sky/20 text-fun-sky'
               }`}>
                 {course.level}
               </span>
             </div>
           </div>
           {prof && (
-            <div className="flex items-center gap-3 bg-cream/50 rounded-lg px-4 py-3 border border-warm">
+            <div className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.2)' }}>
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center text-white font-serif font-bold text-sm overflow-hidden border-2"
                 style={{ borderColor: prof.color, backgroundColor: prof.color + '20' }}
@@ -113,7 +113,7 @@ export default function CourseView({ course, prof, onBack }: CourseViewProps) {
               </div>
               <div>
                 <div className="font-mono text-[0.6rem] uppercase tracking-wider text-muted">Prof</div>
-                <div className="font-medium text-sm text-ink">{prof.name}</div>
+                <div className="font-medium text-sm text-cream">{prof.name}</div>
               </div>
             </div>
           )}
@@ -121,7 +121,7 @@ export default function CourseView({ course, prof, onBack }: CourseViewProps) {
 
         {/* Objectives */}
         {course.objectives.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-warm">
+          <div className="mt-4 pt-4 border-t border-fun-purple/15">
             <div className="font-mono text-[0.65rem] uppercase tracking-wider text-muted mb-2">Objectifs</div>
             <div className="flex flex-wrap gap-2">
               {course.objectives.map((obj, i) => (
@@ -136,7 +136,7 @@ export default function CourseView({ course, prof, onBack }: CourseViewProps) {
 
       {/* Timeline */}
       {course.phases.length > 0 && (
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-warm mb-8">
+        <div className="card-pop rounded-xl p-4 mb-8">
           <div className="font-mono text-[0.65rem] tracking-[0.15em] uppercase text-muted mb-2">
             Structure · {totalDuration} min
           </div>
@@ -153,7 +153,7 @@ export default function CourseView({ course, prof, onBack }: CourseViewProps) {
           <div className="flex flex-wrap gap-x-5 gap-y-1.5 mt-2.5">
             {course.phases.map(phase => (
               <div key={phase.id} className="flex items-center gap-1.5 text-[0.65rem] text-muted font-mono">
-                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: phase.color }} />
+                <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: phase.color, boxShadow: `0 0 6px ${phase.color}60` }} />
                 {phase.title} · {phase.duration} min
               </div>
             ))}
@@ -208,17 +208,17 @@ function PhaseSection({ id, time, duration, title, color, intro, isCompleted, on
       initial={{ opacity: 0, x: -20 }}
       whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true }}
-      className={`mb-10 pl-4 sm:pl-6 border-l-2 sm:border-l-3 relative transition-opacity duration-500 ${isCompleted ? 'opacity-50' : 'opacity-100'}`}
+      className={`mb-10 pl-4 sm:pl-6 border-l-2 sm:border-l-3 relative transition-opacity duration-500 ${isCompleted ? 'opacity-40' : 'opacity-100'}`}
       style={{ borderLeftColor: color }}
     >
-      <div className="absolute -left-[7px] sm:-left-[10px] top-0 w-[13px] h-[13px] sm:w-[17px] sm:h-[17px] rounded-full border-2 sm:border-3 border-cream" style={{ backgroundColor: color }} />
+      <div className="absolute -left-[7px] sm:-left-[10px] top-0 w-[13px] h-[13px] sm:w-[17px] sm:h-[17px] rounded-full border-2 sm:border-3 border-stage" style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}60` }} />
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-4">
         <div className="flex items-baseline gap-3 flex-wrap">
-          <span className="font-mono text-[0.65rem] bg-warm px-2.5 py-0.5 rounded-full text-muted whitespace-nowrap">
+          <span className="font-mono text-[0.65rem] px-2.5 py-0.5 rounded-full whitespace-nowrap" style={{ background: 'rgba(124,58,237,0.15)', color: '#8b7fa8' }}>
             {time}
           </span>
-          <h2 className={`font-serif text-lg sm:text-xl font-bold transition-all ${isCompleted ? 'text-muted line-through' : 'text-ink'}`}>
+          <h2 className={`font-serif text-lg sm:text-xl font-bold transition-all ${isCompleted ? 'text-muted line-through' : 'text-cream'}`}>
             {title}
           </h2>
         </div>
@@ -228,11 +228,11 @@ function PhaseSection({ id, time, duration, title, color, intro, isCompleted, on
           <button
             onClick={onToggle}
             className={`flex items-center gap-2 px-3 py-1.5 sm:py-1 rounded-full text-[0.65rem] sm:text-[0.7rem] font-mono uppercase tracking-wider transition-colors whitespace-nowrap ${
-              isCompleted ? 'bg-green-100 text-green-700' : 'bg-warm text-muted hover:bg-warm/80'
+              isCompleted ? 'bg-fun-teal/20 text-fun-teal' : 'bg-fun-purple/15 text-muted hover:bg-fun-purple/25'
             }`}
           >
             {isCompleted ? <CheckCircle2 size={14} /> : null}
-            {isCompleted ? 'Terminé' : 'Marquer comme fait'}
+            {isCompleted ? 'Termine' : 'Marquer comme fait'}
           </button>
         </div>
       </div>
@@ -276,7 +276,7 @@ function PhaseTimer({ duration }: { duration: number }) {
   const isFinished = timeLeft === 0;
 
   return (
-    <div className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full bg-stage text-cream font-mono text-[0.65rem] sm:text-[0.75rem] ${isFinished ? 'animate-pulse bg-accent' : ''}`}>
+    <div className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full font-mono text-[0.65rem] sm:text-[0.75rem] text-cream ${isFinished ? 'animate-pulse bg-fun-pink' : ''}`} style={!isFinished ? { background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.3)' } : {}}>
       <span className="w-8 sm:w-10 text-center">{formatTime(timeLeft)}</span>
       <div className="flex items-center gap-1 border-l border-muted/30 pl-1.5 sm:pl-2">
         <button onClick={toggle} className="hover:text-gold transition-colors p-0.5">
@@ -300,17 +300,17 @@ function ExerciseCard({ name, tag, description, steps, tip, objectifs }: {
   objectifs?: string[];
 }) {
   return (
-    <div className="bg-white rounded-lg p-5 shadow-sm mb-4">
+    <div className="card-pop rounded-xl p-5 mb-4">
       <div className="flex items-center gap-3 mb-1.5">
-        <h3 className="font-sans font-medium text-base">{name}</h3>
-        {tag && <span className="font-mono text-[0.6rem] uppercase tracking-wider px-2 py-0.5 rounded-full bg-warm text-muted">{tag}</span>}
+        <h3 className="font-sans font-medium text-base text-cream">{name}</h3>
+        {tag && <span className="font-mono text-[0.6rem] uppercase tracking-wider px-2 py-0.5 rounded-full bg-fun-purple/15 text-fun-purple">{tag}</span>}
       </div>
       <p className="text-[0.88rem] text-muted mb-3 leading-relaxed">{description}</p>
 
       <ul className="space-y-2 mb-4">
         {steps.map((step, i) => (
-          <li key={i} className="text-[0.85rem] pl-7 relative border-t border-warm pt-2 first:border-t-0 first:pt-0">
-            <span className="absolute left-0 top-2 first:top-0 w-5 h-5 rounded-full bg-warm text-muted font-mono text-[0.7rem] flex items-center justify-center">
+          <li key={i} className="text-[0.85rem] pl-7 relative border-t border-fun-purple/10 pt-2 first:border-t-0 first:pt-0 text-cream/80">
+            <span className="absolute left-0 top-2 first:top-0 w-5 h-5 rounded-full bg-fun-purple/20 text-fun-purple font-mono text-[0.7rem] flex items-center justify-center">
               {i + 1}
             </span>
             {step}
@@ -319,9 +319,9 @@ function ExerciseCard({ name, tag, description, steps, tip, objectifs }: {
       </ul>
 
       {tip && (
-        <div className="bg-[#fdf6e3] border border-[#e8d5a0] rounded-md p-3.5 mt-3 flex gap-3 items-start">
-          <Lightbulb size={16} className="text-[#b8860b] mt-0.5 shrink-0" />
-          <div className="text-[0.83rem] text-[#6b5a2a] leading-relaxed">
+        <div className="rounded-lg p-3.5 mt-3 flex gap-3 items-start" style={{ background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.15)' }}>
+          <Lightbulb size={16} className="text-gold mt-0.5 shrink-0" />
+          <div className="text-[0.83rem] text-gold/80 leading-relaxed">
             {tip}
           </div>
         </div>
@@ -342,11 +342,11 @@ function ExerciseCard({ name, tag, description, steps, tip, objectifs }: {
 
 function getObjClass(obj: string) {
   switch (obj.toLowerCase()) {
-    case 'qui': return 'bg-[#d4e8d4] text-[#2a5a2a]';
-    case 'quoi': return 'bg-[#d4dff5] text-[#1a3060]';
-    case 'où': return 'bg-[#f5d4d4] text-[#6a1a1a]';
-    case 'corps': return 'bg-[#ede4f5] text-[#3a1a5a]';
-    case 'écoute': return 'bg-[#fdebd4] text-[#5a3010]';
-    default: return 'bg-warm text-muted';
+    case 'qui': return 'bg-fun-teal/20 text-fun-teal';
+    case 'quoi': return 'bg-fun-sky/20 text-fun-sky';
+    case 'où': return 'bg-fun-pink/20 text-fun-pink';
+    case 'corps': return 'bg-fun-purple/20 text-fun-purple';
+    case 'écoute': return 'bg-fun-orange/20 text-fun-orange';
+    default: return 'bg-fun-purple/10 text-muted';
   }
 }
